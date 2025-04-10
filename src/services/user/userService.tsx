@@ -20,7 +20,6 @@ export type UserResponse = {
   user: User;
 };
 
-
 export type CloudinarySignatureData = {
   timestamp: number;
   signature: string;
@@ -34,7 +33,6 @@ export type CloudinarySignatureResponse = {
   data: CloudinarySignatureData;
 };
 
-
 export const getUserDetails = async () => {
   const response = await UserAxiosInstance.get<UserResponse>(
     "/_cl/client/details"
@@ -42,8 +40,9 @@ export const getUserDetails = async () => {
   return response.data;
 };
 
-
-export const getCloudinarySignature = async (folder: string = "user-profiles") => {
+export const getCloudinarySignature = async (
+  folder: string = "user-profiles"
+) => {
   try {
     const response = await UserAxiosInstance.get<CloudinarySignatureResponse>(
       `/user/cloudinary/upload-signature?folder=${folder}`
@@ -55,7 +54,10 @@ export const getCloudinarySignature = async (folder: string = "user-profiles") =
   }
 };
 
-export type IUpdateUserData = Pick<User, "Name" | "phoneNumber" | "profileImage">;
+export type IUpdateUserData = Pick<
+  User,
+  "Name" | "phoneNumber" | "profileImage"
+>;
 
 export const updateUserProfile = async (
   userId: string,
@@ -65,5 +67,20 @@ export const updateUserProfile = async (
     `/user/update-profile/${userId}`,
     data
   );
-  return response.data;
+  return response.data.data;
+};
+
+export const Changepassword = async (
+  _id:string,
+  password: string,
+  newPassword: string
+) => {
+  const response =  await UserAxiosInstance.patch(
+    `user/change-password/?_id=${_id}`,
+    {
+    password,
+    newPassword
+    }
+  )
+  return response
 };

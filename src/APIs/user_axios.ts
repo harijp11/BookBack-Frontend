@@ -45,7 +45,7 @@ UserAxiosInstance.interceptors.response.use(
         error.response.data.message ===
           "Access denied: Your account has been blocked" &&
         !originalRequest._retry)
-    ) {
+    ){
       localStorage.removeItem("userData");
       window.location.href = "/";
       toast.info("Please login again");

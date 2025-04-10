@@ -1,100 +1,120 @@
-import React from 'react';
+import { Search, Calendar, Book, Gift,  } from 'lucide-react';
+import { motion} from 'framer-motion';
+import img from "../../assets/WhatsApp Image 2025-04-10 at 18.53.07_53f9828d.jpg"
+
 
 const UserLanding: React.FC = () => {
-  return (
-    <div className="font-sans text-black bg-white">
-      {/* Header / Hero Section */}
-      <header className="bg-black text-white py-12 px-4">
-        <h1 className="text-4xl md:text-5xl font-bold text-center">
-          Borrow, Lend, Read – BookBack
-        </h1>
-        <p className="text-lg md:text-xl text-center mt-4">
-          Share your bookshelf and rent from others in your community.
-        </p>
-        <div className="flex justify-center gap-4 mt-6">
-          <button className="bg-white text-black border-2 border-black py-2 px-6 hover:bg-black hover:text-white transition">
-            Download the App
-          </button>
-          <button className="bg-white text-black border-2 border-black py-2 px-6 hover:bg-black hover:text-white transition">
-            Learn More
-          </button>
-        </div>
-        
-      </header>
-
-      {/* Why BookBack Section */}
-      <section className="py-10 px-4 border-b border-black">
-        <h2 className="text-3xl font-bold text-center mb-8">A New Way to Enjoy Books</h2>
-        <div className="flex flex-wrap justify-center gap-6">
-          <div className="w-64 p-4">
-            <h3 className="text-xl font-semibold">Save Money</h3>
-            <p>Rent books instead of buying new.</p>
-          </div>
-          <div className="w-64 p-4">
-            <h3 className="text-xl font-semibold">Share Your Collection</h3>
-            <p>Earn by lending your books.</p>
-          </div>
-          <div className="w-64 p-4">
-            <h3 className="text-xl font-semibold">Community-Driven</h3>
-            <p>Connect with local readers.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-10 px-4 border-b border-black">
-        <h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
-        <div className="flex flex-wrap justify-center gap-6">
-          <div className="w-64 p-4">
-            <h3 className="text-xl font-semibold">1. Sign Up</h3>
-            <p>List books you’re willing to lend.</p>
-          </div>
-          <div className="w-64 p-4">
-            <h3 className="text-xl font-semibold">2. Browse</h3>
-            <p>Find books from users near you.</p>
-          </div>
-          <div className="w-64 p-4">
-            <h3 className="text-xl font-semibold">3. Rent or Lend</h3>
-            <p>Arrange secure rentals.</p>
-          </div>
-          <div className="w-64 p-4">
-            <h3 className="text-xl font-semibold">4. Enjoy</h3>
-            <p>Read, return, and repeat!</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-10 px-4 border-b border-black">
-        <h2 className="text-3xl font-bold text-center mb-8">What Makes BookBack Special</h2>
-        <div className="flex flex-wrap justify-center gap-6">
-          <div className="w-48 p-4">User Ratings</div>
-          <div className="w-48 p-4">Secure Payments</div>
-          <div className="w-48 p-4">Local Focus</div>
-          <div className="w-48 p-4">Wishlist</div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-10 px-4">
-        <h2 className="text-3xl font-bold text-center mb-4">Ready to Dive In?</h2>
-        <p className="text-lg text-center mb-6">Join the BookBack community today.</p>
-        <div className="flex justify-center">
-          <button className="bg-white text-black border-2 border-black py-2 px-6 hover:bg-black hover:text-white transition">
-            Get the App Now
-          </button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-black text-white py-6 px-4 text-center">
-        <p>© 2025 BookBack. All rights reserved.</p>
-        <p className="mt-2">
-          About Us | FAQ | Contact | Terms | Privacy
-        </p>
-      </footer>
-    </div>
-  );
+ 
+     // Animation variants
+     const fadeIn = {
+         hidden: { opacity: 0 },
+         visible: { opacity: 1, transition: { duration: 0.5 } }
+     };
+ 
+ 
+ 
+     return (
+         <div className="flex flex-col min-h-screen font-sans text-zinc-700">
+             
+             {/* Hero Banner */}
+             <motion.div
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.3, duration: 0.75 }}
+                 className="mx-8 mt-10"
+             >
+                 <div className="relative bg-black text-white rounded-2xl overflow-hidden md:h-[500px]">
+                     {/* Background Image */}
+                     <div className="absolute inset-0 z-0 opacity-40">
+                         <img
+                             src={img}
+                             alt="Library interior"
+                             className="w-full h-full object-cover"
+                         />
+                     </div>
+ 
+                     {/* Content */}
+                     <div className="relative z-10 max-w-6xl mx-auto px-4 py-16 md:py-24">
+                         <div className="max-w-xl">
+                             <motion.h1
+                                 initial={{ opacity: 0, x: 100 }}
+                                 animate={{ opacity: 1, x: 0 }}
+                                 transition={{ duration: 0.8, delay: 0.5 }}
+                                 className="text-3xl md:text-4xl font-bold mb-4"
+                             >
+                                 Welcome to Greenwich Library
+                             </motion.h1>
+                             <motion.p
+                                 initial={{ opacity: 0, x: -100 }}
+                                 animate={{ opacity: 1, x: 0 }}
+                                 transition={{ duration: 0.8, delay: 0.8 }}
+                                 className="text-lg mb-6"
+                             >
+                                 Your community destination for lifelong learning, innovation, and connection.
+                             </motion.p>
+                             <motion.div
+                                 initial={{ opacity: 0, y: 50 }}
+                                 animate={{ opacity: 1, y: 0 }}
+                                 transition={{ duration: 0.6, delay: 1.1 }}
+                                 className="flex space-x-4"
+                             >
+                                 <motion.button
+                                     whileHover={{ scale: 1.05 }}
+                                     whileTap={{ scale: 0.95 }}
+                                     className="bg-white text-blue-800 px-6 py-2 rounded font-medium hover:bg-gray-100 transition-all duration-500"
+                                 >
+                                     Get a Library Card
+                                 </motion.button>
+                                 <motion.button
+                                     whileHover={{ scale: 1.05 }}
+                                     whileTap={{ scale: 0.95 }}
+                                     className="bg-transparent border border-white text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition-all duration-500"
+                                 >
+                                     Find Hours & Locations
+                                 </motion.button>
+                             </motion.div>
+                         </div>
+                     </div>
+                 </div>
+             </motion.div>
+ 
+             {/* Quick Links */}
+             <motion.div
+                 initial="hidden"
+                 whileInView="visible"
+                 viewport={{ once: true, amount: 0.2 }}
+                 variants={fadeIn}
+                 className="bg-white py-8"
+             >
+                 <div className="max-w-6xl mx-auto px-4">
+                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                         {[
+                             { icon: <Calendar size={32} className="text-zinc-700 mb-2" />, text: "Today's Events" },
+                             { icon: <Book size={32} className="text-zinc-700 mb-2" />, text: "New Arrivals" },
+                             { icon: <Gift size={32} className="text-zinc-700 mb-2" />, text: "Donate" },
+                             { icon: <Search size={32} className="text-zinc-700 mb-2" />, text: "Catalog" }
+                         ].map((item, index) => (
+                             <motion.div
+                                 key={index}
+                                 initial={{ opacity: 0, y: 50 }}
+                                 animate={{ opacity: 1, y: 0 }}
+                                 transition={{
+                                     duration: 0.5,
+                                     delay: 0.2 + (index * 0.15)
+                                 }}
+                                 whileHover={{ scale: 1.05, backgroundColor: '#f9fafb' }}
+                                 whileTap={{ scale: 0.98 }}
+                                 className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg cursor-pointer"
+                             >
+                                 {item.icon}
+                                 <span className="font-medium">{item.text}</span>
+                             </motion.div>
+                         ))}
+                     </div>
+                 </div>
+             </motion.div>
+         </div>
+     );
 };
 
 export default UserLanding;

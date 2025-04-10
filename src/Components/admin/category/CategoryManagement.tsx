@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Search, Edit, Loader2, Plus } from "lucide-react";
-import { Pagination1 } from "@/Components/common/pagination/pagination1";
 import { CategoryType } from "@/services/admin/adminService";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/Components/ui/table";
 import AddorEditCategoryModal from "./AddorEditCategory";
 import { useCategoryMutations } from "@/hooks/admin/categoryHooks/useCategoryMutation";
 import { useCategoriesQuery } from "@/hooks/admin/categoryHooks/useCategoryFetch";
-import { useDebounce } from "@/Components/common/useDebounceHook/useDebounce"; // Import the new debounce hook
+import { useDebounce } from "@/Components/common/useDebounceHook/useDebounce";
+import { DataTable } from "@/Components/common/tablecomponent/tableComponent"; // Import our reusable DataTable component
 
 const CategoryManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,6 +64,65 @@ const CategoryManagement: React.FC = () => {
     refetch();
   };
 
+  // Define columns for the DataTable
+  const columns = [
+    { 
+      header: "Name", 
+      accessor: "name" as const
+    },
+    { 
+      header: "Description", 
+      accessor: (category: CategoryType) => 
+        category.description || <span className="italic">No description</span>
+    },
+    { 
+      header: "Published At", 
+      accessor: (category: CategoryType) => 
+        new Date(category.createdAt as string).toLocaleDateString()
+    },
+    { 
+      header: "Status", 
+      accessor: (category: CategoryType) => (
+        <span 
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            category.isActive 
+              ? "bg-green-100 text-green-800" 
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {category.isActive ? "Active" : "Inactive"}
+        </span>
+      ),
+      className: "text-center"
+    },
+    { 
+      header: "Actions", 
+      accessor: (category: CategoryType) => (
+        <div className="flex justify-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleEditCategory(category)}
+          >
+            <Edit className="h-4 w-4 mr-1" /> Edit
+          </Button>
+          <Button 
+            variant={category.isActive ? "destructive" : "outline"} 
+            size="sm" 
+            onClick={() => handleToggleStatus(category._id)}
+            disabled={toggleStatusMutation.isPending && toggleStatusMutation.variables === category._id}
+          >
+            {toggleStatusMutation.isPending && toggleStatusMutation.variables === category._id ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : null}
+            {category.isActive ? "Deactivate" : "Activate"}
+          </Button>
+        </div>
+      ),
+      className: "text-center"
+    }
+  ];
+
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <Card>
@@ -100,82 +158,17 @@ const CategoryManagement: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No categories found.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Published At</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.map((category:CategoryType) => (
-                    <TableRow key={category._id} className="border-b hover:bg-muted/50">
-                      <TableCell className="font-medium">{category.name}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {category.description || <span className="italic">No description</span>}
-                      </TableCell>
-                      <TableCell>{new Date(category.createdAt as string).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-center">
-                        <span 
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            category.isActive 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {category.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-center gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditCategory(category)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" /> Edit
-                          </Button>
-                          <Button 
-                            variant={category.isActive ? "destructive" : "outline"} 
-                            size="sm" 
-                            onClick={() => handleToggleStatus(category._id)}
-                            disabled={toggleStatusMutation.isPending && toggleStatusMutation.variables === category._id}
-                          >
-                            {toggleStatusMutation.isPending && toggleStatusMutation.variables === category._id ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                            ) : null}
-                            {category.isActive ? "Deactivate" : "Activate"}
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-          {totalPages > 1 && (
-            <div className="mt-4 flex justify-center">
-              <Pagination1
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPagePrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                onPageNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                onPageSelect={setCurrentPage}
-              />
-            </div>
-          )}
+          <DataTable
+            data={categories}
+            columns={columns}
+            isLoading={isLoading}
+            emptyMessage="No categories found."
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPagePrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            onPageNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onPageSelect={setCurrentPage}
+          />
         </CardContent>
       </Card>
       

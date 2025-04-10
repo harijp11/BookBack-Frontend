@@ -16,6 +16,7 @@ export interface IAdmin {
 
 export interface IUser {
   _id:string
+  userId:string
   Name: string;
   email: string;
   phoneNumber: string;

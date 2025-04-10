@@ -17,6 +17,7 @@ import { adminLogout } from "@/store/slice/admin_slice";
 import { logoutAdmin } from "@/services/auth/authService";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { Button } from "@/Components/ui/button";
+import { useToast } from "@/hooks/ui/toast";
 
 interface SidebarItem {
   title: string;
@@ -34,6 +35,7 @@ const sidebarItems: SidebarItem[] = [
 ];
 
 const Sidebar: React.FC = () => {
+  const toast = useToast()
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,6 +57,7 @@ const Sidebar: React.FC = () => {
       await logoutAdmin(); // Wait for API call
       dispatch(adminLogout()); // Clear Redux state
       navigate("/admin/login"); // Redirect to login
+      toast.success("Admin Logout successfully")
     } catch (error) {
       console.error("Logout failed:", error);
     }

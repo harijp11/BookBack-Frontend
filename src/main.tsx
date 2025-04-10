@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { store } from './store/store.ts'
 import { ToastProvider } from './hooks/ui/toast.tsx'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import './leaflet-config.ts';
 import './index.css'
 import App from './App.tsx'
 

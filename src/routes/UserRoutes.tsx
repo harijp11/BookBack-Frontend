@@ -1,11 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 import { UserAuth } from "@/pages/user/UserAuth";
-import UserLandingPage from "@/pages/user/UserLanding";
+import {UserLandingPage} from "@/pages/user/UserLanding";
 import ForgotPassword from "@/Components/auth/forgotPassword";
 import ResetPassword from "@/Components/auth/resetPassword";
 import { PublicRoute } from "@/protected/publicRoute"; // Update path as needed
-import ProfilePage from "@/Components/user/userProfile";
 import { ProtectedRoute } from "@/protected/ProtectedRoute";
+import UserProfilePage from "@/pages/user/userProfilepage";
 
 function UserRoutes() {
   return (
@@ -22,7 +22,7 @@ function UserRoutes() {
       
       
       <Route element={<ProtectedRoute authType="user" />}>
-      <Route path="/profile/:id" element={<ProfilePage />} />
+      <Route path="/profile/:id" element={<UserProfilePage />} />
       </Route>
     </Routes>
   );

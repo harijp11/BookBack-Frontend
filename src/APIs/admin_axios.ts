@@ -28,7 +28,7 @@ adminAxiosInstance.interceptors.response.use(
 
 					store.dispatch(adminLogout());
 
-					window.location.href = "/admin";
+					window.location.href = "/admin/login";
 					toast("Please login again");
 					return Promise.reject(refreshError);
 				}
@@ -46,7 +46,7 @@ adminAxiosInstance.interceptors.response.use(
 			console.log("Session ended");
 			store.dispatch(adminLogout());
 
-			window.location.href = "/admin";
+			window.location.href = "/admin/login";
 			toast("Please login again");
 			return Promise.reject(error);
 		}
