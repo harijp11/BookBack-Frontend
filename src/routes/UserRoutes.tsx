@@ -6,6 +6,8 @@ import ResetPassword from "@/Components/auth/resetPassword";
 import { PublicRoute } from "@/protected/publicRoute"; // Update path as needed
 import { ProtectedRoute } from "@/protected/ProtectedRoute";
 import UserProfilePage from "@/pages/user/userProfilepage";
+import OwnerBooksMangementPage from "@/pages/user/OwnerBooksMangementPage";
+import BookFormPage from "@/Components/user/book/CreateBook";
 
 function UserRoutes() {
   return (
@@ -23,7 +25,14 @@ function UserRoutes() {
       
       <Route element={<ProtectedRoute authType="user" />}>
       <Route path="/profile/:id" element={<UserProfilePage />} />
-      </Route>
+      </Route> 
+
+
+      //book
+      <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />
+      <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />
+      <Route path="/books/:userId"  element ={<OwnerBooksMangementPage/> }/>
+      <Route path="/books/:bookId"  element ={<OwnerBooksMangementPage/> }/>
     </Routes>
   );
 }

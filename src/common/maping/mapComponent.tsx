@@ -208,10 +208,7 @@ const MapView: React.FC = () => {
   };
 
   // Pulsating circle effect for user location
-  const pulseStyle = {
-    animation: "pulse 1.5s infinite"
-  };
-
+ 
   return (
     <div className="map-wrapper">
       <style>

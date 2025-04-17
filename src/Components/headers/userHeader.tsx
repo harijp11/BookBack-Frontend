@@ -24,12 +24,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 import { AxiosError } from "axios";
 
-const navItems = [
-  { name: "Home", href: "/" },
-  { name: "Books", href: "/events/discover" },
-  { name: "Buyings", href: "#" },
-  { name: "Rentals", href: "#" },
-];
+
 
 export function UserHeader() {
   // Original UserHeader functionality
@@ -46,6 +41,14 @@ export function UserHeader() {
 
   // Move mobileMenuOpen state to this component
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+
+  const navItems = [
+    { name: "Home", href: "/" },
+    { name: "Books", href: `/Books/${user?._id}` },
+    { name: "Buyings", href: "#" },
+    { name: "Rentals", href: "#" },
+  ];
 
   // UserHeader's logout functionality
   const logoutUser = () => {
@@ -68,7 +71,7 @@ export function UserHeader() {
   const handleProfileClick = () => {
     setUserMenuOpen(false); // Close menu first
     setTimeout(() => {
-      navigate(`/profile/${user.id}`);
+      navigate(`/profile/${user?.id}`);
     }, 50); // Small delay to ensure animation completes smoothly
   };
 
@@ -108,6 +111,7 @@ export function UserHeader() {
   const time = dateTime.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
+    second:"2-digit",
     hour12: true,
   });
 
@@ -234,7 +238,7 @@ export function UserHeader() {
                 >
                   <div className="bg-gray-200 rounded-full p-1 mr-2">
                     <Avatar className="h-8 w-8">
-                      {!user?.profileImage ? (
+                      {user?.profileImage ? (
                         <AvatarImage
                           src={user.profileImage}
                           alt={user.Name || "@username"}
@@ -286,7 +290,7 @@ export function UserHeader() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-white shadow-lg overflow-hidden absolute right-4 md:right-1 top-8 z-50 w-64 rounded-lg"
+            className="bg-white shadow-lg overflow-hidden absolute right-4 md:right-1 top-10 z-50 w-55 rounded-lg"
           >
             {isLoggedIn && user ? (
               <motion.div
