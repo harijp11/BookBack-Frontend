@@ -6,6 +6,7 @@ import { Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/protected/ProtectedRoute";
 import { PublicRoute } from "@/protected/publicRoute"; // Update path as needed
 import AdminDealTypeManagement from "@/pages/admin/AdminDealTypeManagement";
+import AdminBookMangement from "@/pages/admin/AdminBooksListPage";
 
 function AdminRoutes() {
   return (
@@ -21,6 +22,7 @@ function AdminRoutes() {
         <Route path="/Users" element={<AdminUserManagement />} />
         <Route path="/categories" element={<AdminCategoryManagement />} />
         <Route path="/deal-types" element={<AdminDealTypeManagement />} />
+        <Route path="/book" element={<AdminBookMangement/>}/>
       </Route>
     </Routes>
   );

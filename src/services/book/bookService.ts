@@ -1,4 +1,6 @@
+import { adminAxiosInstance } from "@/APIs/admin_axios";
 import { UserAxiosInstance } from "@/APIs/user_axios";
+import { AxiosError } from "axios";
 
 export interface Book {
     name: string;
@@ -82,7 +84,12 @@ export interface BookListResponse {
   currentPage: number;
 }
 
+export interface BookStatusUpdateResponse{
+  success:boolean;
+  message:string;
+}
 
+//user
 
 export const getCloudinarySignature = async (): Promise<CloudinarySignatureResponse> => {
   try {
@@ -167,5 +174,103 @@ export const createNewBook = async (bookData: Book)=>{
     } catch (error) {
       console.error("Error updating book:", error);
       throw error;
+    }
+  };
+
+  export const updateBookStatus = async (
+    bookId: string,
+  ): Promise<BookStatusUpdateResponse | void> => {
+    try {
+      const response = await UserAxiosInstance.patch(`/user/book/`,
+      {data:"hhi"},
+      {
+        params:{bookId}
+      }
+      );
+      return response.data;
+    } catch (error) {
+      if(error instanceof AxiosError){
+      console.error("Error updating book status:", error);
+      }
+    }
+  };
+
+
+  //admin 
+
+  export const getAllPaginatedAdminBooks = async (params: Omit<BookSearchParams,"ownerId">): Promise<BookListResponse> => {
+    try {
+      
+  
+      // Create query parameters
+      const queryParams = {
+        search: params.search || "",
+        filter: params.filter || {},
+        page: params.page || 1,
+        limit: params.limit || 5
+      };
+  
+      // Make the GET request with query parameters
+      const response = await adminAxiosInstance.get<BookListResponse>("/admin/book", {
+        params: queryParams,
+        paramsSerializer: params => {
+          const urlParams = new URLSearchParams();
+          
+          Object.entries(params).forEach(([key, value]) => {
+            if (key === 'filter' && typeof value === 'object') {
+              urlParams.append(key, JSON.stringify(value));
+            } else {
+              urlParams.append(key, String(value));
+            }
+          });
+          
+          return urlParams.toString();
+        }
+      });
+     console.log("books datasss",response.data)
+      return response.data
+    } catch (error) {
+      console.error("Error fetching paginated books:", error);
+      throw error;
+    }
+  };
+
+  export const updateAdminBookStatus = async (
+    bookId: string,
+  ): Promise<BookStatusUpdateResponse | void> => {
+    try {
+      const response = await adminAxiosInstance.patch(`/admin/book/`,
+      {data:"hhi"},
+      {
+        params:{bookId}
+      }
+      );
+      return response.data;
+    } catch (error) {
+      if(error instanceof AxiosError){
+      console.error("Error updating book status:", error);
+      }
+    }
+  };
+
+
+  export const fetchAvailableBooks = async (parms:{
+    latitude: number,
+    longitude: number,
+    maxDistance: number,
+    page?: number,
+    limit?: number,
+    search?: string,
+    filters?: Record<string, object>,
+    sort?: Record<string, object>
+  }
+  ): Promise<BookListResponse | void> => {
+    try {
+      const response = await UserAxiosInstance.get('/user/books-available', {
+        params: parms
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching available books:', error);
     }
   };

@@ -1,3 +1,4 @@
+import { adminAxiosInstance } from "@/APIs/admin_axios";
 import { UserAxiosInstance } from "@/APIs/user_axios";
 
 
@@ -18,3 +19,10 @@ export interface DealType {
     );
     return response.data.dealtypes || [];
   };
+
+  export const getAllAdminDealTypes = async():Promise<DealType[]> =>{
+    const response = await adminAxiosInstance.get<{ dealtypes: DealType[] }>(
+      "/admin/dealtype"
+    );
+    return response.data.dealtypes || [];
+  }

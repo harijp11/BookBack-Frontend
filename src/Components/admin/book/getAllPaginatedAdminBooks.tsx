@@ -1,39 +1,49 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/ui/toast';
 import { DataTable } from '@/Components/common/tablecomponent/tableComponent';
-import { BookOpen, Edit, Filter, PlusCircle, Search } from 'lucide-react';
-import { useBooksQuery } from '@/hooks/common/useGetAllBooksMutation';
-import { useBookQueries } from '@/hooks/common/useBookMutation';
-import { useUpdateBookStatusMutation } from '@/hooks/common/useUpdateBookStatusMutation'; // Import the new hook
+import { BookOpen, Filter, Search } from 'lucide-react';
 import FilterSidebar from '@/Components/common/FilterSidebar/filterSideBar';
-import { Category, DealType, IBook } from '@/services/book/bookService';
+import { IBook } from '@/services/book/bookService';
 
-const PaginatedBooksComponent: React.FC = () => {
-  const { userId } = useParams<{ userId: string }>();
+// Import custom hooks
+import { usePaginatedBooks,BookSearchParams } from '@/hooks/admin/bookHooks/useBookFetch';
+import { useAdminCategories } from '@/hooks/admin/categoryHooks/useFetchCategories';
+import { useAdminDealTypes } from '@/hooks/admin/dealtypeHooks/useFetchCategories';
+import { useBookStatusMutation } from '@/hooks/admin/bookHooks/useBookMutation';
+
+const AdminPaginatedBooksComponent: React.FC = () => {
   const toast = useToast();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState<Record<string, unknown>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // Create the query params object
+  const queryParams: BookSearchParams = {
+    search: searchTerm,
+    filter,
+    page: currentPage,
+    limit: 5 // You can make this configurable if needed
+  };
+
+  // Use custom hooks for API calls
+  const categoriesQuery = useAdminCategories();
+  const dealTypesQuery = useAdminDealTypes();
+  
   const {
     data,
     isLoading,
     isError,
     error,
-    currentPage,
-    searchTerm,
-    filter,
-    setSearchTerm,
-    setFilter,
-    clearFilter,
-    handlePagePrev,
-    handlePageNext,
-    handlePageSelect,
-    refetch,
-  } = useBooksQuery(userId || '');
-  const { categoriesQuery, dealTypesQuery } = useBookQueries();
-  const [isFilterOpen, setIsFilterOpen] = React.useState(false);
-  const navigate = useNavigate();
-  
-  // Use the update book status mutation
-  const updateBookStatusMutation = useUpdateBookStatusMutation();
+    refetch
+  } = usePaginatedBooks(queryParams);
+
+  // Use the book status mutation hook
+  const statusMutation = useBookStatusMutation({
+    onSuccess: refetch
+  });
 
   useEffect(() => {
     if (data && searchTerm && data.books.length === 0) {
@@ -46,22 +56,6 @@ const PaginatedBooksComponent: React.FC = () => {
       toast.error(`Failed to load books: ${(error as Error).message || 'Unknown error'}`);
     }
   }, [isError, error, toast]);
-
-  // Debugging query states
-  useEffect(() => {
-    console.log('Categories Query:', {
-      isLoading: categoriesQuery.isLoading,
-      isError: categoriesQuery.isError,
-      data: categoriesQuery.data,
-      error: categoriesQuery.error,
-    });
-    console.log('Deal Types Query:', {
-      isLoading: dealTypesQuery.isLoading,
-      isError: dealTypesQuery.isError,
-      data: dealTypesQuery.data,
-      error: dealTypesQuery.error,
-    });
-  }, [categoriesQuery, dealTypesQuery]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -76,21 +70,32 @@ const PaginatedBooksComponent: React.FC = () => {
     refetch();
   };
 
-  const handleAddBook = () => {
-    navigate(`/newBook/${userId}`);
-  };
-
-  const handleEditBook = (bookId: string) => {
-    navigate(`/editBook/${userId}/${bookId}`);
-  };
-
-  // Updated to use the mutation hook
-  const handleToggleActiveStatus = (bookId: string) => {
-    updateBookStatusMutation.mutate(bookId);
+  const handleToggleActiveStatus = async (bookId: string) => {
+    statusMutation.mutate(bookId);
   };
 
   const toggleFilterSidebar = () => {
     setIsFilterOpen(!isFilterOpen);
+  };
+
+  const clearFilter = () => {
+    setFilter({});
+  };
+
+  const handlePagePrev = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handlePageNext = () => {
+    if (data && currentPage < data.totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePageSelect = (page: number) => {
+    setCurrentPage(page);
   };
 
   const formatCurrency = (amount: number) => {
@@ -107,7 +112,7 @@ const PaginatedBooksComponent: React.FC = () => {
       </div>
       <p className="text-xl font-medium mb-2">No books found</p>
       <p className="text-gray-500 text-center max-w-md">
-        Try adjusting your search or filters, or add a new book to your collection
+        Try adjusting your search or filters to find books.
       </p>
     </div>
   );
@@ -182,7 +187,7 @@ const PaginatedBooksComponent: React.FC = () => {
               ? 'bg-amber-100 text-amber-800'
               : 'bg-red-100 text-red-800'
           }`}
-        >  
+        >
           <span
             className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
               book.status === 'Available'
@@ -201,9 +206,7 @@ const PaginatedBooksComponent: React.FC = () => {
       accessor: (book: IBook) => (
         <span
           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-            book.isActive 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-gray-100 text-gray-800'
+            book.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
           }`}
         >
           <span
@@ -218,36 +221,27 @@ const PaginatedBooksComponent: React.FC = () => {
     {
       header: 'Actions',
       accessor: (book: IBook) => (
-        <div className="flex flex-col sm:flex-row items-center gap-2 justify-end">
-          <button
-            className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-200 text-xs font-medium rounded text-primary hover:text-primary-foreground hover:bg-primary transition-colors focus:outline-none"
-            onClick={() => handleEditBook(book._id)}
-          >
-            <Edit className="h-3.5 w-3.5 mr-1" />
-            Edit
-          </button>
+        <div className="flex space-x-1">
           {book.isActive ? (
             <button
-              className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-red-600 hover:text-white hover:bg-red-600 transition-colors focus:outline-none"
+              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-600 hover:text-white hover:bg-red-600 transition-colors focus:outline-none"
               onClick={() => handleToggleActiveStatus(book._id)}
-              disabled={updateBookStatusMutation.isPending}
+              disabled={statusMutation.isPending}
             >
-              {updateBookStatusMutation.isPending && book._id === updateBookStatusMutation.variables ? 
-                'Updating...' : 'Deactivate'}
+              Deactivate
             </button>
           ) : (
             <button
-              className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-green-600 hover:text-white hover:bg-green-600 transition-colors focus:outline-none"
+              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-green-600 hover:text-white hover:bg-green-600 transition-colors focus:outline-none"
               onClick={() => handleToggleActiveStatus(book._id)}
-              disabled={updateBookStatusMutation.isPending}
+              disabled={statusMutation.isPending}
             >
-              {updateBookStatusMutation.isPending && book._id === updateBookStatusMutation.variables ? 
-                'Updating...' : 'Activate'}
+              Activate
             </button>
           )}
         </div>
       ),
-      className: 'text-right w-40',
+      className: 'text-right',
     },
   ];
 
@@ -256,7 +250,7 @@ const PaginatedBooksComponent: React.FC = () => {
       key: 'categoryId',
       label: 'Category',
       options:
-        categoriesQuery.data?.map((category: Category) => ({
+        categoriesQuery.data?.map((category) => ({
           value: category._id,
           label: category.name,
         })) || [],
@@ -266,7 +260,7 @@ const PaginatedBooksComponent: React.FC = () => {
       key: 'dealTypeId',
       label: 'Deal Type',
       options:
-        dealTypesQuery.data?.map((dealType: DealType) => ({
+        dealTypesQuery.data?.map((dealType) => ({
           value: dealType._id,
           label: dealType.name,
         })) || [],
@@ -293,21 +287,10 @@ const PaginatedBooksComponent: React.FC = () => {
     },
   ];
 
-  if (!userId) {
-    return null;
-  }
-
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">My Books</h1>
-        <button
-          onClick={handleAddBook}
-          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <PlusCircle className="h-5 w-5 mr-2" />
-          Add Book
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">All Books</h1>
       </div>
 
       <div className="lg:hidden mb-4">
@@ -428,4 +411,4 @@ const PaginatedBooksComponent: React.FC = () => {
   );
 };
 
-export default PaginatedBooksComponent;
+export default AdminPaginatedBooksComponent;

@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/protected/ProtectedRoute";
 import UserProfilePage from "@/pages/user/userProfilepage";
 import OwnerBooksMangementPage from "@/pages/user/OwnerBooksMangementPage";
 import BookFormPage from "@/Components/user/book/CreateBook";
+import BooksFetchPage from "@/Components/user/book/fetchAllAvailableBooks";
 
 function UserRoutes() {
   return (
@@ -17,7 +18,7 @@ function UserRoutes() {
         <Route path="/auth" element={<UserAuth />} />
       </Route>
       
-      
+      <Route path = "/boooks" element={<BooksFetchPage/>}/>
       <Route path="/forgot-password/:role" element={<ForgotPassword />} />
       <Route path="/reset-password/:token/:role" element={<ResetPassword />} />
       <Route path="/" element={<UserLandingPage />} />
