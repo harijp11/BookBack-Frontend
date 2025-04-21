@@ -9,6 +9,7 @@ import UserProfilePage from "@/pages/user/userProfilepage";
 import OwnerBooksMangementPage from "@/pages/user/OwnerBooksMangementPage";
 import BookFormPage from "@/Components/user/book/CreateBook";
 import BooksFetchPage from "@/Components/user/book/fetchAllAvailableBooks";
+import BookView from "@/Components/user/book/getUserBookDetails";
 
 function UserRoutes() {
   return (
@@ -19,6 +20,7 @@ function UserRoutes() {
       </Route>
       
       <Route path = "/boooks" element={<BooksFetchPage/>}/>
+      <Route path="/book/:bookId" element={<BookView/>}/>
       <Route path="/forgot-password/:role" element={<ForgotPassword />} />
       <Route path="/reset-password/:token/:role" element={<ResetPassword />} />
       <Route path="/" element={<UserLandingPage />} />
@@ -33,7 +35,7 @@ function UserRoutes() {
       <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />
       <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />
       <Route path="/books/:userId"  element ={<OwnerBooksMangementPage/> }/>
-      <Route path="/books/:bookId"  element ={<OwnerBooksMangementPage/> }/>
+      <Route path="/book/:bookId"  element ={<BookView/> }/>
     </Routes>
   );
 }

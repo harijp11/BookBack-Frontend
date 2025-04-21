@@ -269,7 +269,30 @@ export const createNewBook = async (bookData: Book)=>{
       const response = await UserAxiosInstance.get('/user/books-available', {
         params: parms
       });
+      // console.log("books datasss ",response.data)
       return response.data;
+    } catch (error) {
+      console.error('Error fetching available books:', error);
+    }
+  };
+
+  export const getUserBookDetails = async (
+    { _id }: { _id: string }
+  ): Promise<IBook | void> => {
+    try {
+      const response = await UserAxiosInstance.get(`/user/book-Details/${_id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching available books:', error);
+    }
+  };
+
+  export const getRelatedBooks = async (
+    { catId }: { catId: string }
+  ): Promise<IBook | void> => {
+    try {
+      const response = await UserAxiosInstance.get(`/user/related-books/${catId}`);
+      return response.data.books;
     } catch (error) {
       console.error('Error fetching available books:', error);
     }
