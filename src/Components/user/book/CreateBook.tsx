@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Loader2, X, Upload, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import {z} from 'zod';
+import { z } from "zod";
 
 // UI components
 import { Button } from "@/Components/ui/button";
@@ -58,7 +58,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 // Interfaces
 interface Category {
-  _id: string; 
+  _id: string;
   name: string;
 }
 
@@ -67,9 +67,8 @@ interface DealType {
   name: string;
 }
 
-
 interface BookFormPageProps {
-  mode: 'create' | 'update';
+  mode: "create" | "update";
 }
 
 function BookFormPage({ mode }: BookFormPageProps) {
@@ -81,13 +80,12 @@ function BookFormPage({ mode }: BookFormPageProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isImagesModalOpen, setIsImagesModalOpen] = useState(false);
-  // const [isGeocoding, setIsGeocoding] = useState(false);
   const [liveLocationEnabled, setLiveLocationEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState("details");
   const [isCropperOpen, setIsCropperOpen] = useState(false);
   const [currentImageSrc, setCurrentImageSrc] = useState<string>("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [isFormReady, setIsFormReady] = useState(mode === 'create');
+  const [isFormReady, setIsFormReady] = useState(mode === "create");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const navigate = useNavigate();
@@ -99,9 +97,9 @@ function BookFormPage({ mode }: BookFormPageProps) {
       categoryId: "",
       dealTypeId: "",
       originalAmount: 0,
-      rentAmount: 0,
+      rentAmount: undefined, // Changed to undefined to align with optional schema
       description: "",
-      maxRentalPeriod: 30,
+      maxRentalPeriod: undefined, // Changed to undefined to align with optional schema
       locationName: "",
       latitude: 0,
       longitude: 0,
@@ -125,10 +123,19 @@ function BookFormPage({ mode }: BookFormPageProps) {
     enabled: mode === "update" && !!bookId && !!userId,
   });
 
+  // Watch dealTypeId to enable/disable rent fields
+  const dealTypeId = form.watch("dealTypeId");
+  const selectedDealType = dealTypesQuery.data?.find(
+    (deal) => deal._id === dealTypeId
+  );
+  const isRentFieldsEnabled =
+    selectedDealType?.name === "For Rent Only" ||
+    selectedDealType?.name === "For Rent And Sale";
+
   // Populate form with book data when all queries are ready
   useEffect(() => {
     if (
-      mode === 'update' &&
+      mode === "update" &&
       bookQuery?.data &&
       categoriesQuery.data &&
       dealTypesQuery.data
@@ -143,27 +150,36 @@ function BookFormPage({ mode }: BookFormPageProps) {
         (deal) => deal._id === book.dealTypeId._id
       );
       if (!categoryExists) {
-        console.warn(`Category ID ${book.categoryId._id} not found in categories`);
+        console.warn(
+          `Category ID ${book.categoryId._id} not found in categories`
+        );
         warning("Category not found. Please select a new category.");
       }
       if (!dealTypeExists) {
-        console.warn(`Deal Type ID ${book.dealTypeId._id} not found in deal types`);
+        console.warn(
+          `Deal Type ID ${book.dealTypeId._id} not found in deal types`
+        );
         warning("Deal Type not found. Please select a new deal type.");
       }
-      form.reset({
-        name: book.name,
-        categoryId: categoryExists && book.categoryId._id ? book.categoryId._id : "",
-        dealTypeId: dealTypeExists && book.dealTypeId._id ? book.dealTypeId._id : "",
-        originalAmount: book.originalAmount,
-        rentAmount: book.rentAmount,
-        description: book.description || "",
-        maxRentalPeriod: book.maxRentalPeriod,
-        locationName: book.locationName,
-        latitude: book.location.coordinates[1],
-        longitude: book.location.coordinates[0],
-        latitude2: undefined,
-        longitude2: undefined,
-      }, { keepDefaultValues: false });
+      form.reset(
+        {
+          name: book.name,
+          categoryId:
+            categoryExists && book.categoryId._id ? book.categoryId._id : "",
+          dealTypeId:
+            dealTypeExists && book.dealTypeId._id ? book.dealTypeId._id : "",
+          originalAmount: book.originalAmount,
+          rentAmount: book.rentAmount ?? undefined,
+          description: book.description || "",
+          maxRentalPeriod: book.maxRentalPeriod ?? undefined,
+          locationName: book.locationName,
+          latitude: book.location.coordinates[1],
+          longitude: book.location.coordinates[0],
+          latitude2: undefined,
+          longitude2: undefined,
+        },
+        { keepDefaultValues: false }
+      );
       setImages(book.images || []);
       setIsFormReady(true);
       console.log("Book images:", book.images);
@@ -175,6 +191,8 @@ function BookFormPage({ mode }: BookFormPageProps) {
     console.log("Form values:", {
       categoryId: form.getValues("categoryId"),
       dealTypeId: form.getValues("dealTypeId"),
+      rentAmount: form.getValues("rentAmount"),
+      maxRentalPeriod: form.getValues("maxRentalPeriod"),
     });
     console.log("Form errors:", form.formState.errors);
   }, [form, isFormReady]);
@@ -183,7 +201,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
   const handleLocationChange = useCallback(
     async (
       locationName: string,
-      point1: [number, number],
+      point1: [number, number]
       // point2: [number, number] | null
     ) => {
       const [latitude, longitude] = point1;
@@ -224,29 +242,32 @@ function BookFormPage({ mode }: BookFormPageProps) {
     []
   );
 
-  const handleCropComplete = useCallback((croppedImageBase64: string) => {
-    fetch(croppedImageBase64)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const file = new File([blob], `cropped_${Date.now()}.jpg`, {
-          type: "image/jpeg",
-        });
-        setImageFiles((prev) => [...prev, file]);
-        const remainingFiles = pendingFiles.slice(1);
-        setPendingFiles(remainingFiles);
+  const handleCropComplete = useCallback(
+    (croppedImageBase64: string) => {
+      fetch(croppedImageBase64)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const file = new File([blob], `cropped_${Date.now()}.jpg`, {
+            type: "image/jpeg",
+          });
+          setImageFiles((prev) => [...prev, file]);
+          const remainingFiles = pendingFiles.slice(1);
+          setPendingFiles(remainingFiles);
 
-        if (remainingFiles.length > 0) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            setCurrentImageSrc(reader.result as string);
-            setIsCropperOpen(true);
-          };
-          reader.readAsDataURL(remainingFiles[0]);
-        } else {
-          setIsCropperOpen(false);
-        }
-      });
-  }, [pendingFiles]);
+          if (remainingFiles.length > 0) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              setCurrentImageSrc(reader.result as string);
+              setIsCropperOpen(true);
+            };
+            reader.readAsDataURL(remainingFiles[0]);
+          } else {
+            setIsCropperOpen(false);
+          }
+        });
+    },
+    [pendingFiles]
+  );
 
   const handleCropCancel = useCallback(() => {
     setPendingFiles((prev) => prev.slice(1));
@@ -282,7 +303,8 @@ function BookFormPage({ mode }: BookFormPageProps) {
       const uploadedUrls: string[] = [];
       try {
         for (let i = 0; i < files.length; i++) {
-          const signatureData = await getCloudinarySignatureMutation.mutateAsync();
+          const signatureData =
+            await getCloudinarySignatureMutation.mutateAsync();
           if (
             !signatureData ||
             !signatureData.signature ||
@@ -339,6 +361,16 @@ function BookFormPage({ mode }: BookFormPageProps) {
         warning("User ID is missing. Please check your URL.");
         return;
       }
+
+      // Calculate total images (existing + new)
+      const totalImagesCount = images.length + imageFiles.length;
+
+      // Check if we have at least 3 images
+      if (totalImagesCount < 3) {
+        warning("Please add at least 3 images before submitting");
+        return;
+      }
+
       setIsSubmitting(true);
       try {
         let imageUrls = [...images];
@@ -346,24 +378,28 @@ function BookFormPage({ mode }: BookFormPageProps) {
           const uploadedUrls = await uploadImagesToCloudinary(imageFiles);
           imageUrls = [...imageUrls, ...uploadedUrls];
         }
-        if (imageUrls.length === 0 && mode === 'create') {
-          warning("Please add at least one image");
-          return;
-        }
-        
-        const locationData: { type: 'Point'; coordinates: [number, number] } = {
-          type: 'Point',
-          coordinates: [values.longitude, values.latitude]
+
+        const locationData: { type: "Point"; coordinates: [number, number] } = {
+          type: "Point",
+          coordinates: [values.longitude, values.latitude],
         };
+
+        // Ensure rentAmount and maxRentalPeriod are set to 0 or undefined for non-rent deal types
+        const dealTypeName = dealTypesQuery.data?.find(
+          (deal) => deal._id === values.dealTypeId
+        )?.name;
+        const rentRequired =
+          dealTypeName === "For Rent Only" ||
+          dealTypeName === "For Rent And Sale";
 
         const bookData = {
           name: values.name,
           categoryId: values.categoryId,
           dealTypeId: values.dealTypeId,
           originalAmount: Number(values.originalAmount),
-          rentAmount: Number(values.rentAmount),
+          rentAmount: rentRequired ? Number(values.rentAmount) : 0,
           description: values.description || "",
-          maxRentalPeriod: Number(values.maxRentalPeriod),
+          maxRentalPeriod: rentRequired ? Number(values.maxRentalPeriod) : 0,
           images: imageUrls,
           ownerId: userId,
           location: locationData,
@@ -371,7 +407,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
         };
         console.log("Submitting book data:", bookData);
 
-        if (mode === 'create') {
+        if (mode === "create") {
           await createBookMutation.mutateAsync(bookData);
           success("Book has been created successfully");
         } else {
@@ -385,15 +421,18 @@ function BookFormPage({ mode }: BookFormPageProps) {
         form.reset();
         setImages([]);
         setImageFiles([]);
-        setTimeout(() => navigate(`/Books/${userId}`), 2000);
+        navigate(`/Books/${userId}`);
       } catch (err) {
-        if(err instanceof AxiosError){
-        console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} book:`, err);
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          `Failed to ${mode === 'create' ? 'create' : 'update'} book`;
-        error(errorMessage);
+        if (err instanceof AxiosError) {
+          console.error(
+            `Error ${mode === "create" ? "creating" : "updating"} book:`,
+            err
+          );
+          const errorMessage =
+            err.response?.data?.message ||
+            err.message ||
+            `Failed to ${mode === "create" ? "create" : "update"} book`;
+          error(errorMessage);
         }
       } finally {
         setIsSubmitting(false);
@@ -413,6 +452,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
       warning,
       error,
       navigate,
+      dealTypesQuery.data,
     ]
   );
 
@@ -441,7 +481,11 @@ function BookFormPage({ mode }: BookFormPageProps) {
   }, []);
 
   // Handle loading and error states
-  if (categoriesQuery.isLoading || dealTypesQuery.isLoading || (mode === 'update' && bookQuery?.isLoading)) {
+  if (
+    categoriesQuery.isLoading ||
+    dealTypesQuery.isLoading ||
+    (mode === "update" && bookQuery?.isLoading)
+  ) {
     return (
       <div className="container py-10 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-black" />
@@ -450,7 +494,11 @@ function BookFormPage({ mode }: BookFormPageProps) {
     );
   }
 
-  if (categoriesQuery.isError || dealTypesQuery.isError || (mode === 'update' && bookQuery?.isError)) {
+  if (
+    categoriesQuery.isError ||
+    dealTypesQuery.isError ||
+    (mode === "update" && bookQuery?.isError)
+  ) {
     error("Failed to load required data. Please reload the page.");
     return null;
   }
@@ -458,7 +506,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
   const categories: Category[] = categoriesQuery.data || [];
   const dealTypes: DealType[] = dealTypesQuery.data || [];
 
-  if (mode === 'update' && !isFormReady) {
+  if (mode === "update" && !isFormReady) {
     return (
       <div className="container py-10 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-black" />
@@ -467,22 +515,29 @@ function BookFormPage({ mode }: BookFormPageProps) {
     );
   }
 
+  // Calculate total images for display
+  const totalImagesCount = images.length + imageFiles.length;
+
   return (
     <div className="container py-10 bg-white text-black">
       <Card className="max-w-3xl mx-auto border-black">
         <CardHeader className="border-b border-black">
           <CardTitle className="text-2xl font-bold">
-            {mode === 'create' ? 'Add New Book' : 'Edit Book'}
+            {mode === "create" ? "Add New Book" : "Edit Book"}
           </CardTitle>
           <CardDescription className="text-gray-600">
-            {mode === 'create' ? 'Create a new book listing for rental' : 'Update the book listing details'}
+            {mode === "create"
+              ? "Create a new book listing for rental"
+              : "Update the book listing details"}
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((values) => {
-            console.log("handleSubmit triggered");
-            onSubmit(values);
-          })}>
+          <form
+            onSubmit={form.handleSubmit((values) => {
+              console.log("handleSubmit triggered");
+              onSubmit(values);
+            })}
+          >
             <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList className="grid grid-cols-3 mb-4">
                 <TabsTrigger value="details">Book Details</TabsTrigger>
@@ -554,7 +609,22 @@ function BookFormPage({ mode }: BookFormPageProps) {
                           Deal Type
                         </FormLabel>
                         <Select
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            // Reset rent fields if deal type doesn't require them
+                            const selected = dealTypes.find(
+                              (deal) => deal._id === value
+                            );
+                            if (
+                              selected &&
+                              !["For Rent Only", "For Rent And Sale"].includes(
+                                selected.name
+                              )
+                            ) {
+                              form.setValue("rentAmount", undefined);
+                              form.setValue("maxRentalPeriod", undefined);
+                            }
+                          }}
                           value={field.value}
                           defaultValue={field.value}
                           disabled={dealTypes.length === 0}
@@ -592,8 +662,10 @@ function BookFormPage({ mode }: BookFormPageProps) {
                             type="number"
                             placeholder="0.00"
                             {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            value={field.value === 0 ? "" : field.value}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                             className="border-black focus:ring-black focus:border-black bg-white text-black"
                           />
                         </FormControl>
@@ -614,8 +686,11 @@ function BookFormPage({ mode }: BookFormPageProps) {
                             type="number"
                             placeholder="0.00"
                             {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            value={field.value === 0 ? "" : field.value}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            disabled={!isRentFieldsEnabled}
                             className="border-black focus:ring-black focus:border-black bg-white text-black"
                           />
                         </FormControl>
@@ -634,10 +709,13 @@ function BookFormPage({ mode }: BookFormPageProps) {
                         <FormControl>
                           <Input
                             type="number"
-                            placeholder="30"
+                            placeholder="enter maximum rental period"
                             {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            value={field.value === 0 ? "" : field.value}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            disabled={!isRentFieldsEnabled}
                             className="border-black focus:ring-black focus:border-black bg-white text-black"
                           />
                         </FormControl>
@@ -684,25 +762,36 @@ function BookFormPage({ mode }: BookFormPageProps) {
                   />
                   <FormItem>
                     <FormLabel className="text-black font-medium">
-                      Images
+                      Images <span className="text-red-500">*</span>{" "}
+                      <span className="text-sm text-gray-500">
+                        (Minimum 3 required)
+                      </span>
                     </FormLabel>
                     <FormControl>
                       <div className="flex space-x-2">
                         <Input
                           placeholder="Upload images"
                           value={
-                            imageFiles.length > 0
-                              ? `${imageFiles.length} file(s) selected`
-                              : images.length > 0
-                              ? `${images.length} image(s) selected`
-                              : ""
+                            totalImagesCount > 0
+                              ? `${totalImagesCount} image${
+                                  totalImagesCount !== 1 ? "s" : ""
+                                } selected${
+                                  totalImagesCount < 3
+                                    ? " (need " +
+                                      (3 - totalImagesCount) +
+                                      " more)"
+                                    : ""
+                                }`
+                              : "No images selected (need 3)"
                           }
                           readOnly
                           onClick={() => {
                             setActiveTab("images");
                             setIsImagesModalOpen(true);
                           }}
-                          className="border-black focus:ring-black focus:border-black bg-white text-black cursor-pointer"
+                          className={`border-black focus:ring-black focus:border-black bg-white text-black cursor-pointer ${
+                            totalImagesCount < 3 ? "border-red-500" : ""
+                          }`}
                         />
                         <Button
                           type="button"
@@ -717,7 +806,11 @@ function BookFormPage({ mode }: BookFormPageProps) {
                         </Button>
                       </div>
                     </FormControl>
-                    <FormMessage className="text-black" />
+                    {totalImagesCount < 3 && (
+                      <p className="text-sm text-red-500 mt-1">
+                        Please upload at least 3 images
+                      </p>
+                    )}
                   </FormItem>
                 </div>
                 <FormField
@@ -756,43 +849,32 @@ function BookFormPage({ mode }: BookFormPageProps) {
                     <p className="text-gray-600">
                       Select a location for your book listing.
                     </p>
-                     <FormField
+                    <FormField
                       control={form.control}
                       name="locationName"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-black font-medium">
                             Location Name
-                          </FormLabel> 
-                           <FormControl>
+                          </FormLabel>
+                          <FormControl>
                             <div className="flex space-x-2">
                               <Input
                                 placeholder="Enter location name"
                                 {...field}
-                                // disabled={isGeocoding}
                                 className="border-black focus:ring-black focus:border-black bg-white text-black"
                               />
                               <Button
                                 type="button"
                                 variant="outline"
                                 className="border-black"
-                                // disabled={isGeocoding}
-                              >
-                                {/* {isGeocoding ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <>
-                                    <MapPin className="h-4 w-4 mr-2" />
-                                    Get Current
-                                  </>
-                                )} */}
-                              </Button>
+                              ></Button>
                             </div>
-                          </FormControl> 
-                           <FormMessage className="text-black" />
+                          </FormControl>
+                          <FormMessage className="text-black" />
                         </FormItem>
                       )}
-                    /> 
+                    />
                     <div className="border border-black rounded-md p-4 flex-1">
                       <LocationPicker
                         onLocationChange={handleLocationChange}
@@ -821,111 +903,109 @@ function BookFormPage({ mode }: BookFormPageProps) {
                 <DialogContent className="sm:max-w-[600px] border-black">
                   <DialogHeader>
                     <DialogTitle className="text-black">
-                      {mode === 'create' ? 'Add Book Images' : 'Edit Book Images'}
+                      {mode === "create"
+                        ? "Add Book Images"
+                        : "Edit Book Images"}{" "}
+                      <span className="text-sm text-red-500">
+                        (Minimum 3 required)
+                      </span>
                     </DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <p className="text-gray-600">
-                      Upload images for your book.
-                    </p>
-                    <div className="space-y-3">
-                      <h4 className="font-medium">Upload Images</h4>
-                      <div className="flex items-center gap-3">
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={handleFileChange}
-                            ref={fileInputRef}
-                            className="hidden"
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          onClick={handleUploadClick}
-                          variant="outline"
-                          className="border-black text-black"
+                  <div className="space-y-4 p-4">
+                    <div className="flex gap-2 items-center">
+                      <p className="text-gray-600">
+                        Upload images for your book listing.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleUploadClick}
+                        variant="outline"
+                        className="border-black"
+                        disabled={isUploading}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Add Images
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {isUploading && (
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className="bg-black h-2.5 rounded-full"
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+                      {images.map((imageUrl, index) => (
+                        <div
+                          key={`image-${index}`}
+                          className="relative aspect-square border border-black rounded-md overflow-hidden group"
                         >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Select Files
-                        </Button>
-                        <p className="text-gray-600 text-sm">
-                          {imageFiles.length > 0
-                            ? `${imageFiles.length} file(s) selected`
-                            : "No files selected"}
+                          <img
+                            src={imageUrl}
+                            alt={`Book image ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeImage(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      {imageFiles.map((file, index) => (
+                        <div
+                          key={`file-${index}`}
+                          className="relative aspect-square border border-black rounded-md overflow-hidden group"
+                        >
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`New book image ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeFile(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {images.length === 0 && imageFiles.length === 0 && (
+                      <div className="text-center py-8 border border-dashed border-black rounded-md">
+                        <Upload className="h-8 w-8 mx-auto text-gray-400" />
+                        <p className="mt-2 text-gray-600">
+                          No images selected. Click "Add Images" to upload.
                         </p>
                       </div>
-                      {isUploading && (
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="bg-black h-2.5 rounded-full"
-                            style={{ width: `${uploadProgress}%` }}
-                          />
-                        </div>
-                      )}
-                      {imageFiles.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                          {imageFiles.map((file, index) => (
-                            <div
-                              key={index}
-                              className="relative border border-black rounded-md p-2"
-                            >
-                              <div className="h-32 bg-gray-100 rounded flex items-center justify-center">
-                                <img
-                                  src={URL.createObjectURL(file)}
-                                  alt={`Preview ${index}`}
-                                  className="max-h-full max-w-full object-contain"
-                                />
-                              </div>
-                              <p className="truncate text-sm mt-2">
-                                {file.name}
-                              </p>
-                              <button
-                                type="button"
-                                onClick={() => removeFile(index)}
-                                className="absolute top-1 right-1 bg-white rounded-full p-1 border border-black"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    {images.length > 0 && (
-                      <div className="border-t border-gray-300 pt-4 space-y-3">
-                        <h4 className="font-medium">Existing Images</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {images.map((url, index) => (
-                            <div
-                              key={index}
-                              className="relative border border-black rounded-md p-2"
-                            >
-                              <div className="h-32 bg-gray-100 rounded flex items-center justify-center">
-                                <img
-                                  src={url}
-                                  alt={`Book image ${index}`}
-                                  className="max-h-full max-w-full object-contain"
-                                  onError={() =>
-                                    console.error(`Failed to load image: ${url}`)
-                                  }
-                                />
-                              </div>
-                              <p className="truncate text-sm mt-2">
-                                Image {index + 1}
-                              </p>
-                              <button
-                                type="button"
-                                onClick={() => removeImage(index)}
-                                className="absolute top-1 right-1 bg-white rounded-full p-1 border border-black"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    )}
+
+                    {images.length + imageFiles.length < 3 && (
+                      <p className="text-sm text-red-500">
+                        Please upload at least{" "}
+                        {3 - (images.length + imageFiles.length)} more image
+                        {3 - (images.length + imageFiles.length) !== 1
+                          ? "s"
+                          : ""}
+                        .
+                      </p>
                     )}
                   </div>
                   <DialogFooter>
@@ -940,27 +1020,51 @@ function BookFormPage({ mode }: BookFormPageProps) {
                 </DialogContent>
               </Dialog>
 
-              <CardFooter className="flex justify-between space-x-4 pt-6 border-t border-black">
+              {isCropperOpen && (
+                <Dialog open={isCropperOpen} onOpenChange={setIsCropperOpen}>
+                  <DialogContent className="sm:max-w-[600px] border-black">
+                    <DialogHeader>
+                      <DialogTitle className="text-black">
+                        Crop Image
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="p-4">
+                      <ImageCropper
+                        isOpen={isCropperOpen}
+                        onClose={handleCropCancel}
+                        imageSrc={currentImageSrc}
+                        onCropComplete={handleCropComplete}
+                        title="Crop Book Image"
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+
+              <CardFooter className="flex justify-between pt-6 border-t border-black">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCancel}
-                  className="border-black text-black"
+                  className="border-black"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !form.formState.isValid}
                   className="bg-black text-white hover:bg-gray-800"
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {mode === 'create' ? 'Creating...' : 'Updating...'}
+                      {mode === "create" ? "Creating..." : "Updating..."}
                     </>
+                  ) : mode === "create" ? (
+                    "Create Book"
                   ) : (
-                    mode === 'create' ? 'Create Book' : 'Update Book'
+                    "Update Book"
                   )}
                 </Button>
               </CardFooter>
@@ -968,14 +1072,6 @@ function BookFormPage({ mode }: BookFormPageProps) {
           </form>
         </Form>
       </Card>
-
-      <ImageCropper
-        isOpen={isCropperOpen}
-        onClose={handleCropCancel}
-        imageSrc={currentImageSrc}
-        onCropComplete={handleCropComplete}
-        title="Crop Book Image"
-      />
     </div>
   );
 }

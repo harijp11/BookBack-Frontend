@@ -6,7 +6,7 @@ import ResetPassword from "@/Components/auth/resetPassword";
 import { PublicRoute } from "@/protected/publicRoute"; // Update path as needed
 import { ProtectedRoute } from "@/protected/ProtectedRoute";
 import UserProfilePage from "@/pages/user/userProfilepage";
-import OwnerBooksMangementPage from "@/pages/user/OwnerBooksMangementPage";
+import OwnerBooksMangementPage from "@/pages/user/ownerBooksMangementPage";
 import BookFormPage from "@/Components/user/book/CreateBook";
 import BooksFetchPage from "@/Components/user/book/fetchAllAvailableBooks";
 import BookView from "@/Components/user/book/getUserBookDetails";
@@ -28,14 +28,14 @@ function UserRoutes() {
       
       <Route element={<ProtectedRoute authType="user" />}>
       <Route path="/profile/:id" element={<UserProfilePage />} />
+      <Route path="/books/:userId"  element ={<OwnerBooksMangementPage/> }/>
+      <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />
+      <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />
       </Route> 
 
 
       //book
-      <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />
-      <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />
-      <Route path="/books/:userId"  element ={<OwnerBooksMangementPage/> }/>
-      <Route path="/book/:bookId"  element ={<BookView/> }/>
+      {/* <Route path="/book/:bookId"  element ={<BookView/> }/> */}
     </Routes>
   );
 }

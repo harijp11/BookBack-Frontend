@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/ui/toast"
 import { useAvailableBooks } from "@/hooks/common/useBookQueries"
 import { useBookQueries } from "@/hooks/common/useBookMutation"
 import { Search, MapPin, Filter, Loader2, X, ChevronDown } from "lucide-react"
-import { data } from "react-router-dom"
+import { data, useNavigate } from "react-router-dom"
+import { useDebounce } from "@/Components/common/useDebounceHook/useDebounce" // Import useDebounce hook
 
 export interface GetBooksByLocationInput {
   latitude: number
@@ -40,14 +41,15 @@ const BooksFetchPageInner: React.FC = () => {
     point1: [number, number]
   }>({
     name: "",
-    point1: [51.505, -0.09], // Default to London
+    point1: [9.941777, 76.320992], // Default to London
   })
-
+ 
   // State for filters, sorting, and pagination
   const [filters, setFilters] = useState<FilterState>({})
   const [sort, setSort] = useState<SortState>({ field: "createdAt", order: 1 })
   const [page, setPage] = useState<number>(1)
-  const [search, setSearch] = useState<string>("")
+  const [searchInput, setSearchInput] = useState<string>("") // Raw search input
+  const debouncedSearch = useDebounce<string>(searchInput, 500) // Debounce search input
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false)
   const limit:number = 5
@@ -56,7 +58,7 @@ const BooksFetchPageInner: React.FC = () => {
 
   // Use the book queries hook to access the categories and deal types queries
   const { categoriesQuery, dealTypesQuery } = useBookQueries()
-
+  const navigate = useNavigate()
   // Construct query params
   const queryParams: GetBooksByLocationInput = {
     latitude: location.point1[0],
@@ -64,7 +66,7 @@ const BooksFetchPageInner: React.FC = () => {
     maxDistance: 5000, // 5km radius, adjust as needed
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined, // Use debounced search value
     filters: Object.keys(filters).length > 0 ? filters : undefined,
     sort: { [sort.field]: sort.order },
   }
@@ -81,6 +83,13 @@ const BooksFetchPageInner: React.FC = () => {
     }
     console.log("datasssss",data)
   }, [])
+
+  // Effect to refetch when debounced search changes
+  useEffect(() => {
+    if (location.point1) {
+      fetchBooks()
+    }
+  }, [debouncedSearch, page, filters, sort, location.point1])
 
   // Handle location change from LocationPicker
   const handleLocationChange = (name: string, point1: [number, number]) => {
@@ -104,10 +113,10 @@ const BooksFetchPageInner: React.FC = () => {
     setPage(1)
   }
 
-  // Handle search change
+  // Handle search change - updated to use debounce pattern
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value)
-    setPage(1)
+    setSearchInput(e.target.value) // Update raw input immediately for UI feedback
+    // No need to call setPage(1) here as it will be handled when debouncedSearch changes
   }
 
   // Handle pagination
@@ -206,10 +215,15 @@ const BooksFetchPageInner: React.FC = () => {
             <input
               type="text"
               placeholder="Search books..."
-              value={search}
+              value={searchInput}
               onChange={handleSearchChange}
               className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
             />
+            {searchInput !== debouncedSearch && (
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              </span>
+            )}
           </div>
 
           <button
@@ -391,7 +405,8 @@ const BooksFetchPageInner: React.FC = () => {
                  variants={itemVariants}
                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
                >
-                 <div className="aspect-[4/3] overflow-hidden relative">
+                 <div className="aspect-[4/3] overflow-hidden relative"
+                 onClick={()=>navigate(`/book/${book._id}`)}>
                    <img
                      src={book.images?.[0] || "/placeholder.svg"}
                      alt={book.name}
