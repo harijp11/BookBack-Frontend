@@ -30,14 +30,20 @@ export const formSchema = z.object({
     .positive({ message: "Original amount must be positive" }),
   rentAmount: z.coerce
     .number()
-    .optional(),
+    .optional()
+    .refine(val => val === undefined || val > 0, {
+      message: "Rent amount must be a positive number",
+    }),
   description: z
     .string()
     .trim()
     .min(10, { message: "Description must be at least 10 characters" }),
   maxRentalPeriod: z.coerce
     .number()
-    .optional(),
+    .optional()
+    .refine(val => val === undefined || val > 0, {
+      message: "Max rental period must be a positive number",
+    }),
   locationName: z
     .string()
     .trim()
@@ -50,32 +56,18 @@ export const formSchema = z.object({
   // Define deal types that require rent validation
   const rentRequiredDealTypeNames = ["For Rent Only", "For Rent And Sale"];
 
-  const requiresRentValidation = rentRequiredDealTypeNames.some(name => 
-    data.dealTypeId === name 
+  const requiresRentValidation = rentRequiredDealTypeNames.some(name =>
+    data.dealTypeId === name
   );
 
   if (requiresRentValidation) {
-    // Validate rentAmount
-    if (data.rentAmount === undefined || data.rentAmount <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Rent amount must be a positive number",
-        path: ["rentAmount"],
-      });
-    } else if (data.rentAmount > data.originalAmount) {
+    // rentAmount and maxRentalPeriod have already been refined above,
+    // but here you can still perform additional relational checks:
+    if (data.rentAmount && data.rentAmount > data.originalAmount) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Rent amount must not exceed original amount",
         path: ["rentAmount"],
-      });
-    }
-
-    // Validate maxRentalPeriod
-    if (data.maxRentalPeriod === undefined || data.maxRentalPeriod <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Max rental period must be a positive number of days",
-        path: ["maxRentalPeriod"],
       });
     }
   }

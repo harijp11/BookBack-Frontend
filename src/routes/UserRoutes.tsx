@@ -10,6 +10,11 @@ import OwnerBooksMangementPage from "@/pages/user/ownerBooksMangementPage";
 import BookFormPage from "@/Components/user/book/CreateBook";
 import BooksFetchPage from "@/Components/user/book/fetchAllAvailableBooks";
 import BookView from "@/Components/user/book/getUserBookDetails";
+import OwnerBookDetailsPage from "@/Components/user/book/viewOwnerBookDetails";
+import OwnerContractRequestHandling from "@/Components/user/contractrequests/OwnerContractRequestHandling";
+import UserPurse from "@/Components/user/Purse/UserPurse";
+import ContractRequestsPage from "@/Components/user/contractrequests/RequesterContractRequests";
+import ContractForm from "@/Components/user/contractrequests/contractForm/contractForm";
 
 function UserRoutes() {
   return (
@@ -29,10 +34,20 @@ function UserRoutes() {
       <Route element={<ProtectedRoute authType="user" />}>
       <Route path="/profile/:id" element={<UserProfilePage />} />
       <Route path="/books/:userId"  element ={<OwnerBooksMangementPage/> }/>
+      <Route path="/book/owner/:bookId" element ={<OwnerBookDetailsPage/>}/>
       <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />
       <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />
+
+      //contract request
+      <Route path="/owner/contract-request" element={<OwnerContractRequestHandling/>} />
+
+      //purse
+      <Route path="/purse" element={<UserPurse/>} />
+      <Route path="/contract-requests" element={<ContractRequestsPage/>} />
+      <Route path="/fix-deal/:conReqId" element={<ContractForm/>} />
       </Route> 
 
+       
 
       //book
       {/* <Route path="/book/:bookId"  element ={<BookView/> }/> */}

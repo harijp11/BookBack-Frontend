@@ -10,8 +10,12 @@ import { useToast } from "@/hooks/ui/toast"
 import { useAvailableBooks } from "@/hooks/common/useBookQueries"
 import { useBookQueries } from "@/hooks/common/useBookMutation"
 import { Search, MapPin, Filter, Loader2, X, ChevronDown } from "lucide-react"
-import { data, useNavigate } from "react-router-dom"
-import { useDebounce } from "@/Components/common/useDebounceHook/useDebounce" // Import useDebounce hook
+import { useNavigate } from "react-router-dom"
+import { useDebounce } from "@/Components/common/useDebounceHook/useDebounce" 
+// Import the BookCard component
+import { BookCard } from "@/Components/ui/bookcard" 
+import { useSelector } from "react-redux"
+import { RootState } from "@/store/store"
 
 export interface GetBooksByLocationInput {
   latitude: number
@@ -43,7 +47,7 @@ const BooksFetchPageInner: React.FC = () => {
     name: "",
     point1: [9.941777, 76.320992], // Default to London
   })
- 
+
   // State for filters, sorting, and pagination
   const [filters, setFilters] = useState<FilterState>({})
   const [sort, setSort] = useState<SortState>({ field: "createdAt", order: 1 })
@@ -52,7 +56,10 @@ const BooksFetchPageInner: React.FC = () => {
   const debouncedSearch = useDebounce<string>(searchInput, 500) // Debounce search input
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false)
-  const limit:number = 5
+  const [maxDistance, setMaxDistance] = useState<number>(5000) // Default 5km in meters
+  const limit: number = 4
+
+  const user = useSelector((state: RootState) => state.user.User);
   // Use toast hook
   const { error } = useToast()
 
@@ -61,9 +68,10 @@ const BooksFetchPageInner: React.FC = () => {
   const navigate = useNavigate()
   // Construct query params
   const queryParams: GetBooksByLocationInput = {
+    userId: user?._id || "",
     latitude: location.point1[0],
     longitude: location.point1[1],
-    maxDistance: 5000, // 5km radius, adjust as needed
+    maxDistance: maxDistance, // Use the maxDistance state
     page,
     limit,
     search: debouncedSearch || undefined, // Use debounced search value
@@ -81,15 +89,20 @@ const BooksFetchPageInner: React.FC = () => {
     } else {
       error("Please select a location")
     }
-    console.log("datasssss",data)
-  }, [])
+  }, [location.point1, fetchBooks])
+
+
+  useEffect(() => {
+    console.log("Books data:", booksResponse);
+    console.log("Loading state:", loading);
+  }, [booksResponse, loading]);
 
   // Effect to refetch when debounced search changes
   useEffect(() => {
     if (location.point1) {
       fetchBooks()
     }
-  }, [debouncedSearch, page, filters, sort, location.point1])
+  }, [debouncedSearch, page, filters, sort, location.point1, maxDistance])
 
   // Handle location change from LocationPicker
   const handleLocationChange = (name: string, point1: [number, number]) => {
@@ -104,6 +117,12 @@ const BooksFetchPageInner: React.FC = () => {
       ...prev,
       [key]: value || undefined,
     }))
+    setPage(1)
+  }
+
+  // Handle max distance change
+  const handleMaxDistanceChange = (distance: number) => {
+    setMaxDistance(distance)
     setPage(1)
   }
 
@@ -132,13 +151,15 @@ const BooksFetchPageInner: React.FC = () => {
     setPage(newPage)
   }
 
-  // Helper function to format distance in kilometers
-  const formatDistance = (distanceInMeters: number | undefined): string => {
-    if (distanceInMeters === undefined) return "Unknown";
-    // Convert meters to kilometers and format with 1 decimal place
-    const distanceInKm = (distanceInMeters / 1000).toFixed(1);
-    return `${distanceInKm} km`;
-  }
+  // Distance options in meters
+  const distanceOptions = [
+    { label: "1 km", value: 1000 },
+    { label: "5 km", value: 5000 },
+    { label: "10 km", value: 10000 },
+    { label: "50 km", value: 50000 },
+    { label: "100 km", value: 100000 },
+    { label: "200 km", value: 200000 },
+  ]
 
   // Animation variants
   const containerVariants = {
@@ -291,6 +312,28 @@ const BooksFetchPageInner: React.FC = () => {
                   </div>
 
                   <div className="space-y-6">
+                    {/* Distance Range Filter */}
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase text-gray-500 mb-3">Search Radius</h3>
+                      <div className="space-y-2">
+                        {distanceOptions.map((option) => (
+                          <div key={option.value} className="flex items-center">
+                            <input
+                              type="radio"
+                              id={`distance-${option.value}`}
+                              name="distance"
+                              checked={maxDistance === option.value}
+                              onChange={() => handleMaxDistanceChange(option.value)}
+                              className="h-4 w-4 border-gray-300 text-black focus:ring-black"
+                            />
+                            <label htmlFor={`distance-${option.value}`} className="ml-2 text-sm text-gray-700">
+                              {option.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <div>
                       <h3 className="text-sm font-semibold uppercase text-gray-500 mb-3">Categories</h3>
                       <div className="space-y-2">
@@ -377,97 +420,31 @@ const BooksFetchPageInner: React.FC = () => {
           {/* Main Content */}
           <main className="flex-grow">
             {/* Loading Message */}
-            {(loading || categoriesQuery.isLoading || dealTypesQuery.isLoading) && (
-              <motion.div
-                className="flex justify-center items-center py-12"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Loader2 className="h-8 w-8 animate-spin mr-2" />
-                <span className="text-lg font-medium">Loading books and metadata...</span>
-              </motion.div>
-            )}
-
-            {/* Books List */}
             {!loading && booksResponse?.books?.length ? (
-              <motion.div
-                className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-              >
-                {booksResponse.books.map((book: IBook) => (
-                 <motion.div
-                 key={book._id}
-                 className="bg-gradient-to-b from-white to-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col"
-                 variants={itemVariants}
-                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
-               >
-                 <div className="aspect-[4/3] overflow-hidden relative"
-                 onClick={()=>navigate(`/book/${book._id}`)}>
-                   <img
-                     src={book.images?.[0] || "/placeholder.svg"}
-                     alt={book.name}
-                     className="w-full h-full object-cover transition-transform hover:scale-105"
-                   />
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                 </div>
-                 <div className="p-4 flex-grow flex flex-col">
-                   <h3 className="text-lg font-bold mb-2 line-clamp-1">{book.name}</h3>
-                   
-                   {/* Category and Distance Badge */}
-                   <div className="mb-2 flex flex-wrap gap-2">
-                     <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full font-medium">
-                       {book.categoryId.name}
-                     </span>
-                     {book.distance !== undefined && (
-                       <span className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full font-medium">
-                         {formatDistance(book.distance)}
-                       </span>
-                     )}
-                   </div>
-                   
-                   <div className="mt-auto space-y-1">
-                     {/* Original Amount */}
-                     <div className="flex items-baseline">
-                       <span className="text-sm text-gray-500">Original: </span>
-                       <span className="font-medium ml-1">${book.originalAmount.toFixed(2)}</span>
-                     </div>
-                     
-                     {/* Rent Amount */}
-                     {book.rentAmount > 0 && (
-                       <div className="flex items-baseline">
-                         <span className="font-bold text-lg">${book.rentAmount.toFixed(2)}</span>
-                         <span className="text-sm text-gray-500 ml-1">/ rental</span>
-                       </div>
-                     )}
-                   </div>
-               
-                   <div className="mt-2 flex items-center text-sm text-gray-600">
-                     <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
-                     <span className="truncate">{book.locationName}</span>
-                   </div>
-                 </div>
-               </motion.div>
-                ))}
-              </motion.div>
-            ) : (
-              !loading &&
-              !categoriesQuery.isLoading &&
-              !dealTypesQuery.isLoading && (
-                <motion.div
-                  className="text-center py-16 bg-gradient-to-b from-white to-gray-50 rounded-lg border border-gray-100"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <p className="text-xl font-medium text-gray-600">No books found for the selected criteria.</p>
-                  <p className="text-gray-500 mt-2">Try adjusting your filters or search terms.</p>
-                </motion.div>
-              )
-            )}
+  <div className="grid grid-cols-2 gap-4 sm:gap-6">
+    {booksResponse.books.map((book: IBook) => (
+      <div key={book._id} onClick={() => navigate(`/book/${book._id}`)} className="cursor-pointer">
+        <BookCard
+          id={book._id}
+          title={book.name}
+          imageUrl={book.images?.[0] || "/placeholder.svg"}
+          category={book.categoryId.name}
+          originalPrice={book.originalAmount}
+          rentalPrice={book.rentAmount}
+          location={book.locationName}
+          distance={book.distance}
+        />
+      </div>
+    ))}
+  </div>
+) : (
+  !loading && !categoriesQuery.isLoading && !dealTypesQuery.isLoading && (
+    <div className="text-center py-16 bg-white rounded-lg border border-gray-100">
+      <p className="text-xl font-medium text-gray-600">No books found for the selected criteria.</p>
+      <p className="text-gray-500 mt-2">Try adjusting your filters or search terms.</p>
+    </div>
+  )
+)}
 
             {/* Pagination */}
             {booksResponse?.totalPages > 1 && (

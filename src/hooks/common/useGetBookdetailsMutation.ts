@@ -1,6 +1,8 @@
 // src/hooks/useBookQueries.ts
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation,useQueryClient} from '@tanstack/react-query';
 import { getUserBookDetails, getRelatedBooks, type IBook, type BookListResponse } from '@/services/book/bookService';
+import { checkIfRequestExists,sendContractRequest } from '@/services/contractrequest/contractRequestService'; // Adjust import path as needed
+import { ContractRequestPayload } from '@/services/contractrequest/contractRequestService'; // Adjust import path as needed
 
 export function useBookDetails(bookId: string | undefined) {
   return useQuery({
@@ -22,7 +24,6 @@ export function useBookDetails(bookId: string | undefined) {
   });
 }
 
-
 export function useRelatedBooks(categoryId: string | undefined, currentBookId: string | undefined) {
   return useQuery({
     queryKey: ['relatedBooks', categoryId],
@@ -41,5 +42,49 @@ export function useRelatedBooks(categoryId: string | undefined, currentBookId: s
       }
     },
     enabled: !!categoryId, // Only run the query if categoryId exists
+  });
+}
+
+
+
+
+
+
+
+// Hook to check if a request exists - Updated for React Query v5
+export const useCheckIfRequestExists = (userId: string, bookId: string)=> {
+  return useQuery({
+    queryKey: ['contractRequestExists', userId, bookId],
+    queryFn: async () => {
+      if (!userId || !bookId) return { success: false };
+      
+      try {
+        const response = await checkIfRequestExists(userId, bookId);
+        return response || { success: false };
+      } catch (error) {
+        console.error("Error in useCheckIfRequestExists:", error);
+        return { success: false, message: "Failed to check request status" };
+      }
+    },
+    enabled: !!userId && !!bookId,
+    refetchOnWindowFocus: false
+  });
+};
+
+// Hook to send a contract request - Updated for React Query v5
+export const useSendContractRequest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (payload: ContractRequestPayload) => {
+      return await sendContractRequest(payload);
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate the check-request query to trigger a refetch
+      queryClient.invalidateQueries({
+        queryKey: ['contractRequestExists', variables.requesterId, variables.bookId]
+      });
+      return data;
+    }
   });
 }

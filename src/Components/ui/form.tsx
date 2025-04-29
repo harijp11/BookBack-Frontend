@@ -12,7 +12,7 @@ import {
 } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
+import { Label } from "@/Components/ui/label"
 
 const Form = FormProvider
 
@@ -26,6 +26,28 @@ type FormFieldContextValue<
 const FormFieldContext = React.createContext<FormFieldContextValue>(
   {} as FormFieldContextValue
 )
+
+export const FormFieldBook = ({ 
+  label, 
+  value, 
+  icon 
+}: { 
+  label: string; 
+  value: React.ReactNode; 
+  icon?: React.ReactNode;
+}) => {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center mb-1">
+        {icon && <span className="mr-2">{icon}</span>}
+        <label className="text-sm font-medium text-gray-700">{label}</label>
+      </div>
+      <div className="pl-7 py-2 px-3 border-2 border-black rounded-md bg-white">
+        {value}
+      </div>
+    </div>
+  );
+};
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,

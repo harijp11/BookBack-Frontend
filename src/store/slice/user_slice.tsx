@@ -21,6 +21,7 @@ const initialState: UserState = {
 const userSlice = createSlice({
   name: "user",
   initialState,
+  
   reducers: {
     userLogin: (state, action: PayloadAction<User>) => {
       state.User = action.payload;

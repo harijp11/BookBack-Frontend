@@ -29,6 +29,11 @@ export interface Book {
     _id: string;
     name: string;
   }
+
+  export interface ownerId {
+    _id: string;
+    Name: string;
+  }
   
   export interface IBook{
     _id: string;
@@ -40,7 +45,7 @@ export interface Book {
     description: string;
     maxRentalPeriod: number; 
     images: string[];
-    ownerId: string;
+    ownerId: ownerId;
     status:string
     isActive:boolean
     location: {
@@ -48,6 +53,8 @@ export interface Book {
       coordinates: [number, number];
     };
     locationName: string
+    createdAt:Date,
+    updatedAt:Date
   }
 
 
@@ -162,8 +169,8 @@ export const createNewBook = async (bookData: Book)=>{
   ): Promise<BookResponse> => {
     try {
       // Send the bookData directly without nesting it in a data property
-      const response = await UserAxiosInstance.post<BookResponse>(
-        "/user/updatebook",
+      const response = await UserAxiosInstance.put<BookResponse>(
+        "/user/book",
         bookData,
         {
           params: { bookId },
@@ -200,17 +207,12 @@ export const createNewBook = async (bookData: Book)=>{
 
   export const getAllPaginatedAdminBooks = async (params: Omit<BookSearchParams,"ownerId">): Promise<BookListResponse> => {
     try {
-      
-  
-      // Create query parameters
       const queryParams = {
         search: params.search || "",
         filter: params.filter || {},
         page: params.page || 1,
         limit: params.limit || 5
       };
-  
-      // Make the GET request with query parameters
       const response = await adminAxiosInstance.get<BookListResponse>("/admin/book", {
         params: queryParams,
         paramsSerializer: params => {
@@ -255,6 +257,7 @@ export const createNewBook = async (bookData: Book)=>{
 
 
   export const fetchAvailableBooks = async (parms:{
+    userId:string
     latitude: number,
     longitude: number,
     maxDistance: number,
