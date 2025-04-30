@@ -8,6 +8,7 @@ import ContractResultModal from "./contractSuccessModal"; // Import the new comp
 import { sendOtpEmail, verifyOtp, createContract, RentalInput, SaleInput, CreateContractPayload } from "@/services/contract/contractService"; // Adjust path to your API calls
 import { useToast } from "@/hooks/ui/toast";
 import { AxiosError } from "axios";
+import { RequestType } from "leaflet-geosearch/dist/providers/provider.js";
 
 const ContractForm: React.FC = () => {
   const { conReqId } = useParams<{ conReqId: string }>();
@@ -333,7 +334,8 @@ const ContractForm: React.FC = () => {
           onClose={() => {
             setIsResultModalOpen(false);
             // Optionally navigate to contracts list or dashboard
-            navigate('/contracts');
+            
+            navigate('/contract-requests');
           }}
           contractDetails={contractResult}
         />

@@ -46,8 +46,8 @@ export function UserHeader() {
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Books", href: `/Books/${user?._id}` },
-    { name: "Buyings", href: "#" },
-    { name: "Rentals", href: "#" },
+    { name: "Buyings", href: "/bought-books" },
+    { name: "Borrowels", href: "/borrowed-books" },
   ];
 
   // UserHeader's logout functionality

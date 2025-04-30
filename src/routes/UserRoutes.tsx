@@ -11,10 +11,15 @@ import BookFormPage from "@/Components/user/book/CreateBook";
 import BooksFetchPage from "@/Components/user/book/fetchAllAvailableBooks";
 import BookView from "@/Components/user/book/getUserBookDetails";
 import OwnerBookDetailsPage from "@/Components/user/book/viewOwnerBookDetails";
-import OwnerContractRequestHandling from "@/Components/user/contractrequests/OwnerContractRequestHandling";
-import UserPurse from "@/Components/user/Purse/UserPurse";
-import ContractRequestsPage from "@/Components/user/contractrequests/RequesterContractRequests";
-import ContractForm from "@/Components/user/contractrequests/contractForm/contractForm";
+import OwnerContractRequestHandlingPage from "@/pages/user/OwnerContractRequestPage";
+
+import BoughtBooksPage from "@/pages/user/BoughtBooksPage";
+import RentedOutBooksPage from "@/pages/user/RentalHistoryPage";
+import BorrowedBooksPage from "@/pages/user/BorrowedBooksContractPage";
+import UserPursePage from "@/pages/user/PursePage";
+import UserContractRequestsPage from "@/pages/user/ContractRequestPage";
+import UserContractFormPage from "@/pages/user/ContractFormPage";
+import SoldBooksHistoryPage from "@/pages/user/SoldBooksPage";
 
 function UserRoutes() {
   return (
@@ -39,12 +44,20 @@ function UserRoutes() {
       <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />
 
       //contract request
-      <Route path="/owner/contract-request" element={<OwnerContractRequestHandling/>} />
+      <Route path="/owner/contract-request" element={<OwnerContractRequestHandlingPage/>} />
+
+      //sale contract
+      <Route path="/sold-books" element={<SoldBooksHistoryPage/>} />
+      <Route path="/bought-books" element={<BoughtBooksPage/>} />
+
+      //rental contract
+      <Route path="/rented-books" element={<RentedOutBooksPage/>} />
+      <Route path="/borrowed-books" element={<BorrowedBooksPage/>} />
 
       //purse
-      <Route path="/purse" element={<UserPurse/>} />
-      <Route path="/contract-requests" element={<ContractRequestsPage/>} />
-      <Route path="/fix-deal/:conReqId" element={<ContractForm/>} />
+      <Route path="/purse" element={<UserPursePage/>} />
+      <Route path="/contract-requests" element={<UserContractRequestsPage/>} />
+      <Route path="/fix-deal/:conReqId" element={<UserContractFormPage/>} />
       </Route> 
 
        

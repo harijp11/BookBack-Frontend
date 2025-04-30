@@ -20,7 +20,7 @@ UserAxiosInstance.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          await UserAxiosInstance.post("/_us/user/refresh-token");
+          await UserAxiosInstance.post("/user/refresh-token");
           isRefreshing = false;
 
           return UserAxiosInstance(originalRequest);

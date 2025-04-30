@@ -8,6 +8,8 @@ import {
   ShoppingCart,
   Users,
   LogOut,
+  BadgeDollarSign,
+  
 } from "lucide-react";
 import { FaHandshake } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
@@ -28,6 +30,7 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { title: "Dashboard", href: "/admin/Dashboard", icon: Home },
   { title: "Books", href: "/admin/book", icon: BookOpen },
+  { title: "Sales", href: "/admin/sales", icon: BadgeDollarSign },
   { title: "Rentals", href: "/admin/rentals", icon: ShoppingCart },
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Categories", href: "/admin/categories", icon: Boxes },
