@@ -11,6 +11,7 @@ interface ContractResultModalProps {
     amount: number;
     period?: number;
     contractId?: string;
+    requestType:string
   } | null;
 }
 

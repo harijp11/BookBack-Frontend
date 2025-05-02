@@ -8,7 +8,7 @@ import ContractResultModal from "./contractSuccessModal"; // Import the new comp
 import { sendOtpEmail, verifyOtp, createContract, RentalInput, SaleInput, CreateContractPayload } from "@/services/contract/contractService"; // Adjust path to your API calls
 import { useToast } from "@/hooks/ui/toast";
 import { AxiosError } from "axios";
-import { RequestType } from "leaflet-geosearch/dist/providers/provider.js";
+
 
 const ContractForm: React.FC = () => {
   const { conReqId } = useParams<{ conReqId: string }>();
@@ -152,11 +152,19 @@ const ContractForm: React.FC = () => {
       const payload: CreateContractPayload = { data: contractData };
       const response = await createContract(payload, requestType, contractRequest._id);
       
-      if(!response.success){
-         toast.warning(response?.message)
+      if(!response.success){   
+         toast.warning(response.message)
+         if(response?.message === `The Book ${contractRequest.bookId.name} is not available for deal`){
+          setTimeout(() => {
+            navigate("/contract-requests")
+           }, 700); 
+           return
+         }
+
          setTimeout(() => {
           navigate("/purse")
          }, 700); 
+        
          return 
       }
       if (response?.success) {
@@ -169,7 +177,8 @@ const ContractForm: React.FC = () => {
           requesterName: contractRequest.requesterId.Name || "Unknown Requester",
           amount: isSaleForm ? (contractRequest.bookId.originalAmount || 0) : totalRentAmount,
           period: isSaleForm ? undefined : selectedDays,
-          contractId: response.data?._id || response.data?.contractId || undefined
+          contractId: response.data?._id || response.data?.contractId || undefined,
+          requestType:contractRequest.request_type
         });
         
         // Open the result modal
@@ -334,8 +343,12 @@ const ContractForm: React.FC = () => {
           onClose={() => {
             setIsResultModalOpen(false);
             // Optionally navigate to contracts list or dashboard
-            
-            navigate('/contract-requests');
+            if(contractRequest.request_type === "Buy"){
+              navigate('/bought-Books');
+            }else{
+              navigate('/borrowed-books');
+            }
+           
           }}
           contractDetails={contractResult}
         />

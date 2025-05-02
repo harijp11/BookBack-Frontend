@@ -15,7 +15,9 @@ export const useBoughtBooksQuery = (
     queryFn: async () => {
       // Prepare filter object
       const filter: Record<string, object> = {};
-
+      const isValidDate = (dateStr: string) => {
+        return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(Date.parse(dateStr));
+      };
       if (activeFilters) {
         // Price range filter
         if (activeFilters.priceRange.min && activeFilters.priceRange.max) {
@@ -35,10 +37,20 @@ export const useBoughtBooksQuery = (
             $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
             $lte: new Date(activeFilters.dateRange.endDate).toISOString(),
           };
-        } else if (activeFilters.dateRange.startDate) {
-          filter.sale_date = { $gte: new Date(activeFilters.dateRange.startDate).toISOString() };
-        } else if (activeFilters.dateRange.endDate) {
-          filter.sale_date = { $lte: new Date(activeFilters.dateRange.endDate).toISOString() };
+        } else if (activeFilters?.dateRange?.startDate && isValidDate(activeFilters.dateRange.startDate)) {
+          filter.sale_date = {
+            ...filter.sale_date,
+            $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
+          };
+        }
+        
+        if (activeFilters?.dateRange?.endDate && isValidDate(activeFilters.dateRange.endDate)) {
+          const endDate = new Date(activeFilters.dateRange.endDate);
+          endDate.setHours(23, 59, 59, 999); // Ensure full-day inclusion
+          filter.sale_date = {
+            ...filter.sale_date,
+            $lte: endDate.toISOString(),
+          };
         }
       }
 

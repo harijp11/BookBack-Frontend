@@ -23,6 +23,7 @@ export function useContractRequests(
       return await fetchPaginatedUserContractRequests(page, pageSize, filters) as PaginatedRequestsResponse;
     },
     keepPreviousData: true,
-    ...options
+    ...options,
+    refetchOnWindowFocus:true
   });
 }

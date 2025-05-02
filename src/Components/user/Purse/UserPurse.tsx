@@ -7,7 +7,7 @@ import { Badge } from "@/Components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
 import { Skeleton } from "@/Components/ui/skeleton"
 import { format } from "date-fns"
-import { ArrowDownCircle, ArrowUpCircle, Clock, CheckCircle, XCircle, Wallet, Calendar, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react"
+import { ArrowDownCircle, ArrowUpCircle, Clock, CheckCircle, XCircle, Wallet, Calendar, PlusCircle, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react"
 import { Button } from "@/Components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog"
 import { Input } from "@/Components/ui/input"
@@ -79,6 +79,14 @@ export default function UserPurse() {
               <p className="text-sm text-muted-foreground mt-2">
                 Last updated: {purseData?.updatedAt ? format(new Date(purseData.updatedAt), "PPP") : "N/A"}
               </p>
+              {purseData?.hold_amount > 0 && (
+                <div className="mt-4 flex items-center text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  <p className="text-sm font-medium">
+                    Hold Amount: ₹{purseData.hold_amount} (Balance cannot go below this)
+                  </p>
+                </div>
+              )}
               <Button
                 className="mt-4"
                 onClick={handleAddMoney}

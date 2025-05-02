@@ -38,6 +38,7 @@ export interface CombinedResponse extends Response{
     userId: string;                  
     balance: number;                 
     transactions: IPurseTransaction[];
+    hold_amount:number
     createdAt: Date;                 
     updatedAt: Date; 
 }
