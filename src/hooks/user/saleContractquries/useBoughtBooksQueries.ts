@@ -18,6 +18,7 @@ export const useBoughtBooksQuery = (
       const isValidDate = (dateStr: string) => {
         return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(Date.parse(dateStr));
       };
+      
       if (activeFilters) {
         // Price range filter
         if (activeFilters.priceRange.min && activeFilters.priceRange.max) {
@@ -31,26 +32,37 @@ export const useBoughtBooksQuery = (
           filter.price = { $lte: parseFloat(activeFilters.priceRange.max) };
         }
 
-        // Date range filter
-        if (activeFilters.dateRange.startDate && activeFilters.dateRange.endDate) {
-          filter.sale_date = {
-            $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
-            $lte: new Date(activeFilters.dateRange.endDate).toISOString(),
-          };
-        } else if (activeFilters?.dateRange?.startDate && isValidDate(activeFilters.dateRange.startDate)) {
-          filter.sale_date = {
-            ...filter.sale_date,
-            $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
-          };
-        }
-        
-        if (activeFilters?.dateRange?.endDate && isValidDate(activeFilters.dateRange.endDate)) {
+        // Date range filter - updated approach
+        if (activeFilters.dateRange.startDate && activeFilters.dateRange.endDate && 
+            isValidDate(activeFilters.dateRange.startDate) && isValidDate(activeFilters.dateRange.endDate)) {
+          // Create the end date for the next day at 00:00:00 to include the entire end date
           const endDate = new Date(activeFilters.dateRange.endDate);
-          endDate.setHours(23, 59, 59, 999); // Ensure full-day inclusion
+          endDate.setDate(endDate.getDate() + 1);
+          
           filter.sale_date = {
-            ...filter.sale_date,
-            $lte: endDate.toISOString(),
+            $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
+            $lt: endDate.toISOString()
           };
+        } else {
+          // Handle start date only
+          if (activeFilters.dateRange.startDate && isValidDate(activeFilters.dateRange.startDate)) {
+            filter.sale_date = {
+              ...(filter.sale_date as object || {}),
+              $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
+            };
+          }
+          
+          // Handle end date only
+          if (activeFilters.dateRange.endDate && isValidDate(activeFilters.dateRange.endDate)) {
+            // Create the end date for the next day at 00:00:00 to include the entire end date
+            const endDate = new Date(activeFilters.dateRange.endDate);
+            endDate.setDate(endDate.getDate() + 1);
+            
+            filter.sale_date = {
+              ...(filter.sale_date as object || {}),
+              $lt: endDate.toISOString(),
+            };
+          }
         }
       }
 

@@ -60,6 +60,12 @@ export interface SaleContract{
     updated_at: Date;
   }
 
+  export interface SingleCombinedSaleContracts{
+    success:true,
+    message:string
+    saleBooksContracts:SaleContract                    
+}
+
 
 
 
@@ -110,3 +116,13 @@ export const fetchSoldBooksContract = async (params: { page: number; limit: numb
       throw error;
     }
   };
+
+
+export const fetchSaleContractDetails = async (saleContractId: string):Promise<SingleCombinedSaleContracts | undefined> => {
+  try {
+    const response = await UserAxiosInstance.get(`/user/sale-contract/details/${saleContractId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching sale contract details:', error);
+  }
+};

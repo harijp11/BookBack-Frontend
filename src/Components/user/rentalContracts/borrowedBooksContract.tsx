@@ -5,7 +5,8 @@ import { ReusableFilterTopbar, FilterOptions } from "@/Components/common/FilterS
 import { DataTable } from "@/Components/common/tablecomponent/tableComponent";
 import { useBorrowedBooksQuery } from "@/hooks/user/rentalContracts/useBorrowedBooksContractqueries";
 import { RentalContract } from "@/services/rental/rentalService";
-import { DollarSign, Calendar, Eye } from "lucide-react";
+import { DollarSign, Calendar, } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const BorrowedBooks: React.FC = () => {
   const [page, setPage] = useState<number>(1);
@@ -14,10 +15,10 @@ const BorrowedBooks: React.FC = () => {
     dateRange: { startDate: null, endDate: null },
     priceRange: { min: "", max: "" },
   });
-  const [isViewingDetails, setIsViewingDetails] = useState<boolean>(false);
+ 
 
-  const { data, isLoading, error } = useBorrowedBooksQuery(page, limit, filterOptions, isViewingDetails);
-
+  const { data, isLoading, error } = useBorrowedBooksQuery(page, limit, filterOptions);
+ const navigate = useNavigate()
   console.log("API response data:", data); // Debugging
 
   const hasActiveFilters = !!(
@@ -40,7 +41,7 @@ const BorrowedBooks: React.FC = () => {
       },
     };
     setFilterOptions(sanitizedFilters);
-    setPage(1); // Reset to first page when filters change
+    setPage(1); 
   };
 
   const handleClearFilters = () => {
@@ -75,6 +76,7 @@ const BorrowedBooks: React.FC = () => {
                     src={contract.bookId.images[0]}
                     alt={contract.bookId.name}
                     className="w-12 h-12 object-cover rounded"
+                    onClick={()=>navigate(`/borrowed-book/details/${contract._id}`)}
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder-image.jpg" // Fallback image
                     }}

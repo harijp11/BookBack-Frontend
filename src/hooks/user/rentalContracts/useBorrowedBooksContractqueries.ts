@@ -15,6 +15,11 @@ export const useBorrowedBooksQuery = (
     queryFn: async () => {
       // Prepare filter object
       const filter: Record<string, object> = {};
+      
+      // Helper function to validate date format
+      const isValidDate = (dateStr: string) => {
+        return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(Date.parse(dateStr));
+      };
 
       if (activeFilters) {
         // Price range filter (rent_amount)
@@ -30,15 +35,28 @@ export const useBorrowedBooksQuery = (
         }
 
         // Date range filter (requested_at)
-        if (activeFilters.dateRange.startDate && activeFilters.dateRange.endDate) {
+        if (activeFilters.dateRange.startDate && activeFilters.dateRange.endDate && 
+            isValidDate(activeFilters.dateRange.startDate) && isValidDate(activeFilters.dateRange.endDate)) {
+          // Create the end date for the next day at 00:00:00 to include the entire end date
+          const endDate = new Date(activeFilters.dateRange.endDate);
+          endDate.setDate(endDate.getDate() + 1);
+          
           filter.requested_at = {
             $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
-            $lte: new Date(activeFilters.dateRange.endDate).toISOString(),
+            $lt: endDate.toISOString()
           };
-        } else if (activeFilters.dateRange.startDate) {
-          filter.requested_at = { $gte: new Date(activeFilters.dateRange.startDate).toISOString() };
-        } else if (activeFilters.dateRange.endDate) {
-          filter.requested_at = { $lte: new Date(activeFilters.dateRange.endDate).toISOString() };
+        } else if (activeFilters.dateRange.startDate && isValidDate(activeFilters.dateRange.startDate)) {
+          filter.requested_at = { 
+            $gte: new Date(activeFilters.dateRange.startDate).toISOString() 
+          };
+        } else if (activeFilters.dateRange.endDate && isValidDate(activeFilters.dateRange.endDate)) {
+          // Create the end date for the next day at 00:00:00 to include the entire end date
+          const endDate = new Date(activeFilters.dateRange.endDate);
+          endDate.setDate(endDate.getDate() + 1);
+          
+          filter.requested_at = { 
+            $lt: endDate.toISOString() 
+          };
         }
       }
 

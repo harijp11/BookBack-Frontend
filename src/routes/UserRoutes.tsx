@@ -20,6 +20,7 @@ import UserPursePage from "@/pages/user/PursePage";
 import UserContractRequestsPage from "@/pages/user/ContractRequestPage";
 import UserContractFormPage from "@/pages/user/ContractFormPage";
 import SoldBooksHistoryPage from "@/pages/user/SoldBooksPage";
+import BorrowedBookDetailsPage from "@/Components/user/rentalContracts/BorrowedBookDetails";
 
 function UserRoutes() {
   return (
@@ -53,6 +54,7 @@ function UserRoutes() {
       //rental contract
       <Route path="/rented-books" element={<RentedOutBooksPage/>} />
       <Route path="/borrowed-books" element={<BorrowedBooksPage/>} />
+      <Route path="/borrowed-book/details/:rentalId" element={<BorrowedBookDetailsPage/>} />
 
       //purse
       <Route path="/purse" element={<UserPursePage/>} />

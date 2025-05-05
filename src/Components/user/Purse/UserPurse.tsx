@@ -22,6 +22,7 @@ export default function UserPurse() {
   const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState<string>("")
   
+ 
   const { 
     data: purseData, 
     isLoading, 

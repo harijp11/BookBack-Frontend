@@ -40,7 +40,7 @@ export const useRentalCalculation = (
   const calculateTotalRentAmount = () => {
     // console.log("calculate rent amount")
     if (!contractRequest || maxRentalPeriod === 0) return 0;
-    return (selectedDays / maxRentalPeriod) * baseRentAmount;
+    return (selectedDays / maxRentalPeriod) * baseRentAmount; 
   };
   
   // Create the dropdown options for days
@@ -48,12 +48,12 @@ export const useRentalCalculation = (
     if (!contractRequest) return [];
     
     return [
-      { value: maxRentalPeriod, label: "Existing Days" },
-      { value: maxRentalPeriod + 1, label: "1 Day" },
-      { value: maxRentalPeriod + 5, label: "5 Days" },
-      { value: maxRentalPeriod + 10, label: "10 Days" },
-      { value: maxRentalPeriod + 20, label: "20 Days" },
-      { value: maxRentalPeriod + 30, label: "30 Days" }
+      { value: maxRentalPeriod, label: "Available" },
+      { value: maxRentalPeriod + 1, label: "Extended 1 Days" },
+      { value: maxRentalPeriod + 5, label: "Extended 5 Days" },
+      { value: maxRentalPeriod + 10, label: "Extended 10 Days" },
+      { value: maxRentalPeriod + 20, label: "Extended 20 Days" },
+      { value: maxRentalPeriod + 30, label: "Extended 30 Days" }
     ];
   };
   

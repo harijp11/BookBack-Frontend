@@ -29,14 +29,26 @@ export const useSoldBooksQuery = (
         
         // Date range filter
         if (activeFilters.dateRange.startDate && activeFilters.dateRange.endDate) {
+          // Create the end date for the next day at 00:00:00 to include the entire end date
+          const endDate = new Date(activeFilters.dateRange.endDate);
+          endDate.setDate(endDate.getDate() + 1);
+          
           filter.sale_date = {
             $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
-            $lte: new Date(activeFilters.dateRange.endDate).toISOString()
+            $lt: endDate.toISOString()
           }
         } else if (activeFilters.dateRange.startDate) {
-          filter.sale_date = { $gte: new Date(activeFilters.dateRange.startDate).toISOString() }
+          filter.sale_date = { 
+            $gte: new Date(activeFilters.dateRange.startDate).toISOString() 
+          }
         } else if (activeFilters.dateRange.endDate) {
-          filter.sale_date = { $lte: new Date(activeFilters.dateRange.endDate).toISOString() }
+          // Create the end date for the next day at 00:00:00 to include the entire end date
+          const endDate = new Date(activeFilters.dateRange.endDate);
+          endDate.setDate(endDate.getDate() + 1);
+          
+          filter.sale_date = { 
+            $lt: endDate.toISOString() 
+          }
         }
       }
       

@@ -1,6 +1,5 @@
 
 import Sidebar from "../../Components/admin/sidebar";
-import Dashboard from "../../Components/admin/Dashboard";
 import UserManagement from "../../Components/admin/UserManagement"
 
 const AdminUserManagement = () => {

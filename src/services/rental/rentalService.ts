@@ -1,5 +1,6 @@
 import { adminAxiosInstance } from "@/APIs/admin_axios";
 import { UserAxiosInstance } from "@/APIs/user_axios";
+import { AxiosError } from "axios";
 
 export interface Response {
     success:boolean,
@@ -81,6 +82,12 @@ export interface RentalContract{
                              
      }
 
+     export interface SingleCombinedRentalContracts{
+         success:true
+         message:string
+         rentedBooksContracts:RentalContract                      
+     }
+
      export interface CombinedRentalContracts0{
       success:true,
          message:string
@@ -127,5 +134,16 @@ export const fetchRentedOutBooksContract = async (params: { page: number; limit:
     } catch (error) {
       console.error("Error fetching admin rented out books contracts:", error);
       throw error;
+    }
+  };
+
+
+  export const fetchRentalContractDetails = async (rentalId: string):Promise<SingleCombinedRentalContracts | undefined> => {
+    try {
+      const response = await UserAxiosInstance.get(`/user/rental-contract/details/${rentalId}`);
+      return response.data;
+    } catch (error) {
+      if(error instanceof AxiosError)
+      console.error('Error fetching rental contract details:', error);
     }
   };
