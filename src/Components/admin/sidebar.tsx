@@ -9,6 +9,8 @@ import {
   Users,
   LogOut,
   BadgeDollarSign,
+  Undo2,
+  Ban
   
 } from "lucide-react";
 import { FaHandshake } from "react-icons/fa";
@@ -27,6 +29,15 @@ interface SidebarItem {
   icon: React.ElementType;
 }
 
+const ReturnRejectionIcon = () => {
+  return (
+    <div className="relative w-6 h-6">
+      <Undo2 className="absolute inset-0 w-6 h-6 text-blue-600" />
+      <Ban className="absolute inset-0 w-6 h-6 text-red-500 opacity-70" />
+    </div>
+  );
+};
+
 const sidebarItems: SidebarItem[] = [
   { title: "Dashboard", href: "/admin/Dashboard", icon: Home },
   { title: "Books", href: "/admin/book", icon: BookOpen },
@@ -35,6 +46,7 @@ const sidebarItems: SidebarItem[] = [
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Categories", href: "/admin/categories", icon: Boxes },
   { title: "DealTypes", href: "/admin/deal-types", icon: FaHandshake },
+  { title: "Return Rejection Requests", href: "/admin/return-rejection", icon: ReturnRejectionIcon },
 ];
 
 const Sidebar: React.FC = () => {
@@ -65,6 +77,8 @@ const Sidebar: React.FC = () => {
       console.error("Logout failed:", error);
     }
   };
+
+  
 
   return (
     <div className={`relative flex h-screen flex-col border-r bg-white transition-all duration-300 ${collapsed ? "w-16" : "w-64"}`}>

@@ -76,7 +76,7 @@ export default function UserPurse() {
               <div className="bg-primary/10 p-4 rounded-full mb-4">
                 <Wallet className="h-10 w-10 text-primary" />
               </div>
-              <div className="text-4xl font-bold"> ₹{purseData?.balance || 0}</div>
+              <div className="text-4xl font-bold"> ₹{purseData?.balance.toFixed(2) || 0}</div>
               <p className="text-sm text-muted-foreground mt-2">
                 Last updated: {purseData?.updatedAt ? format(new Date(purseData.updatedAt), "PPP") : "N/A"}
               </p>

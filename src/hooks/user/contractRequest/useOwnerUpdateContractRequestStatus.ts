@@ -28,7 +28,6 @@ export function useOwnerContractRequests(ownerId: string | undefined) {
       return data.requests || []
     },
     enabled: !!ownerId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
   })
 }

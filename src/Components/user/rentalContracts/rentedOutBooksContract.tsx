@@ -5,7 +5,8 @@ import { ReusableFilterTopbar, FilterOptions } from "@/Components/common/FilterS
 import { DataTable } from "@/Components/common/tablecomponent/tableComponent";
 import { useRentedOutBooksQuery } from "@/hooks/user/rentalContracts/useRentedOutBooksQueries";
 import { RentalContract } from "@/services/rental/rentalService";
-import { DollarSign, Calendar, Eye } from "lucide-react";
+import { DollarSign, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const RentedOutBooks: React.FC = () => {
   const [page, setPage] = useState<number>(1);
@@ -19,7 +20,7 @@ const RentedOutBooks: React.FC = () => {
   const { data, isLoading, error } = useRentedOutBooksQuery(page, limit, filterOptions, isViewingDetails);
 
   console.log("API response data:", data); // Debugging
-
+  const navigate = useNavigate()
   const hasActiveFilters = !!(
     filterOptions.dateRange.startDate ||
     filterOptions.dateRange.endDate ||
@@ -75,6 +76,7 @@ const RentedOutBooks: React.FC = () => {
                 src={contract.bookId.images[0]}
                 alt={contract.bookId.name}
                 className="w-12 h-12 object-cover rounded"
+                onClick={()=>navigate(`/rentedout-book/details/${contract._id}`)}
                 onError={(e) => {
                   e.currentTarget.src = "/placeholder-image.jpg" // Fallback image
                 }}

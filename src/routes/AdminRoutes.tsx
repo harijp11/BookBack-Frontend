@@ -9,6 +9,7 @@ import AdminDealTypeManagement from "@/pages/admin/AdminDealTypeManagement";
 import AdminBookMangement from "@/pages/admin/AdminBooksListPage";
 import AdminRentalTypeManagement from "@/pages/admin/AdminRentalManagemenet";
 import AdminSalesTypeManagement from "@/pages/admin/AdminSalesManagement";
+import AdminReturnRejectionRequestPage from "@/pages/admin/AdminReturnRejectionRequestPage";
 
 function AdminRoutes() {
   return (
@@ -27,6 +28,7 @@ function AdminRoutes() {
         <Route path="/book" element={<AdminBookMangement/>}/>
         <Route path="/rentals" element={<AdminRentalTypeManagement/>}/>
         <Route path="/sales" element={<AdminSalesTypeManagement/>}/>
+        <Route path="/return-rejection" element={<AdminReturnRejectionRequestPage/>}/>
       </Route>
     </Routes>
   );

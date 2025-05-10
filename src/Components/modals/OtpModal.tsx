@@ -10,7 +10,6 @@ import { Button } from "@/Components/ui/button";
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/Components/ui/input-otp";
 import { useTimer } from "@/hooks/useTimer";
@@ -79,10 +78,7 @@ const OTPModal: React.FC<OTPModalProps> = ({
                   <InputOTPSlot index={0} />
                   <InputOTPSlot index={1} />
                   <InputOTPSlot index={2} />
-                </InputOTPGroup>
-                <InputOTPSeparator />
-                <InputOTPGroup>
-                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={3} />   
                 </InputOTPGroup>
               </InputOTP>
             </div>

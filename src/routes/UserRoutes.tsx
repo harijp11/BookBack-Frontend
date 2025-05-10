@@ -21,6 +21,7 @@ import UserContractRequestsPage from "@/pages/user/ContractRequestPage";
 import UserContractFormPage from "@/pages/user/ContractFormPage";
 import SoldBooksHistoryPage from "@/pages/user/SoldBooksPage";
 import BorrowedBookDetailsPage from "@/Components/user/rentalContracts/BorrowedBookDetails";
+import RentedOutBookDetailsPage from "@/Components/user/rentalContracts/RentedOutBookDetails";
 
 function UserRoutes() {
   return (
@@ -55,6 +56,7 @@ function UserRoutes() {
       <Route path="/rented-books" element={<RentedOutBooksPage/>} />
       <Route path="/borrowed-books" element={<BorrowedBooksPage/>} />
       <Route path="/borrowed-book/details/:rentalId" element={<BorrowedBookDetailsPage/>} />
+      <Route path="/rentedout-book/details/:rentalId" element={<RentedOutBookDetailsPage/>} />
 
       //purse
       <Route path="/purse" element={<UserPursePage/>} />
