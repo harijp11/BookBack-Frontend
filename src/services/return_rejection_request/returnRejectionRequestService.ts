@@ -76,7 +76,7 @@ interface TopComplaint {
   user: UserInfo;
 }
 
-interface AdminReturnRejectionResponse {
+export interface AdminReturnRejectionResponse {
   success: boolean;
   message: string;
   topFiveMostComplainted: TopComplaint[];
@@ -85,6 +85,10 @@ interface AdminReturnRejectionResponse {
   totalReturnRejectionRequest: number;
   totalPages: number;
   currentPage: number;
+}
+
+interface UpdateReturnRejectionStatusPayload {
+  status: "accepted" | "rejected";
 }
 
 
@@ -100,26 +104,38 @@ export const createReturnRejectionRequest = async (data: ReturnRejectionPayload)
 
 
 
-
 export const fetchAdminReturnRejectionRequests = async ({
   filter,
   page,
   limit,
-}: FetchReturnRejectionRequestParams): Promise<AdminReturnRejectionResponse | Response> => {
+}: FetchReturnRejectionRequestParams): Promise<AdminReturnRejectionResponse> => {
   try {
     const response = await adminAxiosInstance.get<AdminReturnRejectionResponse>(
       "/admin/return-rejection-request",
       {
-        params: {
-          filter,
-          page,
-          limit,
-        },
+        params: { filter, page, limit },
       }
     );
     return response.data;
   } catch (error) {
     console.error("Error fetching return rejection requests:", error);
+    throw error;
+  }
+};
+
+
+export const updateReturnRejectionRequestStatus = async (
+  retRejId: string,
+  status: UpdateReturnRejectionStatusPayload
+): Promise<Response> => {
+  try {
+    const response = await adminAxiosInstance.put<Response>(
+      `/admin/return-rejection-request/${retRejId}/update`,
+      status
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating return rejection request status:", error);
     throw error;
   }
 };

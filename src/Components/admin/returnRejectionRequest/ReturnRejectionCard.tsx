@@ -4,6 +4,9 @@ import { renewal_details } from "@/services/rental/rentalService";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/Components/ui/card";
+import { useUpdateReturnRejectionMutation } from "@/hooks/admin/returnRejectionRequestsHooks/useReturnRejectionRequestMutation";
+import { useQueryClient } from "@tanstack/react-query";
+import { AdminReturnRejectionResponse } from "@/services/return_rejection_request/returnRejectionRequestService";
 
 interface UserInfo {
   _id: string;
@@ -60,14 +63,56 @@ interface ReturnRejectionCardProps {
 }
 
 const ReturnRejectionCard: React.FC<ReturnRejectionCardProps> = ({ request }) => {
+  const queryClient = useQueryClient();
+  const { mutate: updateStatus, isPending: isUpdating } = useUpdateReturnRejectionMutation();
+
+  const updateCache = (newStatus: "accepted" | "rejected") => {
+    // Get all queries matching ["returnRejectionRequests"]
+    const queries = queryClient.getQueriesData<AdminReturnRejectionResponse>({
+      queryKey: ["returnRejectionRequests"],
+    });
+
+    // Update each matching query
+    queries.forEach(([queryKey, oldData]) => {
+      if (!oldData || !oldData.returnRejectionRequest) return;
+
+      const updatedData = {
+        ...oldData,
+        returnRejectionRequest: oldData.returnRejectionRequest.map((item) =>
+          item._id === request._id ? { ...item, status: newStatus } : item
+        ),
+      };
+
+      queryClient.setQueryData(queryKey, updatedData);
+    });
+  };
+
   const handleAccept = () => {
-    console.log(`Accepting request: ${request._id}`);
-    // TODO: Implement API call, e.g., PUT /return-rejection-request/:id { status: "accepted" }
+    updateStatus(
+      {
+        retRejId: request._id,
+        status: { status: "accepted" },
+      },
+      {
+        onSuccess: () => {
+          updateCache("accepted");
+        },
+      }
+    );
   };
 
   const handleReject = () => {
-    console.log(`Rejecting request: ${request._id}`);
-    // TODO: Implement API call, e.g., PUT /return-rejection-request/:id { status: "rejected" }
+    updateStatus(
+      {
+        retRejId: request._id,
+        status: { status: "rejected" },
+      },
+      {
+        onSuccess: () => {
+          updateCache("rejected");
+        },
+      }
+    );
   };
 
   const getStatusBadgeStyles = (status: string) => {
@@ -85,25 +130,25 @@ const ReturnRejectionCard: React.FC<ReturnRejectionCardProps> = ({ request }) =>
 
   return (
     <motion.div
-      className="w-full max-w-3xl mx-auto" 
+      className="w-full max-w-3xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className=" overflow-hidden border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
+      <Card className="overflow-hidden border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
         <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 pb-6">
           <div className="flex justify-between items-start">
             <CardTitle className="text-2xl font-bold text-gray-800">
               Return Rejection Request
             </CardTitle>
-            <Badge 
+            <Badge
               className={`${getStatusBadgeStyles(request.status)} px-3 py-1.5 text-xs font-semibold uppercase tracking-wider`}
             >
               {request.status}
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent className="p-6 space-y-6">
           {/* Book preview with details */}
           <div className="flex gap-5 p-4 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100">
@@ -189,22 +234,36 @@ const ReturnRejectionCard: React.FC<ReturnRejectionCardProps> = ({ request }) =>
             </div>
           </div>
         </CardContent>
-        
+
         <CardFooter className="bg-gradient-to-r from-white to-gray-50 border-t border-gray-100 p-6">
           <div className="flex justify-end gap-3 w-full">
-            <Button
-              onClick={handleReject}
-              variant="destructive"
-              className="shadow-sm hover:shadow-md transition-all px-5"
-            >
-              Reject
-            </Button>
-            <Button
-              onClick={handleAccept}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-sm hover:shadow-md transition-all px-5"
-            >
-              Accept
-            </Button>
+            {request.status === "pending" ? (
+              <>
+                <Button
+                  onClick={handleReject}
+                  variant="destructive"
+                  className="shadow-sm hover:shadow-md transition-all px-5"
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? "Processing..." : "Reject"}
+                </Button>
+                <Button
+                  onClick={handleAccept}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-sm hover:shadow-md transition-all px-5"
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? "Processing..." : "Accept"}
+                </Button>
+              </>
+            ) : (
+              <p
+                className={`text-sm font-medium ${
+                  request.status === "accepted" ? "text-emerald-700" : "text-rose-700"
+                }`}
+              >
+                Return Rejection Request {request.status === "accepted" ? "Accepted" : "Rejected"}
+              </p>
+            )}
           </div>
         </CardFooter>
       </Card>

@@ -1,5 +1,5 @@
-import { fetchAdminReturnRejectionRequests } from "@/services/return_rejection_request/returnRejectionRequestService";
-import { useQuery } from "@tanstack/react-query";
+import { AdminReturnRejectionResponse, fetchAdminReturnRejectionRequests, } from "@/services/return_rejection_request/returnRejectionRequestService";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 interface FetchReturnRejectionRequestParams {
     filter: object;
@@ -11,10 +11,11 @@ interface FetchReturnRejectionRequestParams {
     filter,
     page,
     limit,
-  }: FetchReturnRejectionRequestParams) => {
-    return useQuery({
+  }: FetchReturnRejectionRequestParams): UseQueryResult<AdminReturnRejectionResponse, Error> => {
+    return useQuery<AdminReturnRejectionResponse, Error, AdminReturnRejectionResponse, [string, object, number, number]>({
       queryKey: ["returnRejectionRequests", filter, page, limit],
       queryFn: () => fetchAdminReturnRejectionRequests({ filter, page, limit }),
-      keepPreviousData: true,
+      placeholderData: keepPreviousData => keepPreviousData,
     });
   };
+  
