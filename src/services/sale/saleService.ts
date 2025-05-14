@@ -118,11 +118,15 @@ export const fetchSoldBooksContract = async (params: { page: number; limit: numb
   };
 
 
-export const fetchSaleContractDetails = async (saleContractId: string):Promise<SingleCombinedSaleContracts | undefined> => {
-  try {
-    const response = await UserAxiosInstance.get(`/user/sale-contract/details/${saleContractId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching sale contract details:', error);
-  }
-};
+  export const fetchSaleContractDetails = async (
+    saleContractId: string
+  ): Promise<SingleCombinedSaleContracts | Response> => {
+    try {
+      const response = await UserAxiosInstance.get(`/user/sale-contract/details/${saleContractId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching sale contract details:', error);
+     throw error
+    }
+  };
+  

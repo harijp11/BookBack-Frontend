@@ -140,8 +140,6 @@ const RentedOutBookDetailsPage = () => {
 
   const progressPercentage = Math.min((elapsedDays / totalDays) * 100, 100);
 
-
-
   const returnedProgressPercentage = 100; // Constant for returned status
 
   const getStatusColor = (status: string) => {
@@ -462,6 +460,12 @@ const RentedOutBookDetailsPage = () => {
                         : "N/A"}
                     </span>
                   </div>
+                ) : rentalContract.status === "Return Requested" &&
+                  isContractExceeded() ? (
+                  <div className="flex items-center gap-2 text-amber-600 bg-amber-100 px-3 py-1 rounded-full border border-amber-200">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>Borrower requested for return, please respond to it.</span>
+                  </div>
                 ) : (
                   <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
                     <Clock className="h-4 w-4" />
@@ -603,6 +607,22 @@ const RentedOutBookDetailsPage = () => {
                       </div>
                     </div>
 
+                    {rentalContract.status === "Return Requested" && rentalContract.return_requested_at && (
+                      <div className="flex items-start gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200/50 transition-transform hover:translate-y-[-2px] hover:shadow-md">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center flex-shrink-0">
+                          <AlertTriangle className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">
+                            RETURN REQUESTED AT
+                          </p>
+                          <p className="font-medium">
+                            {formatDate(rentalContract.return_requested_at)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     {rentalContract.status === "Returned" ? (
                       <div className="flex items-start gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200/50 transition-transform hover:translate-y-[-2px] hover:shadow-md">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
@@ -614,6 +634,19 @@ const RentedOutBookDetailsPage = () => {
                             {rentalContract.returned_at
                               ? formatDate(rentalContract.returned_at)
                               : "N/A"}
+                          </p>
+                        </div>
+                      </div>
+                    ) : rentalContract.status === "Return Requested" &&
+                      isContractExceeded() ? (
+                      <div className="flex items-start gap-4 bg-amber-100 p-4 rounded-lg border border-amber-200 transition-transform hover:translate-y-[-2px] hover:shadow-md">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center flex-shrink-0">
+                          <AlertTriangle className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">RETURN REQUEST STATUS</p>
+                          <p className="text-sm text-amber-600">
+                            borrower requested for return, please respond to it.
                           </p>
                         </div>
                       </div>
@@ -979,7 +1012,7 @@ const RentedOutBookDetailsPage = () => {
                 </span>
               </div>
               <div className="flex justify-between items-center bg-gray-50 p-3 rounded-md border border-gray-200">
-                <span className="text-gray-700">Renewal amount:</span>
+              <span className="text-gray-700">Renewal amount:</span>
                 <span className="font-medium">
                   Rs.{" "}
                   {rentalContract.renewal_details &&

@@ -70,7 +70,7 @@ export interface RentalContract{
         status: 'Returned' | 'Return Requested' | 'On Rental' | 'Return Rejected' | 'Contract Date Exceeded' | 'Return Rejection Requested';
         renewal_status: 'No Renewal' | 'Renewal Requested' | 'Renewal Rejected' | 'Renewed';
         renewal_details: renewal_details[] | [];  
-        requested_at: Date 
+        return_requested_at: Date 
         returned_at:Date
         penalty_amount: number;
         created_at: Date;

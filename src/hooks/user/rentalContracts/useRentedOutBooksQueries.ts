@@ -41,12 +41,12 @@ export const useRentedOutBooksQuery = (
           const endDate = new Date(activeFilters.dateRange.endDate);
           endDate.setDate(endDate.getDate() + 1);
           
-          filter.requested_at = {
+          filter.created_at = {
             $gte: new Date(activeFilters.dateRange.startDate).toISOString(),
             $lt: endDate.toISOString()
           };
         } else if (activeFilters.dateRange.startDate && isValidDate(activeFilters.dateRange.startDate)) {
-          filter.requested_at = { 
+          filter.created_at = { 
             $gte: new Date(activeFilters.dateRange.startDate).toISOString() 
           };
         } else if (activeFilters.dateRange.endDate && isValidDate(activeFilters.dateRange.endDate)) {
@@ -54,7 +54,7 @@ export const useRentedOutBooksQuery = (
           const endDate = new Date(activeFilters.dateRange.endDate);
           endDate.setDate(endDate.getDate() + 1);
           
-          filter.requested_at = { 
+          filter.created_at = { 
             $lt: endDate.toISOString() 
           };
         }

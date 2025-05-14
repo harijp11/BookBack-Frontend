@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react"
 import { format } from "date-fns"
-import { Eye, ArrowLeft, Loader2, DollarSign, Calendar } from "lucide-react"
+import {  ArrowLeft, Loader2, DollarSign, Calendar } from "lucide-react"
 import { type SaleContract } from "@/services/sale/saleService"
 import { DataTable } from "@/Components/common/tablecomponent/tableComponent"
 import { FilterOptions, ReusableFilterTopbar } from "@/Components/common/FilterSidebar/filterHeader"
 import { useSoldBooksQuery } from "@/hooks/user/saleContractquries/useSoldBooksQuery"
+import { useNavigate } from "react-router-dom"
 
 export const SoldBooksHistory: React.FC = () => {
   // State management
@@ -16,12 +17,12 @@ export const SoldBooksHistory: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [selectedContract, setSelectedContract] = useState<SaleContract | null>(null)
   const [isViewingDetails, setIsViewingDetails] = useState(false)
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
   const [activeFilters, setActiveFilters] = useState<FilterOptions | null>(null)
-  
-  const limit = 10
 
-  // Fetch contracts using custom hook
+  const navigate = useNavigate()
+  
+  const limit = 8
+    // Fetch contracts using custom hook
   const { data, isLoading: queryLoading } = useSoldBooksQuery(
     currentPage,
     limit,
@@ -65,11 +66,7 @@ export const SoldBooksHistory: React.FC = () => {
     activeFilters.dateRange.endDate
   )
 
-  // Handle view details button click
-  const handleViewDetails = (contract: SaleContract) => {
-    setSelectedContract(contract)
-    setIsViewingDetails(true)
-  }
+  
 
   // Handle back button click
   const handleGoBack = () => {
@@ -104,6 +101,7 @@ export const SoldBooksHistory: React.FC = () => {
             src={contract.bookId.images[0]}
             alt={contract.bookId.name}
             className="w-12 h-12 object-cover rounded"
+            onClick={()=>navigate(`/sold-book/details/${contract._id}`)}
             onError={(e) => {
               e.currentTarget.src = "/placeholder-image.jpg" // Fallback image
             }}
@@ -176,13 +174,6 @@ export const SoldBooksHistory: React.FC = () => {
 
   // Render contract details view
   const renderContractDetails = () => {
-    if (isLoadingDetails) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-black" />
-        </div>
-      )
-    }
 
     if (!selectedContract) {
       return (

@@ -151,9 +151,9 @@ const RentalManagement: React.FC = () => {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-lg font-semibold">Contract Requests</h2>
+              <h2 className="text-lg font-semibold">Rental contracts</h2>
               <p className="text-sm text-muted-foreground">
-                You have made {totalContracts} contract requests in total
+                You have made {totalContracts} Rental contracts in total
               </p>
             </div>
           

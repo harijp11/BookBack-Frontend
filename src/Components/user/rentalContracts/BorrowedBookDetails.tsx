@@ -24,6 +24,8 @@ import { useRentalMutations } from "@/hooks/user/rentalContracts/useRentedContra
 import { useToast } from "@/hooks/ui/toast";
 import { AxiosError } from "axios";
 
+
+
 const BorrowedBookDetailsPage: React.FC = () => {
   const { rentalId } = useParams<{ rentalId: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,7 +126,8 @@ const BorrowedBookDetailsPage: React.FC = () => {
     return diffDays > 0 ? diffDays : 0;
   };
 
-  const formatDate = (date: Date): string => {
+  const formatDate = (date: Date | string | null): string => {
+    if (!date) return "N/A";
     return format(new Date(date), "dd-MM-yyyy");
   };
 
@@ -173,18 +176,7 @@ const BorrowedBookDetailsPage: React.FC = () => {
 
   const exceededDays = calculateExceededDays(rentalContract.rent_end_date);
 
-  // const returnedDays = rentalContract.returned_at
-  //   ? Math.max(
-  //       1,
-  //       Math.ceil(
-  //         (new Date(rentalContract.returned_at).getTime() -
-  //           new Date(rentalContract.rent_start_date).getTime()) /
-  //           (1000 * 60 * 60 * 24)
-  //       )
-  //     )
-  //   : totalDays;
-
-  const returnedProgressPercentage = 100; // Constant for returned status
+  const returnedProgressPercentage = 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 text-black font-sans">
@@ -296,6 +288,19 @@ const BorrowedBookDetailsPage: React.FC = () => {
                             </p>
                           </div>
                         </div>
+                        {rentalContract.status === "Return Requested" && rentalContract.return_requested_at && (
+                          <div className="absolute top-[30%] transform translate-y-[-50%] left-10 right-0 z-20">
+                            <div className="relative">
+                              <div className="absolute left-[-36px] top-1 bg-yellow-500 w-7 h-7 rounded-full flex items-center justify-center">
+                                <AlertTriangle className="h-4 w-4 text-white" aria-label="Return Request Warning" />
+                              </div>
+                              <p className="text-xs text-gray-500 mb-1">RETURN REQUESTED AT</p>
+                              <p className="font-medium text-base">
+                                {formatDate(rentalContract.return_requested_at)}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                         {rentalContract.status === "Returned" ? (
                           <div className="absolute top-[55%] transform translate-y-[-50%] left-10 right-0 z-20">
                             <div className="relative">
@@ -310,7 +315,7 @@ const BorrowedBookDetailsPage: React.FC = () => {
                               </p>
                             </div>
                           </div>
-                        ) : rentalContract.status === "Contract Date Exceeded" || remainingDays <= 0 ? (
+                        ) : (rentalContract.status === "Contract Date Exceeded" || remainingDays <= 0) && !(rentalContract.status === "Return Requested") ? (
                           <div className="absolute top-[55%] transform translate-y-[-50%] left-10 right-0 z-20">
                             <div className="relative">
                               <div className="absolute left-[-36px] top-1 bg-red-500 w-7 h-7 rounded-full flex items-center justify-center">
@@ -320,6 +325,25 @@ const BorrowedBookDetailsPage: React.FC = () => {
                               <div className="flex items-center">
                                 <p className="font-medium text-base">
                                   {exceededDays} days contract exceeded, return soon!
+                                  {rentalContract.penalty_amount > 0 && (
+                                    <span className="ml-2 text-xs text-red-600 font-medium">
+                                      (Penalty: Rs. {rentalContract.penalty_amount})
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : rentalContract.status === "Return Requested" && remainingDays <= 0 ? (
+                          <div className="absolute top-[55%] transform translate-y-[-50%] left-10 right-0 z-20">
+                            <div className="relative">
+                              <div className="absolute left-[-36px] top-1 bg-red-500 w-7 h-7 rounded-full flex items-center justify-center">
+                                <AlertTriangle className="h-4 w-4 text-white" />
+                              </div>
+                              <p className="text-xs text-gray-500 mb-1">CONTRACT EXCEEDED</p>
+                              <div className="flex items-center">
+                                <p className="font-medium text-base">
+                                  contract date exceeded contact owner for return
                                   {rentalContract.penalty_amount > 0 && (
                                     <span className="ml-2 text-xs text-red-600 font-medium">
                                       (Penalty: Rs. {rentalContract.penalty_amount})

@@ -15,9 +15,8 @@ const RentedOutBooks: React.FC = () => {
     dateRange: { startDate: null, endDate: null },
     priceRange: { min: "", max: "" },
   });
-  const [isViewingDetails, setIsViewingDetails] = useState<boolean>(false);
 
-  const { data, isLoading, error } = useRentedOutBooksQuery(page, limit, filterOptions, isViewingDetails);
+  const { data, isLoading, error } = useRentedOutBooksQuery(page, limit, filterOptions);
 
   console.log("API response data:", data); // Debugging
   const navigate = useNavigate()
@@ -117,7 +116,7 @@ const RentedOutBooks: React.FC = () => {
     },
     {
       header: "Requested At",
-      accessor: (row: RentalContract) => new Date(row.requested_at).toLocaleDateString(),
+      accessor: (row: RentalContract) => new Date(row.created_at).toLocaleDateString(),
       className: "text-center",
     },
     {
@@ -125,19 +124,7 @@ const RentedOutBooks: React.FC = () => {
       accessor: (row: RentalContract) => row.period_of_contract,
       className: "text-center",
     },
-    // {
-    //   header: "Actions",
-    //   accessor: () => (
-    //     <button
-    //       className="flex items-center gap-1 px-3 py-1 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
-    //       onClick={() => setIsViewingDetails(true)}
-    //     >
-    //       <Eye size={16} />
-    //       View Details
-    //     </button>
-    //   ),
-    //   className: "text-center",
-    // },
+   
   ];
 
   // Use totalRentedContracts and totalPages from API response

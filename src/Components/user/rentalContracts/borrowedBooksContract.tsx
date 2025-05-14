@@ -124,7 +124,7 @@ const BorrowedBooks: React.FC = () => {
     },
     {
       header: "Requested At",
-      accessor: (row: RentalContract) => new Date(row.requested_at).toLocaleDateString(),
+      accessor: (row: RentalContract) => new Date(row.created_at).toLocaleDateString(),
       className: "text-center text-gray-800",
     },
     {

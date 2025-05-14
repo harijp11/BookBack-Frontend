@@ -6,14 +6,17 @@ import { DataTable } from '@/Components/common/tablecomponent/tableComponent';
 import { useBoughtBooksQuery } from '@/hooks/user/saleContractquries/useBoughtBooksQueries';
 import { SaleContract } from '@/services/sale/saleService';
 import { DollarSign, Calendar,} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const BoughtBooks: React.FC = () => {
   const [page, setPage] = useState<number>(1);
-  const [limit] = useState<number>(1);
+  const [limit] = useState<number>(5);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     dateRange: { startDate: null, endDate: null },
     priceRange: { min: '', max: '' },
   });
+
+  const navigate = useNavigate()
   // const [isViewingDetails, setIsViewingDetails] = useState<boolean>(false);
 
   const { data, isLoading, error } = useBoughtBooksQuery(page, limit, filterOptions,);
@@ -74,6 +77,7 @@ const BoughtBooks: React.FC = () => {
                 src={contract.bookId.images[0]}
                 alt={contract.bookId.name}
                 className="w-12 h-12 object-cover rounded"
+                onClick={()=>navigate(`/bought-book/details/${contract._id}`)}
                 onError={(e) => {
                   e.currentTarget.src = "/placeholder-image.jpg" // Fallback image
                 }}

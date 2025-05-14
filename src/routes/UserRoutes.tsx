@@ -22,6 +22,12 @@ import UserContractFormPage from "@/pages/user/ContractFormPage";
 import SoldBooksHistoryPage from "@/pages/user/SoldBooksPage";
 import BorrowedBookDetailsPage from "@/Components/user/rentalContracts/BorrowedBookDetails";
 import RentedOutBookDetailsPage from "@/Components/user/rentalContracts/RentedOutBookDetails";
+import BoughtBookDetails from "@/Components/user/SaleContracts/BoughtBookDetails";
+import SoldBookDetails from "@/Components/user/SaleContracts/SoldBookDetails";
+import ChatWrapper from "@/Components/user/chat/ChatWrapper";
+import UserList from "@/Components/user/chat/UserList";
+import ChatLayout from "@/layouts/chatLayout";
+
 
 function UserRoutes() {
   return (
@@ -45,12 +51,22 @@ function UserRoutes() {
       <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />
       <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />
 
+
+      
+        <Route path="/chats/:receiverId" element={<ChatLayout/>} />
+        <Route path="/chats" element={<UserList/>} />
+
+
+
+
       //contract request
       <Route path="/owner/contract-request" element={<OwnerContractRequestHandlingPage/>} />
 
       //sale contract
       <Route path="/sold-books" element={<SoldBooksHistoryPage/>} />
       <Route path="/bought-books" element={<BoughtBooksPage/>} />
+      <Route path="/bought-book/details/:saleContractId" element={<BoughtBookDetails/>} />
+      <Route path="/sold-book/details/:saleContractId" element={<SoldBookDetails/>} />
 
       //rental contract
       <Route path="/rented-books" element={<RentedOutBooksPage/>} />
