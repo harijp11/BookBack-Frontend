@@ -29,26 +29,75 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
   const toast = useToast();
 
   useEffect(() => {
+    if (!userId || !receiverId) {
+      console.error('Invalid chat configuration: missing userId or receiverId', { userId, receiverId });
+      toast.error('Invalid chat configuration');
+      return;
+    }
+
+    if (userId === receiverId) {
+      console.error('Invalid chat configuration: userId and receiverId are the same', { userId, receiverId });
+      toast.error('Cannot open chat with yourself');
+      return;
+    }
+
+    console.log('Setting up socket for chat:', { userId, receiverId });
     socketClient.connect();
     socketClient.register(userId);
 
     const handleMessages = ({ messages }: { messages: Message[] }) => {
       console.log('Messages received:', messages);
+      if (!Array.isArray(messages)) {
+        console.error('Invalid messages format: not an array', messages);
+        return;
+      }
       setMessages(messages);
-      if (messages.length > 0 && messages[0].receiverId._id === receiverId) {
+      if (messages.length > 0 && messages[0].receiverId?._id === receiverId) {
         const possibleName = messages[0].receiverId.Name;
         if (possibleName) setReceiverName(possibleName);
       }
     };
 
-    const handleReceiveMessage = ({ message }: { message: Message }) => {
-      console.log('Received message:', message);
+    const handleReceiveMessage = ({ chatId, message }: { chatId: string; message: Message }) => {
+      console.log('Received message:', { chatId, message });
+      console.log('Checking message for chat:', {
+        messageId: message.messageId,
+        senderId: message.senderId._id,
+        receiverId: message.receiverId._id,
+        currentUserId: userId,
+        currentReceiverId: receiverId,
+      });
+
+      const senderId = message.senderId?._id;
+      const messageReceiverId = message.receiverId?._id;
+
+      if (!senderId || !messageReceiverId) {
+        console.log('Invalid message: missing senderId or receiverId', message);
+        return;
+      }
+
+      const isMessageForCurrentChat =
+        (senderId === receiverId && messageReceiverId === userId) || // Incoming message from other user
+        (senderId === userId && messageReceiverId === receiverId);  // Outgoing message from current user
+
+      if (!isMessageForCurrentChat) {
+        console.log('Message ignored (wrong chat):', {
+          messageId: message.messageId,
+          senderId,
+          receiverId: messageReceiverId,
+          expectedSenderId: receiverId,
+          expectedReceiverId: userId,
+          messageContent: message.content,
+        });
+        return;
+      }
+
       setMessages((prev) => {
-        // Prevent duplicates by checking messageId
         if (prev.some((msg) => msg.messageId === message.messageId)) {
           console.log('Duplicate message ignored:', message.messageId);
           return prev;
         }
+        console.log('Adding message to chat:', { messageId: message.messageId, content: message.content });
         return [...prev, message];
       });
     };
@@ -63,12 +112,14 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       toast.error('Failed to connect to chat server');
     };
 
+    console.log('Emitting getMessages:', { userId, receiverId });
     socketClient.getMessages(userId, receiverId, handleMessages);
     socketClient.onReceiveMessage(handleReceiveMessage);
     socketClient.onError(handleError);
     socketClient.socket.on('connect_error', handleConnectError);
 
     return () => {
+      console.log('Cleaning up socket listeners for:', { userId, receiverId });
       socketClient.socket.off('messageHistory', handleMessages);
       socketClient.socket.off('receiveMessage', handleReceiveMessage);
       socketClient.socket.off('error', handleError);
@@ -93,6 +144,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       let mediaUrl = '';
       if (media) {
         setIsUploading(true);
+        console.log('Uploading media to Cloudinary:', media.name);
         const signatureData: CloudinarySignatureResponse = await getCloudinarySignature();
         const { signature, timestamp, cloudName, apiKey, folder } = signatureData;
 
@@ -116,16 +168,24 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
 
         const uploadData = await uploadResponse.json();
         mediaUrl = uploadData.secure_url;
-        // toast.success('Media uploaded');
+        console.log('Media uploaded:', mediaUrl);
       }
 
       console.log('Sending message:', { userId, receiverId, content, mediaUrl, messageType: media ? 'media' : 'text' });
       socketClient.sendMessage(userId, receiverId, content, mediaUrl, media ? 'media' : 'text');
+      socketClient.emitMessageSent({ senderId: userId, receiverId });
       setContent('');
       setMedia(null);
       setShowEmojiPicker(false);
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message:', {
+        message: (error as Error).message,
+        stack: (error as Error).stack,
+        userId,
+        receiverId,
+        content,
+        media: media?.name,
+      });
       toast.error(
         error instanceof AxiosError
           ? error.response?.data?.message || 'Failed to send message'
@@ -154,7 +214,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
 
   return (
     <div className="flex flex-col h-full w-full max-w-full">
-      {/* Chat Header */}
       <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center">
         <div className="flex items-center flex-grow">
           <div className="relative">
@@ -171,8 +230,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
           </div>
         </div>
       </div>
-
-      {/* Chat Messages */}
       <div 
         ref={chatRef} 
         className="flex-grow p-4 overflow-y-auto bg-gray-50"
@@ -202,7 +259,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
 
             return (
               <div 
-                key={msg.messageId} // Use messageId for uniqueness
+                key={msg.messageId}
                 className={`mb-4 ${isCurrentUser ? 'flex justify-end' : 'flex justify-start'}`}
               >
                 <div className={`max-w-[70%]`}>
@@ -211,7 +268,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
                       className={`px-4 py-2 rounded-2xl ${
                         isCurrentUser
                           ? 'bg-black text-white rounded-tr-none'
-                          : 'bg-white text-gray-800 border border-gray-200 rounded-tl-none'
+                          : 'bg-white text-gray-900 border border-gray-200 rounded-tl-none'
                       }`}
                     >
                       <p className="break-words">{msg.content}</p>
@@ -247,8 +304,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
           })
         )}
       </div>
-
-      {/* Message Input */}
       <div className="px-4 py-3 bg-white border-t border-gray-200">
         {media && (
           <div className="mb-2 p-2 bg-gray-100 rounded-md flex items-center justify-between">
@@ -269,7 +324,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
           >
             <Paperclip className="h-5 w-5" />
           </button>
-          
           <div className="relative">
             <button
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -278,7 +332,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
             >
               <Smile className="h-5 w-5" />
             </button>
-            
             {showEmojiPicker && (
               <div className="absolute bottom-12 left-0 z-10">
                 <div className="shadow-xl rounded-lg">
@@ -287,7 +340,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
               </div>
             )}
           </div>
-          
           <input
             ref={fileInputRef}
             type="file"
@@ -295,7 +347,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
             onChange={(e) => setMedia(e.target.files ? e.target.files[0] : null)}
             className="hidden"
           />
-          
           <input
             type="text"
             value={content}
@@ -309,7 +360,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
               }
             }}
           />
-          
           <button
             onClick={handleSendMessage}
             disabled={isUploading || (!content && !media)}
