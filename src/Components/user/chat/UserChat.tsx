@@ -8,6 +8,7 @@ import { Paperclip, Send, Smile } from 'lucide-react';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
+import { useFetchReceiverDetails } from '@/hooks/user/chat/useReceiverDetailsQueries';
 
 interface ChatProps {
   userId: string;
@@ -20,10 +21,14 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
   const [media, setMedia] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [receiverName, setReceiverName] = useState(receiverId);
 
   const userData = useSelector((state: RootState) => state.user.User);
   
+  const { data: receiverData, isLoading: isReceiverLoading, isError: isReceiverError } = useFetchReceiverDetails(receiverId);
+  const receiverName = receiverData?.receiverDetails?.Name || receiverId;
+  const receiverProfileImage = receiverData?.receiverDetails?.profileImage || `https://placehold.co/40x40?text=${receiverName.charAt(0).toUpperCase()}`;
+  console.log("receiver details", receiverData, receiverName, receiverProfileImage);
+
   const chatRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -52,10 +57,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
         return;
       }
       setMessages(messages);
-      if (messages.length > 0 && messages[0].receiverId?._id === receiverId) {
-        const possibleName = messages[0].receiverId.Name;
-        if (possibleName) setReceiverName(possibleName);
-      }
     };
 
     const handleReceiveMessage = ({ chatId, message }: { chatId: string; message: Message }) => {
@@ -216,18 +217,32 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     <div className="flex flex-col h-full w-full max-w-full">
       <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center">
         <div className="flex items-center flex-grow">
-          <div className="relative">
-            <img 
-              src={`https://placehold.co/40x40?text=${receiverName.charAt(0).toUpperCase()}`} 
-              alt={receiverName} 
-              className="w-10 h-10 rounded-full"
-            />
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-          </div>
-          <div className="ml-3">
-            <h2 className="font-medium text-gray-900">{receiverName}</h2>
-            <p className="text-xs text-green-500">Online</p>
-          </div>
+          {isReceiverLoading ? (
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="ml-3">
+                <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse mt-2"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center">
+              <div className="relative">
+                <img 
+                  src={receiverProfileImage} 
+                  alt={receiverName} 
+                  className="w-10 h-10 rounded-full"
+                />
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+              </div>
+              <div className="ml-3">
+                <h2 className="font-medium text-gray-900">{receiverName}</h2>
+                <p className="text-xs text-green-500">
+                  {isReceiverError ? 'Offline' : 'Online'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div 

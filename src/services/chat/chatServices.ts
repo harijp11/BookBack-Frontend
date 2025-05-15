@@ -1,6 +1,33 @@
 import { UserAxiosInstance } from "@/APIs/user_axios";
 import { CloudinarySignatureResponse } from "@/types/ChatTypes";
 
+export interface IUserEntity {
+  _id: string
+  userId:string
+  Name?: string;
+  email: string;
+  password: string;
+  googleId: string;
+  phoneNumber?: string;
+  profileImage?:string;
+  onlineStatus?: "online" | "offline";
+  lastStatusUpdated: Date;
+  role: 'admin' | 'user'
+  isActive:boolean
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface response {
+  success:boolean
+  message: string
+}
+
+export interface ReceiverResponse {
+  response:response
+  receiver:IUserEntity
+}
+
 export const getCloudinarySignature = async (): Promise<CloudinarySignatureResponse> => {
   try {
     
@@ -29,3 +56,13 @@ export const fetchUserChatList = async () => {
       throw error;
     }
   };
+
+  export const fetchReceiverDetails = async (receiverId:string):Promise<ReceiverResponse> => {
+  try {
+    const response = await UserAxiosInstance.get(`/user/chat-list/receiver-details/${receiverId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching receiver details:", error);
+    throw error;
+  }
+};
