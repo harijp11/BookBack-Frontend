@@ -4,7 +4,7 @@ import { getCloudinarySignature } from '@/services/chat/chatServices';
 import { Message, CloudinarySignatureResponse } from '@/types/ChatTypes';
 import { useToast } from '@/hooks/ui/toast';
 import { AxiosError } from 'axios';
-import { Paperclip, Send, Smile } from 'lucide-react';
+import { Paperclip, Send, Smile, FileText } from 'lucide-react';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
@@ -197,8 +197,21 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     }
   };
 
-  const isVideo = (url: string) => {
-    return url.match(/\.(mp4|webm|ogg)$/i);
+  const getMediaType = (url: string): 'image' | 'video' | 'pdf' | 'text' | 'unknown' => {
+    const cleanUrl = url.split('?')[0];
+    const extension = cleanUrl.split('.').pop()?.toLowerCase();
+    if (!extension) return 'unknown';
+
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+    const videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi'];
+    const pdfExtensions = ['pdf'];
+    const textExtensions = ['txt'];
+
+    if (imageExtensions.includes(extension)) return 'image';
+    if (videoExtensions.includes(extension)) return 'video';
+    if (pdfExtensions.includes(extension)) return 'pdf';
+    if (textExtensions.includes(extension)) return 'text';
+    return 'unknown';
   };
 
   const handleFileClick = () => {
@@ -293,21 +306,58 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
                     </div>
                   ) : (
                     <div className={`rounded-lg overflow-hidden ${isCurrentUser ? 'ml-auto' : ''}`}>
-                      {isVideo(msg.mediaUrl!) ? (
-                        <video
-                          src={msg.mediaUrl}
-                          controls
-                          className="max-w-full rounded-lg shadow-sm"
-                          style={{ maxHeight: '250px' }}
-                        />
-                      ) : (
-                        <img
-                          src={msg.mediaUrl}
-                          alt="chat media"
-                          className="max-w-full rounded-lg shadow-sm"
-                          style={{ maxHeight: '250px' }}
-                        />
-                      )}
+                      {(() => {
+                        const mediaType = getMediaType(msg.mediaUrl!);
+                        switch (mediaType) {
+                          case 'image':
+                            return (
+                              <img
+                                src={msg.mediaUrl}
+                                alt="chat media"
+                                className="max-w-full rounded-lg shadow-sm"
+                                style={{ maxHeight: '250px' }}
+                              />
+                            );
+                          case 'video':
+                            return (
+                              <video
+                                src={msg.mediaUrl}
+                                controls
+                                className="max-w-full rounded-lg shadow-sm"
+                                style={{ maxHeight: '250px' }}
+                              />
+                            );
+                          case 'pdf':
+                          case 'text':
+                            return (
+                              <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg">
+                                <FileText className="h-8 w-8 text-gray-500 mr-2" />
+                                <a
+                                  href={msg.mediaUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {mediaType === 'pdf' ? 'View PDF' : 'View Text File'}
+                                </a>
+                              </div>
+                            );
+                          default:
+                            return (
+                              <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg">
+                                <FileText className="h-8 w-8 text-gray-500 mr-2" />
+                                <a
+                                  href={msg.mediaUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  View File
+                                </a>
+                              </div>
+                            );
+                        }
+                      })()}
                       <div className={`text-xs mt-1 ${isCurrentUser ? 'text-right text-gray-500' : 'text-gray-500'}`}>
                         {formatTime(msg.created_at)}
                       </div>
@@ -358,7 +408,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/mp4,video/webm"
+            accept="image/*,video/mp4,video/webm,application/pdf,text/plain"
             onChange={(e) => setMedia(e.target.files ? e.target.files[0] : null)}
             className="hidden"
           />
