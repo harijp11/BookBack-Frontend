@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Menu, BookOpen } from "lucide-react";
+import { Menu, BookOpen, MessageCircle, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { userLogout } from "@/store/slice/user_slice";
@@ -24,8 +24,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 import { AxiosError } from "axios";
 
-
-
 export function UserHeader() {
   // Original UserHeader functionality
   const user = useSelector((state: RootState) => state.user.User);
@@ -41,7 +39,6 @@ export function UserHeader() {
 
   // Move mobileMenuOpen state to this component
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -191,22 +188,40 @@ export function UserHeader() {
               className="md:hidden flex items-center space-x-4"
             >
               {isLoggedIn && user && (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                >
-                  <div className="bg-gray-200 rounded-full p-1">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={user.profileImage || "/placeholder-avatar.jpg"}
-                        alt={user.Name || "@username"}
-                      />
-                      <AvatarFallback>
-                        {user?.Name?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                </motion.button>
+                <>
+                  {/* New Mobile Chat Icon Button */}
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gray-200 rounded-full p-2"
+                  >
+                    <MessageCircle size={20} className="text-gray-700" />
+                  </motion.button>
+                  
+                  {/* New Mobile Notification Icon Button */}
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gray-200 rounded-full p-2"
+                  >
+                    <Bell size={20} className="text-gray-700" />
+                  </motion.button>
+                
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  >
+                    <div className="bg-gray-200 rounded-full p-1">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={user.profileImage || "/placeholder-avatar.jpg"}
+                          alt={user.Name || "@username"}
+                        />
+                        <AvatarFallback>
+                          {user?.Name?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                  </motion.button>
+                </>
               )}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
@@ -227,36 +242,56 @@ export function UserHeader() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="hidden md:block"
+              className="hidden md:flex items-center space-x-3"
             >
               {isLoggedIn && user ? (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center text-gray-700"
-                >
-                  <div className="bg-gray-200 rounded-full p-1 mr-2">
-                    <Avatar className="h-8 w-8">
-                      {user?.profileImage ? (
-                        <AvatarImage
-                          src={user.profileImage}
-                          alt={user.Name || "@username"}
-                          className="object-cover"
-                        />
-                      ) : (
-                        <AvatarFallback className="bg-black text-white border border-white">
-                        {user?.Name ? (
-                          user.Name.charAt(0).toUpperCase()
+                <>
+                  {/* New Desktop Chat Icon Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gray-200 rounded-full p-2"
+                  >
+                    <MessageCircle size={20} className="text-gray-700" />
+                  </motion.button>
+                  
+                  {/* New Desktop Notification Icon Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gray-200 rounded-full p-2"
+                  >
+                    <Bell size={20} className="text-gray-700" />
+                  </motion.button>
+                
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center text-gray-700"
+                  >
+                    <div className="bg-gray-200 rounded-full p-1 mr-2">
+                      <Avatar className="h-8 w-8">
+                        {user?.profileImage ? (
+                          <AvatarImage
+                            src={user.profileImage}
+                            alt={user.Name || "@username"}
+                            className="object-cover"
+                          />
                         ) : (
-                          <UserIcon className="h-5 w-5 text-white" />
+                          <AvatarFallback className="bg-black text-white border border-white">
+                          {user?.Name ? (
+                            user.Name.charAt(0).toUpperCase()
+                          ) : (
+                            <UserIcon className="h-5 w-5 text-white" />
+                          )}
+                        </AvatarFallback>
                         )}
-                      </AvatarFallback>
-                      )}
-                    </Avatar>
-                  </div>
-                  <span>{user.Name}</span>
-                </motion.button>
+                      </Avatar>
+                    </div>
+                    <span>{user.Name}</span>
+                  </motion.button>
+                </>
               ) : (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -388,6 +423,13 @@ export function UserHeader() {
 }
 
 function MobileNav() {
+  const navItems = [
+    { name: "Home", href: "/" },
+    { name: "Books", href: `/Books` },
+    { name: "Buyings", href: "/bought-books" },
+    { name: "Borrowels", href: "/borrowed-books" },
+  ];
+  
   return (
     <div className="flex flex-col space-y-3">
       <Link className="flex items-center space-x-2" to={"/"}>
