@@ -33,11 +33,7 @@ export function UserHeader() {
   const dispatch = useDispatch();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [dateTime, setDateTime] = useState(new Date());
-
-  // Original Navbar_1 state
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-
-  // Move mobileMenuOpen state to this component
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -54,7 +50,7 @@ export function UserHeader() {
         dispatch(userLogout());
         toast.success(data?.message);
         navigate("/auth");
-        setUserMenuOpen(false); // Ensure menu closes after logout
+        setUserMenuOpen(false);
       },
       onError: (error) => {
         if (error instanceof AxiosError) {
@@ -66,18 +62,27 @@ export function UserHeader() {
 
   // Handle profile navigation with menu closing
   const handleProfileClick = () => {
-    setUserMenuOpen(false); // Close menu first
+    setUserMenuOpen(false);
     setTimeout(() => {
       navigate(`/profile/${user?.id}`);
-    }, 50); // Small delay to ensure animation completes smoothly
+    }, 50);
   };
 
   // Handle logout button click
   const handleLogoutClick = () => {
-    setUserMenuOpen(false); // Close menu first
+    setUserMenuOpen(false);
     setTimeout(() => {
       setShowLogoutDialog(true);
-    }, 50); // Small delay to ensure animation completes smoothly
+    }, 50);
+  };
+
+  // New handlers for chat and notification navigation
+  const handleChatClick = () => {
+    navigate("/chats");
+  };
+
+  const handleNotificationClick = () => {
+    navigate("/notifications");
   };
 
   // Animation variants
@@ -99,8 +104,7 @@ export function UserHeader() {
   useEffect(() => {
     const interval = setInterval(() => {
       setDateTime(new Date());
-    }, 1000); // Update every second
-
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -108,7 +112,7 @@ export function UserHeader() {
   const time = dateTime.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    second:"2-digit",
+    second: "2-digit",
     hour12: true,
   });
 
@@ -126,21 +130,13 @@ export function UserHeader() {
       >
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="text-xs">
-            <span className="mr-4">
-              {day},{time}
-            </span>
+            <span className="mr-4">{day}, {time}</span>
             {isLoggedIn && <span>My Account</span>}
           </div>
           <div className="hidden md:flex space-x-4 text-xs">
-            <a href="#" className="hover:underline">
-              Contact
-            </a>
-            <a href="#" className="hover:underline">
-              Donate
-            </a>
-            <a href="#" className="hover:underline">
-              Support Us
-            </a>
+            <a href="#" className="hover:underline">Contact</a>
+            <a href="#" className="hover:underline">Donate</a>
+            <a href="#" className="hover:underline">Support Us</a>
           </div>
         </div>
       </motion.div>
@@ -189,22 +185,24 @@ export function UserHeader() {
             >
               {isLoggedIn && user && (
                 <>
-                  {/* New Mobile Chat Icon Button */}
+                  {/* Mobile Chat Icon Button */}
                   <motion.button
                     whileTap={{ scale: 0.95 }}
+                    onClick={handleChatClick}
                     className="bg-gray-200 rounded-full p-2"
                   >
                     <MessageCircle size={20} className="text-gray-700" />
                   </motion.button>
-                  
-                  {/* New Mobile Notification Icon Button */}
+
+                  {/* Mobile Notification Icon Button */}
                   <motion.button
                     whileTap={{ scale: 0.95 }}
+                    onClick={handleNotificationClick}
                     className="bg-gray-200 rounded-full p-2"
                   >
                     <Bell size={20} className="text-gray-700" />
                   </motion.button>
-                
+
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -246,24 +244,26 @@ export function UserHeader() {
             >
               {isLoggedIn && user ? (
                 <>
-                  {/* New Desktop Chat Icon Button */}
+                  {/* Desktop Chat Icon Button */}
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={handleChatClick}
                     className="bg-gray-200 rounded-full p-2"
                   >
                     <MessageCircle size={20} className="text-gray-700" />
                   </motion.button>
-                  
-                  {/* New Desktop Notification Icon Button */}
+
+                  {/* Desktop Notification Icon Button */}
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={handleNotificationClick}
                     className="bg-gray-200 rounded-full p-2"
                   >
                     <Bell size={20} className="text-gray-700" />
                   </motion.button>
-                
+
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -280,12 +280,12 @@ export function UserHeader() {
                           />
                         ) : (
                           <AvatarFallback className="bg-black text-white border border-white">
-                          {user?.Name ? (
-                            user.Name.charAt(0).toUpperCase()
-                          ) : (
-                            <UserIcon className="h-5 w-5 text-white" />
-                          )}
-                        </AvatarFallback>
+                            {user?.Name ? (
+                              user.Name.charAt(0).toUpperCase()
+                            ) : (
+                              <UserIcon className="h-5 w-5 text-white" />
+                            )}
+                          </AvatarFallback>
                         )}
                       </Avatar>
                     </div>
@@ -429,7 +429,7 @@ function MobileNav() {
     { name: "Buyings", href: "/bought-books" },
     { name: "Borrowels", href: "/borrowed-books" },
   ];
-  
+
   return (
     <div className="flex flex-col space-y-3">
       <Link className="flex items-center space-x-2" to={"/"}>

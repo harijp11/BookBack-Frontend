@@ -27,6 +27,7 @@ import SoldBookDetails from "@/Components/user/SaleContracts/SoldBookDetails";
 import ChatWrapper from "@/Components/user/chat/ChatWrapper";
 import UserList from "@/Components/user/chat/UserList";
 import ChatLayout from "@/layouts/chatLayout";
+import Notifications from "@/Components/user/notifications/userNotification";
 
 
 function UserRoutes() {
@@ -55,7 +56,7 @@ function UserRoutes() {
       
         <Route path="/chats/:receiverId" element={<ChatLayout/>} />
         <Route path="/chats" element={<UserList/>} />
-
+        <Route path="/notifications" element={<Notifications/>}/>
 
 
 
