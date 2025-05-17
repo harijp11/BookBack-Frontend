@@ -8,7 +8,8 @@ const ChatLayout: React.FC = () => {
   const { receiverId } = useParams<{ receiverId?: string }>();
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-50">
+   <div className="flex flex-col md:flex-row min-h-[75vh] bg-gray-50">
+
       <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 shadow-sm overflow-y-auto">
         <UserList />
       </div>

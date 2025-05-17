@@ -219,13 +219,20 @@ const PaginatedBooksComponent: React.FC = () => {
       header: 'Actions',
       accessor: (book: IBook) => (
         <div className="flex flex-col sm:flex-row items-center gap-2 justify-end">
-          <button
-            className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-200 text-xs font-medium rounded text-primary hover:text-primary-foreground hover:bg-primary transition-colors focus:outline-none"
-            onClick={() => handleEditBook(book._id)}
-          >
-            <Edit className="h-3.5 w-3.5 mr-1" />
-            Edit
-          </button>
+         <button
+  className={`w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-200 text-xs font-medium rounded transition-colors focus:outline-none
+    ${
+      (book.status === "Sold Out" || book.status === "Borrowed")
+        ? "cursor-not-allowed opacity-50 text-primary"
+        : "text-primary hover:text-primary-foreground hover:bg-primary"
+    }`}
+  onClick={() => handleEditBook(book._id)}
+  disabled={book.status === "Sold Out" || book.status === "Borrowed"}
+>
+  <Edit className="h-3.5 w-3.5 mr-1" />
+  Edit
+</button>
+
           {book.isActive ? (
             <button
               className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-red-600 hover:text-white hover:bg-red-600 transition-colors focus:outline-none"

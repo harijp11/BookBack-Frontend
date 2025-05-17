@@ -222,12 +222,13 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     setContent(prev => prev + emojiData.emoji);
   };
 
-  const formatTime = (timestamp: string | number) => {
+  const formatTime = (timestamp: Date | number | string) => {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div className="flex flex-col h-full w-full max-w-full">
+    <div className="flex flex-col h-[80vh] w-full max-w-full">
+
       <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center">
         <div className="flex items-center flex-grow">
           {isReceiverLoading ? (

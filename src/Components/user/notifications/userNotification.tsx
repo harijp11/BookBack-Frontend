@@ -82,11 +82,11 @@ export default function Index() {
           </Button>
           <Bell className="mr-2 h-6 w-6" />
           <h1 className="text-2xl font-bold">Notifications</h1>
-          {unreadCount > 0 && (
+          {/* {unreadCount > 0 && (
             <Badge variant="destructive" className="ml-2">
               {unreadCount} unread
             </Badge>
-          )}
+          )} */}
         </div>
         <Button 
           variant="outline" 
@@ -110,14 +110,14 @@ export default function Index() {
           >
             All
           </Button>
-          <Button 
+          {/* <Button 
             variant={filter === "unread" ? "default" : "ghost"}
             size="sm"
             onClick={() => { setFilter("unread"); setPage(1); }}
             className="mx-1 whitespace-nowrap"
           >
             Unread
-          </Button>
+          </Button> */}
           <Button 
             variant={filter === "warning" ? "default" : "ghost"}
             size="sm"
@@ -298,7 +298,7 @@ function NotificationCard({ notification, onMarkAsRead }: NotificationCardProps)
                 <p className="text-sm text-gray-700 mt-1 line-clamp-2">{notification.message}</p>
               </div>
               
-              {!notification.isRead && (
+              {/* {!notification.isRead && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -308,7 +308,7 @@ function NotificationCard({ notification, onMarkAsRead }: NotificationCardProps)
                   <Check className="h-4 w-4" />
                   <span className="sr-only">Mark as read</span>
                 </Button>
-              )}
+              )} */}
             </div>
             
             <div className="flex items-center justify-between mt-auto text-xs">

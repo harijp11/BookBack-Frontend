@@ -260,7 +260,7 @@ const BookView: React.FC = () => {
     book.rentAmount !== undefined &&
     book.rentAmount !== null &&
     book.rentAmount !== 0;
-  
+
   // Check if the book is available
   const isAvailable = book.status === "Available";
 
@@ -400,12 +400,14 @@ const BookView: React.FC = () => {
           <div className="lg:w-3/5 space-y-8">
             <div className="opacity-0 translate-y-8" ref={descriptionRef}>
               <div className="mb-6 flex items-center gap-3 flex-wrap">
-                <span className={cn(
-                  "px-4 py-1.5 text-sm font-medium rounded-full transform transition-all duration-300 hover:scale-105 shadow-sm",
-                  isAvailable 
-                    ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800" 
-                    : "bg-gradient-to-r from-red-100 to-red-200 text-red-800"
-                )}>
+                <span
+                  className={cn(
+                    "px-4 py-1.5 text-sm font-medium rounded-full transform transition-all duration-300 hover:scale-105 shadow-sm",
+                    isAvailable
+                      ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800"
+                      : "bg-gradient-to-r from-red-100 to-red-200 text-red-800"
+                  )}
+                >
                   {book.status || "Unknown Status"}
                 </span>
                 {book.categoryId?.name && (
@@ -495,71 +497,83 @@ const BookView: React.FC = () => {
                   </p>
                   <p className="text-gray-500">Book Owner</p>
                 </div>
+
+                <button
+                  onClick={() => navigate(`/chats/${book.ownerId?._id}`)}
+                  className="ml-auto bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
+                >
+                  Chat
+                </button>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-        {!isAvailable ? (
-          // Not Available button when status is not "Available"
-          <button
-            className="w-full bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 cursor-not-allowed opacity-80"
-            disabled={true}
-          >
-            <XCircle size={20} />
-            Not Available For Deal
-          </button>
-        ) : user && existingRequest && (requestStatus === "pending" || requestStatus === "accepted") ? (
-          <div className="w-full">
-            <button
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-4 rounded-xl font-semibold text-lg hover:shadow-lg hover:shadow-blue-200/50 transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1"
-              onClick={navigateToMyRequests}
-            >
-              <FileText size={20} />
-              View My Request
-            </button>
-          </div>
-        ) : (
-          <>
-            {isForRent && (
-              <button
-                className={cn(
-                  "flex-1 px-6 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transform hover:-translate-y-1 transition-all duration-300",
-                  hasRentAmount
-                    ? "bg-gradient-to-r from-gray-700 to-black text-white hover:shadow-lg hover:shadow-gray-200/50"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed",
-                  isSubmitting && "opacity-75 cursor-wait"
-                )}
-                disabled={!hasRentAmount || isSubmitting || checkingRequest}
-                onClick={() => handleContractRequest("borrow")}
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                {!isAvailable ? (
+                  // Not Available button when status is not "Available"
+                  <button
+                    className="w-full bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 cursor-not-allowed opacity-80"
+                    disabled={true}
+                  >
+                    <XCircle size={20} />
+                    Not Available For Deal
+                  </button>
+                ) : user &&
+                  existingRequest &&
+                  (requestStatus === "pending" ||
+                    requestStatus === "accepted") ? (
+                  <div className="w-full">
+                    <button
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-4 rounded-xl font-semibold text-lg hover:shadow-lg hover:shadow-blue-200/50 transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1"
+                      onClick={navigateToMyRequests}
+                    >
+                      <FileText size={20} />
+                      View My Request
+                    </button>
+                  </div>
                 ) : (
-                  <BookOpen size={20} />
-                )}
-                {hasRentAmount ? "Rent Now" : "Not Available for Rent"}
-              </button>
-            )}
+                  <>
+                    {isForRent && (
+                      <button
+                        className={cn(
+                          "flex-1 px-6 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transform hover:-translate-y-1 transition-all duration-300",
+                          hasRentAmount
+                            ? "bg-gradient-to-r from-gray-700 to-black text-white hover:shadow-lg hover:shadow-gray-200/50"
+                            : "bg-gray-200 text-gray-500 cursor-not-allowed",
+                          isSubmitting && "opacity-75 cursor-wait"
+                        )}
+                        disabled={
+                          !hasRentAmount || isSubmitting || checkingRequest
+                        }
+                        onClick={() => handleContractRequest("borrow")}
+                      >
+                        {isSubmitting ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        ) : (
+                          <BookOpen size={20} />
+                        )}
+                        {hasRentAmount ? "Rent Now" : "Not Available for Rent"}
+                      </button>
+                    )}
 
-            {isForSale && (
-              <button
-                className={cn(
-                  "flex-1 bg-white text-gray-800 border-2 border-gray-300 px-6 py-4 rounded-xl font-semibold text-lg hover:border-black hover:text-black transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1 shadow-md hover:shadow-lg",
-                  isSubmitting && "opacity-75 cursor-wait"
+                    {isForSale && (
+                      <button
+                        className={cn(
+                          "flex-1 bg-white text-gray-800 border-2 border-gray-300 px-6 py-4 rounded-xl font-semibold text-lg hover:border-black hover:text-black transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1 shadow-md hover:shadow-lg",
+                          isSubmitting && "opacity-75 cursor-wait"
+                        )}
+                        onClick={() => handleContractRequest("buy")}
+                        disabled={isSubmitting || checkingRequest}
+                      >
+                        {isSubmitting ? (
+                          <div className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin mr-2"></div>
+                        ) : (
+                          <DollarSign size={20} />
+                        )}
+                        Buy Now
+                      </button>
+                    )}
+                  </>
                 )}
-                onClick={() => handleContractRequest("buy")}
-                disabled={isSubmitting || checkingRequest}
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin mr-2"></div>
-                ) : (
-                  <DollarSign size={20} />
-                )}
-                Buy Now
-              </button>
-            )}
-          </>
-        )}
-      </div>
+              </div>
             </div>
           </div>
         </div>
@@ -598,18 +612,20 @@ const BookView: React.FC = () => {
                         alt={relatedBook.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
-                     {relatedBook.dealTypeId?.name && (
+                      {relatedBook.dealTypeId?.name && (
                         <div className="absolute top-4 left-4 px-3 py-1 bg-white/80 backdrop-blur-sm rounded-full text-xs font-medium">
                           {relatedBook.dealTypeId.name}
                         </div>
                       )}
                       {relatedBook.status && (
-                        <div className={cn(
-                          "absolute top-4 right-4 px-3 py-1 backdrop-blur-sm rounded-full text-xs font-medium",
-                          relatedBook.status === "Available" 
-                            ? "bg-green-500/80 text-white" 
-                            : "bg-red-500/80 text-white"
-                        )}>
+                        <div
+                          className={cn(
+                            "absolute top-4 right-4 px-3 py-1 backdrop-blur-sm rounded-full text-xs font-medium",
+                            relatedBook.status === "Available"
+                              ? "bg-green-500/80 text-white"
+                              : "bg-red-500/80 text-white"
+                          )}
+                        >
                           {relatedBook.status}
                         </div>
                       )}
@@ -642,7 +658,9 @@ const BookView: React.FC = () => {
           ) : (
             <div className="w-full py-16 flex justify-center">
               <div className="text-center">
-                <p className="text-gray-500 font-medium mb-4">No related books found</p>
+                <p className="text-gray-500 font-medium mb-4">
+                  No related books found
+                </p>
                 <Link
                   to="/"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-all duration-300 shadow-lg hover:shadow-black/20"

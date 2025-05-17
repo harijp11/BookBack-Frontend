@@ -235,7 +235,7 @@ const TopUsers: React.FC<TopUsersProps> = ({ users }) => (
         <tr className="border-b">
           <th className="py-2 text-gray-600">Name</th>
           <th className="py-2 text-gray-600">Transactions</th>
-          <th className="py-2 text-gray-600">Amount ($)</th>
+          {/* <th className="py-2 text-gray-600">Amount ($)</th> */}
         </tr>
       </thead>
       <tbody>
@@ -243,7 +243,7 @@ const TopUsers: React.FC<TopUsersProps> = ({ users }) => (
           <tr key={user.id} className="border-b hover:bg-gray-50">
             <td className="py-2">{user.name}</td>
             <td className="py-2">{user.transactions}</td>
-            <td className="py-2">{user.amount}</td>
+            {/* <td className="py-2">{user.amount}</td> */}
           </tr>
         ))}
       </tbody>

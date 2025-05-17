@@ -1,19 +1,29 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { 
-   Edit, Clock, DollarSign, Tag, ShoppingBag, 
-   MapPin, ChevronLeft, BookOpen, FileText, 
-   Calendar, Package, AlertCircle, 
-   Clock as ClockIcon, DollarSign as DollarSignIcon,
-} from "lucide-react"
-import { useBookDetails } from "@/hooks/common/useGetBookdetailsMutation" // Import the hook
-import { Card } from "@/Components/ui/card"
-import { FormFieldBook } from "@/Components/ui/form"
-import { useState } from 'react'
-import { useSelector } from "react-redux"
-import { RootState } from "@/store/store"
+import type React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Edit,
+  Clock,
+  DollarSign,
+  Tag,
+  ShoppingBag,
+  MapPin,
+  ChevronLeft,
+  BookOpen,
+  FileText,
+  Calendar,
+  Package,
+  AlertCircle,
+  Clock as ClockIcon,
+  DollarSign as DollarSignIcon,
+} from "lucide-react";
+import { useBookDetails } from "@/hooks/common/useGetBookdetailsMutation"; // Import the hook
+import { Card } from "@/Components/ui/card";
+import { FormFieldBook } from "@/Components/ui/form";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 // Types based on your provided interface
 export interface Category {
@@ -21,7 +31,7 @@ export interface Category {
   name: string;
 }
 
-export interface DealType { 
+export interface DealType {
   _id: string;
   name: string;
 }
@@ -40,7 +50,7 @@ export interface IBook {
   status: string;
   isActive: boolean;
   location: {
-    type: 'Point';
+    type: "Point";
     coordinates: [number, number];
   };
   locationName: string;
@@ -57,28 +67,31 @@ const Button = ({
   onClick,
   disabled = false,
 }: {
-  children: React.ReactNode
-  variant?: "default" | "outline" | "secondary" | "primary"
-  size?: "sm" | "md" | "lg"
-  className?: string
-  onClick?: () => void
-  disabled?: boolean
+  children: React.ReactNode;
+  variant?: "default" | "outline" | "secondary" | "primary";
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  onClick?: () => void;
+  disabled?: boolean;
 }) => {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50"
+    "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50";
 
   const variantStyles = {
-    default: "bg-gradient-to-r from-gray-800 to-black text-white hover:from-gray-700 hover:to-gray-900 border border-black",
+    default:
+      "bg-gradient-to-r from-gray-800 to-black text-white hover:from-gray-700 hover:to-gray-900 border border-black",
     outline: "border-2 border-black bg-white text-gray-800 hover:bg-gray-50",
-    secondary: "bg-gradient-to-r from-gray-100 to-gray-300 text-gray-800 hover:from-gray-200 hover:to-gray-400 border border-black",
-    primary: "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 border border-black",
-  }
+    secondary:
+      "bg-gradient-to-r from-gray-100 to-gray-300 text-gray-800 hover:from-gray-200 hover:to-gray-400 border border-black",
+    primary:
+      "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 border border-black",
+  };
 
   const sizeStyles = {
     sm: "h-9 px-3 text-sm",
     md: "h-10 px-4",
     lg: "h-11 px-6",
-  }
+  };
 
   return (
     <button
@@ -88,28 +101,35 @@ const Button = ({
     >
       {children}
     </button>
-  )
-}
+  );
+};
 
 const Loading = () => (
   <div className="flex justify-center items-center h-64">
     <div className="animate-spin rounded-full h-12 w-12 border-4 border-black border-t-transparent"></div>
   </div>
-)
+);
 
 const ErrorDisplay = ({ message }: { message: string }) => (
   <div className="bg-red-50 border-2 border-red-500 p-4 rounded-md text-center">
     <p className="text-red-600 font-medium">{message}</p>
   </div>
-)
+);
 
 // New Image Gallery Component with wider main image
-const ImageGallery = ({ images, bookId }: { images: string[], bookId?: string }) => {
-  const defaultImage = "https://m.media-amazon.com/images/I/81PNeyIYVfL._AC_UF1000,1000_QL80_.jpg";
+const ImageGallery = ({
+  images,
+  bookId,
+}: {
+  images: string[];
+  bookId?: string;
+}) => {
+  const defaultImage =
+    "https://m.media-amazon.com/images/I/81PNeyIYVfL._AC_UF1000,1000_QL80_.jpg";
   const allImages = images.length > 0 ? images : [defaultImage];
-  
+
   const [mainImage, setMainImage] = useState(allImages[0]);
-  
+
   return (
     <div className="flex flex-col gap-2 w-60">
       {/* Main image - wider and fixed height */}
@@ -122,20 +142,22 @@ const ImageGallery = ({ images, bookId }: { images: string[], bookId?: string })
           />
         </div>
       </div>
-      
+
       {/* Thumbnails */}
       {allImages.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {allImages.map((img, index) => (
-            <div 
+            <div
               key={index}
               onClick={() => setMainImage(img)}
               className={`cursor-pointer border-2 p-1 rounded-md w-16 h-16 flex-shrink-0 transition-all duration-200 ${
-                mainImage === img ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-500'
+                mainImage === img
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:border-gray-500"
               }`}
             >
-              <img 
-                src={img} 
+              <img
+                src={img}
                 alt={`Thumbnail ${index + 1}`}
                 className="w-full h-full object-cover rounded"
               />
@@ -143,10 +165,10 @@ const ImageGallery = ({ images, bookId }: { images: string[], bookId?: string })
           ))}
         </div>
       )}
-      
+
       <div className="mt-1 text-center">
         <div className="bg-black text-white py-1 rounded font-medium text-xs">
-          ID: {bookId ? bookId.substring(0, 8) + '...' : 'No ID'}
+          ID: {bookId ? bookId.substring(0, 8) + "..." : "No ID"}
         </div>
       </div>
     </div>
@@ -156,15 +178,15 @@ const ImageGallery = ({ images, bookId }: { images: string[], bookId?: string })
 // Format date helper
 const formatDate = (date: Date | string | undefined): string => {
   if (!date) return "N/A";
-  
-  if (typeof date === 'string') {
+
+  if (typeof date === "string") {
     date = new Date(date);
   }
-  
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 
@@ -172,16 +194,16 @@ const formatDate = (date: Date | string | undefined): string => {
 const BookDetailsPage: React.FC = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const { data: book, isLoading, isError, error } = useBookDetails(bookId);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const user = useSelector((state:RootState)=>state.user.User)
+  const user = useSelector((state: RootState) => state.user.User);
   // For navigating back
   const handleBack = () => {
     window.history.back();
   };
 
   const handleEdit = () => {
-    navigate(`/editBook/${user?._id}/${bookId}`)
+    navigate(`/editBook/${user?._id}/${bookId}`);
   };
 
   return (
@@ -196,9 +218,13 @@ const BookDetailsPage: React.FC = () => {
             View Book Details
           </h1>
           <div className="flex items-center text-sm text-gray-600 mt-3 border-b-2 border-gray-200 pb-3">
-            <span className="hover:text-black cursor-pointer transition-colors duration-200">My Account</span>
+            <span className="hover:text-black cursor-pointer transition-colors duration-200">
+              My Account
+            </span>
             <span className="mx-2">•</span>
-            <span className="hover:text-black cursor-pointer transition-colors duration-200">My Books</span>
+            <span className="hover:text-black cursor-pointer transition-colors duration-200">
+              My Books
+            </span>
             <span className="mx-2">•</span>
             <span className="text-black font-medium">View Book</span>
           </div>
@@ -206,11 +232,17 @@ const BookDetailsPage: React.FC = () => {
 
         <Card className="overflow-hidden">
           {isLoading && <Loading />}
-          
+
           {isError && (
-            <ErrorDisplay message={error instanceof Error ? error.message : "Failed to load book details"} />
+            <ErrorDisplay
+              message={
+                error instanceof Error
+                  ? error.message
+                  : "Failed to load book details"
+              }
+            />
           )}
-          
+
           {book && (
             <div className="p-6">
               <div className="flex flex-col md:flex-row gap-8">
@@ -221,22 +253,26 @@ const BookDetailsPage: React.FC = () => {
 
                 {/* Book Details */}
                 <div className="flex-1">
-                  <FormFieldBook 
+                  <FormFieldBook
                     icon={<BookOpen className="w-5 h-5 text-blue-600" />}
-                    label="Name" 
-                    value={<div className="font-semibold text-lg">{book.name}</div>}
+                    label="Name"
+                    value={
+                      <div className="font-semibold text-lg">{book.name}</div>
+                    }
                   />
-                  
-                  <FormFieldBook 
+
+                  <FormFieldBook
                     icon={<FileText className="w-5 h-5 text-gray-600" />}
-                    label="Description" 
-                    value={<div className="text-gray-700">{book.description}</div>}
+                    label="Description"
+                    value={
+                      <div className="text-gray-700">{book.description}</div>
+                    }
                   />
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormFieldBook 
+                    <FormFieldBook
                       icon={<Tag className="w-5 h-5 text-green-600" />}
-                      label="Category" 
+                      label="Category"
                       value={
                         <div className="flex items-center">
                           <span className="inline-block bg-green-100 border border-green-300 text-green-800 rounded-full px-3 py-1 font-medium">
@@ -245,10 +281,10 @@ const BookDetailsPage: React.FC = () => {
                         </div>
                       }
                     />
-                    
-                    <FormFieldBook 
+
+                    <FormFieldBook
                       icon={<DollarSign className="w-5 h-5 text-amber-600" />}
-                      label="Original Price" 
+                      label="Original Price"
                       value={
                         <div className="font-semibold text-amber-700">
                           Rs. {book.originalAmount.toLocaleString()}
@@ -256,11 +292,11 @@ const BookDetailsPage: React.FC = () => {
                       }
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormFieldBook 
+                    <FormFieldBook
                       icon={<Calendar className="w-5 h-5 text-purple-600" />}
-                      label="Posted Date" 
+                      label="Posted Date"
                       value={
                         <div className="flex items-center">
                           <span className="bg-purple-100 border border-purple-300 text-purple-800 rounded-md px-2 py-1">
@@ -269,10 +305,10 @@ const BookDetailsPage: React.FC = () => {
                         </div>
                       }
                     />
-                    
-                    <FormFieldBook 
+
+                    <FormFieldBook
                       icon={<Package className="w-5 h-5 text-orange-600" />}
-                      label="Deal Available" 
+                      label="Deal Available"
                       value={
                         <div className="bg-orange-100 border border-orange-300 text-orange-800 rounded-md px-2 py-1 inline-block font-medium">
                           {book.dealTypeId.name}
@@ -280,24 +316,33 @@ const BookDetailsPage: React.FC = () => {
                       }
                     />
                   </div>
-                  
-                  <FormFieldBook 
+
+                  <FormFieldBook
                     icon={<AlertCircle className="w-5 h-5 text-red-600" />}
-                    label="Status" 
+                    label="Status"
                     value={
                       <div className="flex items-center">
-                        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${book.isActive ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                        <span className={`font-medium ${book.isActive ? 'text-green-700' : 'text-red-700'}`}>
-                          {book.status} {book.isActive ? '(Active)' : '(Inactive)'}
+                        <span
+                          className={`inline-block w-3 h-3 rounded-full mr-2 ${
+                            book.isActive ? "bg-green-500" : "bg-red-500"
+                          }`}
+                        ></span>
+                        <span
+                          className={`font-medium ${
+                            book.isActive ? "text-green-700" : "text-red-700"
+                          }`}
+                        >
+                          {book.status}{" "}
+                          {book.isActive ? "(Active)" : "(Inactive)"}
                         </span>
                       </div>
                     }
                   />
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormFieldBook 
+                    <FormFieldBook
                       icon={<ClockIcon className="w-5 h-5 text-blue-600" />}
-                      label="Minimum Rental Days" 
+                      label="Minimum Rental Days"
                       value={
                         <div className="flex items-center">
                           <span className="bg-blue-100 border border-blue-300 text-blue-800 rounded-md px-3 py-1 font-medium">
@@ -306,10 +351,12 @@ const BookDetailsPage: React.FC = () => {
                         </div>
                       }
                     />
-                    
-                    <FormFieldBook 
-                      icon={<DollarSignIcon className="w-5 h-5 text-green-600" />}
-                      label="Rental Amount" 
+
+                    <FormFieldBook
+                      icon={
+                        <DollarSignIcon className="w-5 h-5 text-green-600" />
+                      }
+                      label="Rental Amount"
                       value={
                         <div className="bg-green-100 border border-green-300 text-green-800 rounded-md px-3 py-1 inline-block font-medium">
                           Rs. {book.rentAmount.toLocaleString()}
@@ -317,31 +364,38 @@ const BookDetailsPage: React.FC = () => {
                       }
                     />
                   </div>
-                  
-                  <FormFieldBook 
+
+                  <FormFieldBook
                     icon={<MapPin className="w-5 h-5 text-pink-600" />}
-                    label="Location" 
+                    label="Location"
                     value={
                       <div className="flex items-center">
                         <span className="font-medium">{book.locationName}</span>
                       </div>
                     }
                   />
-                  
+
                   <div className="flex gap-3 mt-6">
-                    <Button variant="outline" size="md" className="flex-1">
+                    {/* <Button variant="outline" size="md" className="flex-1">
                       <ShoppingBag className="w-4 h-4 mr-2" />
                       Checkout Details
                     </Button>
                     <Button variant="primary" size="md" className="flex-1">
                       <Clock className="w-4 h-4 mr-2" />
                       Rental Details
-                    </Button>
-                    <Button 
-                      variant="default" 
-                      size="md" 
-                      className="flex-1"
+                    </Button> */}
+                    <Button
+                      variant="default"
+                      size="md"
+                      className={`flex-1 transition-opacity ${
+                        book.status === "Sold Out" || book.status === "Borrowed"
+                          ? "cursor-not-allowed opacity-50"
+                          : ""
+                      }`}
                       onClick={handleEdit}
+                      disabled={
+                        book.status === "Sold Out" || book.status === "Borrowed"
+                      }
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Book
@@ -354,7 +408,7 @@ const BookDetailsPage: React.FC = () => {
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default BookDetailsPage
+export default BookDetailsPage;
