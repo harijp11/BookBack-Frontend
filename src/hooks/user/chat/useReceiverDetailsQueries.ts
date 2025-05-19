@@ -9,13 +9,7 @@ export const useFetchReceiverDetails = (receiverId: string) => {
       console.log("fetchReceiverDetails Response:", response);
       return response;
     },
-    enabled: !!receiverId, // Only fetch if receiverId is non-empty
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    onError: (error) => {
-      console.error("useFetchReceiverDetails Error:", error);
-    },
-    onSuccess: (data) => {
-      console.log("useFetchReceiverDetails Success:", data);
-    },
+    enabled: !!receiverId, 
+    staleTime: 5 * 60 * 1000, 
   });
 };

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchUserChatList } from "@/services/chat/chatServices";
@@ -9,12 +10,17 @@ import { RootState } from "@/store/store";
 import { MessageSquare, User, CircleDot } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-const UserList: React.FC = () => {
+
+interface UserListProps {
+  onClose: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const UserList: React.FC<UserListProps> = ({ onClose }) => {
   const [chats, setChats] = useState<ChatPreview[]>([]);
   const [newMessageUsers, setNewMessageUsers] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const  toast  = useToast();
+  const toast = useToast();
   const userData = useSelector((state: RootState) => state.user.User);
   const { receiverId } = useParams();
   
@@ -37,6 +43,9 @@ const UserList: React.FC = () => {
               chat.userId1._id === userData?._id
                 ? chat.userId2.profileImage
                 : chat.userId1.profileImage,
+            onlineStatus: chat.userId1._id === userData?._id
+                ? chat.userId2.onlineStatus
+                : chat.userId1.onlineStatus,    
             lastMessage: chat.last_message,
             lastMessageTime: chat.updated_at,
           })
@@ -45,18 +54,11 @@ const UserList: React.FC = () => {
         console.log("mappedChats:", mappedChats);
       } else {
         setChats([]);
-        toast.info(
-         "No Chats available",
-          );
+        toast.info("No Chats available");
       }
     } catch (error) {
       console.error("Error fetching chat list:", error);
       setChats([]);
-      // toast({
-      //   title: "Error",
-      //   description: "Error fetching chat list",
-      //   variant: "destructive"
-      // });
     } finally {
       setLoading(false);
     }
@@ -64,8 +66,7 @@ const UserList: React.FC = () => {
 
   useEffect(() => {
     if (!userData?._id) {
-      toast.error( "User not authenticated",
-       );
+      toast.error("Please log in to view chats");
       setLoading(false);
       return;
     }
@@ -85,7 +86,7 @@ const UserList: React.FC = () => {
         profileImage:
           (chat.userId1._id === userData._id
             ? chat.userId2.profileImage
-            : chat.userId1.profileImage) || undefined,
+            : chat.userId1.profileImage),
         lastMessage: chat.last_message,
         lastMessageTime: chat.updated_at,
       };
@@ -97,8 +98,8 @@ const UserList: React.FC = () => {
         }
         return [newChat, ...prev].sort(
           (a, b) =>
-            new Date(b.lastMessageTime).getTime() -
-            new Date(a.lastMessageTime).getTime()
+            new Date(b.lastMessageTime || 0).getTime() -
+            new Date(a.lastMessageTime || 0).getTime()
         );
       });
       setNewMessageUsers((prev) => new Set(prev).add(newChat.userId));
@@ -115,11 +116,6 @@ const UserList: React.FC = () => {
 
     const handleError = ({ message }: { message: string }) => {
       console.error('Socket error:', message);
-      toast({
-        title: "Error",
-        description: message,
-        variant: "destructive"
-      });
     };
 
     socketClient.onNewChat(handleNewChat);
@@ -141,12 +137,14 @@ const UserList: React.FC = () => {
       return newSet;
     });
     navigate(`/chats/${userId}`);
+    onClose(false);
   };
   
-  const formatMessageTime = (time: string) => {
+  const formatMessageTime = (time: string | Date) => {
     try {
       return formatDistanceToNow(new Date(time), { addSuffix: true });
     } catch (error) {
+      console.error('Error formatting time:', error);
       return "";
     }
   };
@@ -171,7 +169,7 @@ const UserList: React.FC = () => {
 
   return (
     <div className="bg-white dark:bg-black border-r border-gray-200 dark:border-gray-800 h-full overflow-y-auto">
-      <div className="sticky top-0 bg-white dark:bg-black z-10 p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className=" bg-white dark:bg-black p-4 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
             <MessageSquare className="h-5 w-5 mr-2" />
@@ -203,17 +201,29 @@ const UserList: React.FC = () => {
               <div className="flex items-center">
                 <div className="relative">
                   {chat.profileImage ? (
+                    <>
                     <img
                       src={chat.profileImage}
                       alt={chat.userName}
                       className="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                     />
+                    {chat.onlineStatus === "online" ?
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                      : <span className="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-white rounded-full"></span>
+                    }
+                    </>
                   ) : (
+                    <>
                     <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 flex items-center justify-center font-medium">
                       {chat.userName.charAt(0).toUpperCase()}
                     </div>
+                    {chat.onlineStatus === "online" ?
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                      : <span className="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-white rounded-full"></span>
+                    }
+                    </>
                   )}
-                  {newMessageUsers.has(chat.userId) && (
+                  {newMessageUsers.has(chat?.userId) && (
                     <div className="absolute -top-1 -right-1">
                       <CircleDot className="h-5 w-5 text-blue-500 fill-blue-500 stroke-white dark:stroke-black" />
                     </div>
@@ -223,11 +233,11 @@ const UserList: React.FC = () => {
                 <div className="ml-4 flex-1">
                   <div className="flex justify-between items-start">
                     <h4 className="font-medium text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-[180px]">
-                      {chat.userName}
+                      {chat?.userName}
                     </h4>
-                    {chat.lastMessageTime && (
+                    {chat?.lastMessageTime && (
                       <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                        {formatMessageTime(chat.lastMessageTime)}
+                        {formatMessageTime(chat?.lastMessageTime)}
                       </span>
                     )}
                   </div>

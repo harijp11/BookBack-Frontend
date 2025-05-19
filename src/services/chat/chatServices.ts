@@ -25,7 +25,8 @@ interface response {
 
 export interface ReceiverResponse {
   response:response
-  receiver:IUserEntity
+  receiverDetails
+:IUserEntity
 }
 
 export const getCloudinarySignature = async (): Promise<CloudinarySignatureResponse> => {

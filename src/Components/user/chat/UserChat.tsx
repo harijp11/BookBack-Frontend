@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { socketClient } from '@/socket/socket';
 import { getCloudinarySignature } from '@/services/chat/chatServices';
@@ -24,13 +25,15 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
 
   const userData = useSelector((state: RootState) => state.user.User);
   
-  const { data: receiverData, isLoading: isReceiverLoading, isError: isReceiverError } = useFetchReceiverDetails(receiverId);
+  const { data: receiverData, isLoading: isReceiverLoading, error: receiverError } = useFetchReceiverDetails(receiverId);
   const receiverName = receiverData?.receiverDetails?.Name || receiverId;
   const receiverProfileImage = receiverData?.receiverDetails?.profileImage || `https://placehold.co/40x40?text=${receiverName.charAt(0).toUpperCase()}`;
+  const receiverOnlineStatus = receiverData?.receiverDetails?.onlineStatus || "offline";
   console.log("receiver details", receiverData, receiverName, receiverProfileImage);
 
   const chatRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const processedMessageIds = useRef<Set<string>>(new Set());
   const toast = useToast();
 
   useEffect(() => {
@@ -43,6 +46,12 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     if (userId === receiverId) {
       console.error('Invalid chat configuration: userId and receiverId are the same', { userId, receiverId });
       toast.error('Cannot open chat with yourself');
+      return;
+    }
+
+    if (!userData?._id) {
+      console.error('User not authenticated', { userId });
+      toast.error('Please log in to use chat');
       return;
     }
 
@@ -62,9 +71,9 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     const handleReceiveMessage = ({ chatId, message }: { chatId: string; message: Message }) => {
       console.log('Received message:', { chatId, message });
       console.log('Checking message for chat:', {
-        messageId: message.messageId,
-        senderId: message.senderId._id,
-        receiverId: message.receiverId._id,
+        messageId: message._id,
+        senderId: message.senderId?._id,
+        receiverId: message.receiverId?._id,
         currentUserId: userId,
         currentReceiverId: receiverId,
       });
@@ -78,12 +87,12 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       }
 
       const isMessageForCurrentChat =
-        (senderId === receiverId && messageReceiverId === userId) || // Incoming message from other user
-        (senderId === userId && messageReceiverId === receiverId);  // Outgoing message from current user
+        (senderId === receiverId && messageReceiverId === userId) ||
+        (senderId === userId && messageReceiverId === receiverId);
 
       if (!isMessageForCurrentChat) {
         console.log('Message ignored (wrong chat):', {
-          messageId: message.messageId,
+          messageId: message._id,
           senderId,
           receiverId: messageReceiverId,
           expectedSenderId: receiverId,
@@ -94,28 +103,42 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       }
 
       setMessages((prev) => {
-        if (prev.some((msg) => msg.messageId === message.messageId)) {
-          console.log('Duplicate message ignored:', message.messageId);
+        if (prev.some((msg) => msg._id === message._id)) {
+          console.log('Duplicate message ignored:', message._id);
           return prev;
         }
-        console.log('Adding message to chat:', { messageId: message.messageId, content: message.content });
+        console.log('Adding message to chat:', { messageId: message._id, content: message.content });
         return [...prev, message];
       });
     };
 
+    const handleMessageStatusUpdated = ({ messageId, status }: { messageId: string; status: 'sent' | 'delivered' | 'read' }) => {
+      console.log('Updating message status:', { messageId, status });
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, status } : msg
+        )
+      );
+    };
+
     const handleError = ({ message }: { message: string }) => {
-      console.error('Socket error:', message);
+      console.error('Socket error:', message, { userId, receiverId });
+      if (message === 'Failed to update message status') {
+        console.warn('Suppressing toast for known status update error');
+        return; // Suppress repetitive toasts
+      }
       toast.error(message);
     };
 
     const handleConnectError = (error: Error) => {
-      console.error('Socket.IO connection error:', error);
+      console.error('Socket.IO connection error:', error, { userId, receiverId });
       toast.error('Failed to connect to chat server');
     };
 
     console.log('Emitting getMessages:', { userId, receiverId });
     socketClient.getMessages(userId, receiverId, handleMessages);
     socketClient.onReceiveMessage(handleReceiveMessage);
+    socketClient.onMessageStatusUpdated(handleMessageStatusUpdated);
     socketClient.onError(handleError);
     socketClient.socket.on('connect_error', handleConnectError);
 
@@ -123,11 +146,37 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       console.log('Cleaning up socket listeners for:', { userId, receiverId });
       socketClient.socket.off('messageHistory', handleMessages);
       socketClient.socket.off('receiveMessage', handleReceiveMessage);
+      socketClient.socket.off('messageStatusUpdated', handleMessageStatusUpdated);
       socketClient.socket.off('error', handleError);
       socketClient.socket.off('connect_error', handleConnectError);
       socketClient.disconnect();
     };
-  }, [userId, receiverId]);
+  }, [userId, receiverId, userData?._id]);
+
+  useEffect(() => {
+    if (receiverError) {
+      console.error('Receiver details fetch failed:', receiverError);
+      toast.error('Failed to load receiver details');
+    }
+  }, [receiverError]);
+
+  useEffect(() => {
+    messages.forEach((msg) => {
+      const senderId = typeof msg.senderId === 'object' ? msg.senderId._id : msg.senderId;
+      if (
+        senderId === receiverId &&
+        msg.status !== 'read' &&
+        !processedMessageIds.current.has(msg._id) &&
+        msg._id
+      ) {
+        console.log('Emitting read status for message:', { messageId: msg._id, status: 'read' });
+        socketClient.updateMessageStatus(msg._id, 'read');
+        processedMessageIds.current.add(msg._id);
+      } else if (!msg._id) {
+        console.warn('Skipping invalid message for status update:', { message: msg });
+      }
+    });
+  }, [messages, receiverId]);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -226,9 +275,21 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'sent':
+        return 'text-gray-500';
+      case 'delivered':
+        return 'text-blue-500';
+      case 'read':
+        return 'text-green-500';
+      default:
+        return 'text-gray-500';
+    }
+  };
+
   return (
     <div className="flex flex-col h-[80vh] w-full max-w-full">
-
       <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center">
         <div className="flex items-center flex-grow">
           {isReceiverLoading ? (
@@ -247,12 +308,15 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
                   alt={receiverName} 
                   className="w-10 h-10 rounded-full"
                 />
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                {receiverOnlineStatus === "online" ?
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                  : <span className="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-white rounded-full"></span>
+                }
               </div>
               <div className="ml-3">
                 <h2 className="font-medium text-gray-900">{receiverName}</h2>
-                <p className="text-xs text-green-500">
-                  {isReceiverError ? 'Offline' : 'Online'}
+                <p className={receiverOnlineStatus === "online" ? "text-xs text-green-500" : "text-xs text-gray-500"}>
+                  {receiverOnlineStatus}
                 </p>
               </div>
             </div>
@@ -273,22 +337,15 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
             <p className="text-sm">Start the conversation by sending a message</p>
           </div>
         ) : (
-          messages.map((msg, index) => {
+          messages.map((msg) => {
             const senderId = typeof msg.senderId === 'object' && msg.senderId?._id 
               ? msg.senderId._id 
               : msg.senderId;
             const isCurrentUser = senderId === userData?._id;
-            const prevMessage = index > 0 ? messages[index - 1] : null;
-            const prevSenderId = prevMessage 
-              ? (typeof prevMessage.senderId === 'object' && prevMessage.senderId?._id 
-                  ? prevMessage.senderId._id 
-                  : prevMessage.senderId)
-              : null;
-            const showSender = !prevMessage || prevSenderId !== senderId;
 
             return (
               <div 
-                key={msg.messageId}
+                key={msg._id}
                 className={`mb-4 ${isCurrentUser ? 'flex justify-end' : 'flex justify-start'}`}
               >
                 <div className={`max-w-[70%]`}>
@@ -301,8 +358,11 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
                       }`}
                     >
                       <p className="break-words">{msg.content}</p>
-                      <div className="text-xs mt-1 opacity-70 text-right">
-                        {formatTime(msg.created_at)}
+                      <div className="text-xs mt-1 opacity-70 text-right flex justify-end items-center gap-2">
+                        <span>{formatTime(msg.created_at)}</span>
+                        <span className={getStatusStyle(msg.status)}>
+                          {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
+                        </span>
                       </div>
                     </div>
                   ) : (
@@ -359,8 +419,11 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
                             );
                         }
                       })()}
-                      <div className={`text-xs mt-1 ${isCurrentUser ? 'text-right text-gray-500' : 'text-gray-500'}`}>
-                        {formatTime(msg.created_at)}
+                      <div className={`text-xs mt-1 flex justify-end items-center gap-2 ${isCurrentUser ? 'text-right text-gray-500' : 'text-gray-500'}`}>
+                        <span>{formatTime(msg.created_at)}</span>
+                        <span className={getStatusStyle(msg.status)}>
+                          {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
+                        </span>
                       </div>
                     </div>
                   )}

@@ -1,15 +1,17 @@
+
+
 import { io, Socket } from 'socket.io-client';
 import { MessageHistory, ChatMessage, Chat } from '@/types/ChatTypes';
 
 const SOCKET_URL = 'http://localhost:5000';
 
 export class SocketClient {
-  private socket: Socket;
+  public socket: Socket;
   private isInitialized: boolean = false;
 
   constructor() {
     this.socket = io(SOCKET_URL, { 
-      autoConnect: false,
+      autoConnect: true,
       reconnection: true,   
       reconnectionAttempts: 5,
       reconnectionDelay: 1000
@@ -19,7 +21,7 @@ export class SocketClient {
       console.log('Socket connected:', this.socket.id);
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on('connect_error', (error: Error) => {
       console.error('Socket connection error:', error);
     });
   }
@@ -46,8 +48,8 @@ export class SocketClient {
   getMessages(senderId: string, receiverId: string, callback: (data: MessageHistory) => void): void {
     console.log('Emitting getMessages:', { senderId, receiverId });
     this.socket.emit('getMessages', { senderId, receiverId });
-    this.socket.off('messageHistory'); // Remove previous listeners
-    this.socket.on('messageHistory', (data) => {
+    this.socket.off('messageHistory');
+    this.socket.on('messageHistory', (data: MessageHistory) => {
       console.log('Received messageHistory:', data);
       callback(data);
     });
@@ -63,13 +65,18 @@ export class SocketClient {
     this.socket.emit('messageSent', data);
   }
 
+  updateMessageStatus(messageId: string, status: 'delivered' | 'read'): void {
+    console.log('Emitting updateMessageStatus:', { messageId, status });
+    this.socket.emit('updateMessageStatus', { messageId, status });
+  }
+
   onReceiveMessage(callback: (data: ChatMessage) => void): void {
-    this.socket.off('receiveMessage'); // Remove previous listeners
-    this.socket.on('receiveMessage', (data) => {
+    this.socket.off('receiveMessage');
+    this.socket.on('receiveMessage', (data: ChatMessage) => {
       console.log('Received message:', data);
       console.log('Message details:', {
         chatId: data.chatId,
-        messageId: data.message.messageId,
+        messageId: data.message._id,
         senderId: data.message.senderId,
         receiverId: data.message.receiverId,
         content: data.message.content,
@@ -79,24 +86,32 @@ export class SocketClient {
   }
 
   onNewChat(callback: (data: { chat: Chat }) => void): void {
-    this.socket.off('newChat'); // Remove previous listeners
-    this.socket.on('newChat', (data) => {
+    this.socket.off('newChat');
+    this.socket.on('newChat', (data: { chat: Chat }) => {
       console.log('Received newChat:', data);
       callback(data);
     });
   }
 
   onMessageSent(callback: (data: { senderId: string; receiverId: string }) => void): void {
-    this.socket.off('messageSent'); // Remove previous listeners
-    this.socket.on('messageSent', (data) => {
+    this.socket.off('messageSent');
+    this.socket.on('messageSent', (data: { senderId: string; receiverId: string }) => {
       console.log('Received messageSent:', data);
       callback(data);
     });
   }
 
+  onMessageStatusUpdated(callback: (data: { messageId: string; status: 'sent' | 'delivered' | 'read' }) => void): void {
+    this.socket.off('messageStatusUpdated');
+    this.socket.on('messageStatusUpdated', (data: { messageId: string; status: 'sent' | 'delivered' | 'read' }) => {
+      console.log('Received messageStatusUpdated:', data);
+      callback(data);
+    });
+  }
+
   onError(callback: (data: { message: string }) => void): void {
-    this.socket.off('error'); // Remove previous listeners
-    this.socket.on('error', (data) => {
+    this.socket.off('error');
+    this.socket.on('error', (data: { message: string }) => {
       console.log('Socket error received:', data);
       callback(data);
     });
@@ -104,3 +119,4 @@ export class SocketClient {
 }
 
 export const socketClient = new SocketClient();
+

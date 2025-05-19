@@ -1,11 +1,13 @@
 
 export interface Message {
+  _id:string
   messageId:string;
     chatId: string;
     senderId: User;
     receiverId: User;
     content?: string;
     mediaUrl?: string;
+    status: 'sent' | 'delivered' | 'read'
     messageType: 'text' | 'media';
     created_at: Date
     updated_at:Date
@@ -43,6 +45,7 @@ export interface Message {
     _id:string
     Name:string
     profileImage:string
+    onlineStatus:string
   }
   
   export interface Chat {
@@ -59,6 +62,7 @@ export interface ChatPreview {
     userId: string;
     profileImage:string
     userName: string;
+    onlineStatus?:string
     lastMessage?: string;
     lastMessageTime?: Date;
   }

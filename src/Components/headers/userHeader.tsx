@@ -46,9 +46,9 @@ export function UserHeader() {
   // UserHeader's logout functionality
   const logoutUser = () => {
     logoutReq(undefined, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         dispatch(userLogout());
-        toast.success(data?.message);
+        toast.success("LogOuted successfully");
         navigate("/auth");
         setUserMenuOpen(false);
       },
