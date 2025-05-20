@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { socketClient } from '@/socket/socket';
 import { getCloudinarySignature } from '@/services/chat/chatServices';
@@ -125,7 +124,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       console.error('Socket error:', message, { userId, receiverId });
       if (message === 'Failed to update message status') {
         console.warn('Suppressing toast for known status update error');
-        return; // Suppress repetitive toasts
+        return;
       }
       toast.error(message);
     };
@@ -274,19 +273,26 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
   const formatTime = (timestamp: Date | number | string) => {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+const getStatusStyle = (status: string, type: string) => {
+  const baseStyle = 'flex items-center gap-1 text-xs mt-1';
+  const mediaStyle = type === 'media' ? 'bg-black/60 px-2 py-1 rounded-md' : '';
 
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'sent':
-        return 'text-gray-500';
-      case 'delivered':
-        return 'text-blue-500';
-      case 'read':
-        return 'text-green-500';
-      default:
-        return 'text-gray-500';
-    }
-  };
+  let statusStyle = 'text-gray-100';
+
+  switch (status) {
+    case 'read':
+      statusStyle = 'text-blue-400 font-semibold';
+      break;
+    case 'sent':
+    case 'delivered':
+    default:
+      statusStyle = 'text-gray-100';
+      break;
+  }
+
+  return `${baseStyle} ${mediaStyle} ${statusStyle}`;
+};
+
 
   return (
     <div className="flex flex-col h-[80vh] w-full max-w-full">
@@ -360,9 +366,18 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
                       <p className="break-words">{msg.content}</p>
                       <div className="text-xs mt-1 opacity-70 text-right flex justify-end items-center gap-2">
                         <span>{formatTime(msg.created_at)}</span>
-                        <span className={getStatusStyle(msg.status)}>
-                          {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
-                        </span>
+                        {isCurrentUser && (
+                          <span
+                            className={getStatusStyle(msg.status,msg.messageType)}
+                            style={{
+                              letterSpacing: msg.status !== 'sent' ? '-3px' : 'normal',
+                            }}
+                          >
+                            {msg.status === 'sent' && '✓'}
+                            {msg.status === 'delivered' && '✓✓'}
+                            {msg.status === 'read' && '✓✓'}
+                          </span>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -419,11 +434,20 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
                             );
                         }
                       })()}
-                      <div className={`text-xs mt-1 flex justify-end items-center gap-2 ${isCurrentUser ? 'text-right text-gray-500' : 'text-gray-500'}`}>
+                      <div className={`text-xs mt-1 flex justify-end items-center gap-2 ${isCurrentUser ? 'text-right text-gray-800' : 'text-gray-800'}`}>
                         <span>{formatTime(msg.created_at)}</span>
-                        <span className={getStatusStyle(msg.status)}>
-                          {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
-                        </span>
+                        {isCurrentUser && (
+                          <span
+                            className={getStatusStyle(msg.status,msg.messageType)}
+                            style={{
+                              letterSpacing: msg.status !== 'sent' ? '-3px' : 'normal',
+                            }}
+                          >
+                            {msg.status === 'sent' && '✓'}
+                            {msg.status === 'delivered' && '✓✓'}
+                            {msg.status === 'read' && '✓✓'}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}

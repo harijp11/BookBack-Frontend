@@ -30,7 +30,13 @@ export interface NotificationResponse {
                         totalPages:number,
                         currentPage:number,
 }
-  
+
+export interface UnreadCountsResponse {
+  success: boolean;
+  message: string;
+  unReadMessagesCount: number;
+  unReadNotificationsCount: number;
+}
 
 export const fetchUserNotifications = async (
   filter: NotificationFilter = {},
@@ -52,3 +58,8 @@ export const fetchUserNotifications = async (
     throw error;
   }
 };
+
+export const fetchUnreadCounts = async (): Promise<UnreadCountsResponse | null> =>{
+      const response = await UserAxiosInstance.get<UnreadCountsResponse>('/user/chat-notifications/unread-count');
+      return response.data
+  }

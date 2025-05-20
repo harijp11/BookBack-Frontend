@@ -85,6 +85,6 @@ export const useSendContractRequest = () => {
         queryKey: ['contractRequestExists', variables.requesterId, variables.bookId]
       });
       return data;
-    }
+    },
   });
 }

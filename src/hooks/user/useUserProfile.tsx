@@ -62,8 +62,8 @@ export function useProfileMutations() {
 
   // Mutation for updating user profile
   const updateProfileMutation = useMutation({
-    mutationFn: (data: { userId: string; updateData: IUpdateUserData }) =>
-      updateUserProfile(data.userId, data.updateData),
+    mutationFn: (data: {updateData: IUpdateUserData }) =>
+      updateUserProfile(data.updateData),
     onSuccess: (response) => {
       // Invalidate and refetch user data
       queryClient.invalidateQueries({ queryKey: ["userData"] });

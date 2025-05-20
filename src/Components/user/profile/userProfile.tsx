@@ -231,7 +231,6 @@ const UserProfile = () => {
         return
       }
       await passwordMutation.mutateAsync({
-        userId: userData._id,
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       })
@@ -301,7 +300,6 @@ const UserProfile = () => {
     }
     updateProfileMutation.mutate(
       {
-        userId: userData._id,
         updateData: formData as IUpdateUserData,
       },
       {

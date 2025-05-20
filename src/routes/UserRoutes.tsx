@@ -27,6 +27,8 @@ import SoldBookDetails from "@/Components/user/SaleContracts/SoldBookDetails";
 import Notifications from "@/Components/user/notifications/userNotification";
 import UserChatPage from "@/pages/user/UserChatPage";
 import UserChatListPage from "@/pages/user/UserListPage";
+import UserAboutPage from "@/pages/user/UserAboutPage";
+import { UserContactPage } from "@/pages/user/UserContactPage";
 
 
 
@@ -43,10 +45,12 @@ function UserRoutes() {
       <Route path="/forgot-password/:role" element={<ForgotPassword />} />
       <Route path="/reset-password/:token/:role" element={<ResetPassword />} />
       <Route path="/" element={<UserLandingPage />} />
+      <Route path="/about" element={<UserAboutPage/>} />
+      <Route path="/contact" element={<UserContactPage/>} />
       
       
       <Route element={<ProtectedRoute authType="user" />}>
-      <Route path="/profile/:id" element={<UserProfilePage />} />
+      <Route path="/profile" element={<UserProfilePage />} />
       <Route path="/books/:userId"  element ={<OwnerBooksMangementPage/> }/>
       <Route path="/book/owner/:bookId" element ={<OwnerBookDetailsPage/>}/>
       <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />

@@ -2,9 +2,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { Changepassword } from "@/services/user/userService";
 import { useToast } from "../ui/toast"; 
+import { AxiosError } from "axios";
 
 export interface PasswordChangeData {
-  userId: string;
   currentPassword: string;
   newPassword: string;
 }
@@ -12,14 +12,15 @@ export interface PasswordChangeData {
 export const usePasswordMutation = () => {
   const toast = useToast()
   return useMutation({
-    mutationFn: async ({ userId, currentPassword, newPassword }: PasswordChangeData) => {
-      const response = await Changepassword(userId, currentPassword, newPassword);
+    mutationFn: async ({currentPassword, newPassword }: PasswordChangeData) => {
+      const response = await Changepassword( currentPassword, newPassword);
       return response;
     },
     onSuccess: () => {
       toast.success("Password changed successfully");
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      if(error instanceof AxiosError)
       toast.error(error.response?.data?.message || "Failed to change password");
     }
   });

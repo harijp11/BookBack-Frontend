@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserNotifications, NotificationFilter, NotificationResponse } from "@/services/notifications/notificationService";
+import { useUserAuth } from "@/hooks/custom/useAuth";
 
 export const useFetchNotifications = (
   filter: NotificationFilter = {},
   page: number = 1,
   limit: number = 5
 ) => {
+  const { isLoggedIn } = useUserAuth();
+  
   return useQuery<NotificationResponse, Error>({
     queryKey: ["notifications", filter, page, limit],
     queryFn: async () => {
@@ -18,8 +21,8 @@ export const useFetchNotifications = (
         throw new Error
       }
     },
-    onSuccess: (data) => {
-      console.log("useFetchNotifications Success:", data);
-    },
+     refetchInterval: 40 * 1000,
+     retry: 1, 
+     enabled: isLoggedIn, 
   });
 };

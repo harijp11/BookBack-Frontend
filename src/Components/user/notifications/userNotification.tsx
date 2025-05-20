@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Bell, Check, Info, AlertTriangle, X, ArrowRight, ArrowLeft } from "lucide-react";
+import { Bell, Check, Info, AlertTriangle, X, ArrowLeft, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
@@ -10,7 +10,9 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchNotifications } from "@/hooks/user/notifications/useNotificationQueries";
 import { Loader2 } from "lucide-react";
-import { Pagination1 } from "@/Components/common/pagination/pagination1";
+import { Pagination1 } from "@/Components/common/pagination/pagination1"; // Import the Pagination1 component
+import { INotificationEntity } from "@/services/notifications/notificationService";
+import { motion } from "framer-motion";
 
 // Type definitions for notifications
 interface Notification {
@@ -23,10 +25,17 @@ interface Notification {
   link?: string;
 }
 
+export interface NotificationResponse {
+  response: Response;
+  notifications: INotificationEntity;
+  totalnotifications: number;
+  totalPages: number;
+  currentPage: number;
+}
+
 export default function Index() {
   const [filter, setFilter] = useState<string>("all");
-  const [page, setPage] = useState(1);
-  const limit = 5;
+  const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -40,32 +49,40 @@ export default function Index() {
     [filter]
   );
 
-  const { data, isLoading, isError, error, isFetching, isSuccess } = useFetchNotifications(notificationFilter, page, limit);
-  console.log("Query State:", { data, isLoading, isError, error, isFetching, isSuccess });
+  const { data, isLoading, isError, error, isFetching, isSuccess } = useFetchNotifications(notificationFilter, page,6);
 
-  // Map raw INotificationEntity[] to Notification[]
   const notifications: Notification[] = (data?.notifications || []).map(notification => ({
     id: notification._id || "",
     type: notification.type,
     title: notification.title,
     message: notification.message,
     isRead: notification.isRead,
-    created_at: notification.created_at, // Already a string
+    created_at: notification.created_at,
     link: notification.navlink || undefined,
   }));
-  const totalPages = data?.totalPages || 1;
-  const currentPage = data?.currentPage || page;
 
   const markAsRead = (id: string) => {
     console.log(`Marking notification ${id} as read`);
   };
 
-  const markAllAsRead = () => {
-    console.log("Marking all notifications as read");
-  };
-
   const unreadCount = notifications.filter(n => !n.isRead).length;
   const filteredNotifications = notifications;
+
+  const handlePagePrev = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  const handlePageNext = () => {
+    if (data?.totalPages && page < data.totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePageSelect = (selectedPage: number) => {
+    setPage(selectedPage);
+  };
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
@@ -82,82 +99,30 @@ export default function Index() {
           </Button>
           <Bell className="mr-2 h-6 w-6" />
           <h1 className="text-2xl font-bold">Notifications</h1>
-          {/* {unreadCount > 0 && (
+          {unreadCount > 0 && (
             <Badge variant="destructive" className="ml-2">
               {unreadCount} unread
             </Badge>
-          )} */}
+          )}
         </div>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={markAllAsRead}
-          disabled={unreadCount === 0 || isLoading || isFetching}
-          className="text-sm"
-        >
-          <Check className="mr-1 h-4 w-4" />
-          Mark all as read
-        </Button>
       </div>
 
       <Card className="mb-6">
         <div className="flex overflow-x-auto scrollbar-none p-1">
-          <Button 
-            variant={filter === "all" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilter("all"); setPage(1); }}
-            className="mx-1 whitespace-nowrap"
-          >
-            All
-          </Button>
-          {/* <Button 
-            variant={filter === "unread" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilter("unread"); setPage(1); }}
-            className="mx-1 whitespace-nowrap"
-          >
-            Unread
-          </Button> */}
-          <Button 
-            variant={filter === "warning" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilter("warning"); setPage(1); }}
-            className="mx-1 whitespace-nowrap"
-          >
-            Warnings
-          </Button>
-          <Button 
-            variant={filter === "good" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilter("good"); setPage(1); }}
-            className="mx-1 whitespace-nowrap"
-          >
-            Good News
-          </Button>
-          <Button 
-            variant={filter === "info" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilter("info"); setPage(1); }}
-            className="mx-1 whitespace-nowrap"
-          >
-            Information
-          </Button>
-          <Button 
-            variant={filter === "fault" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilter("fault"); setPage(1); }}
-            className="mx-1 whitespace-nowrap"
-          >
-            Faults
-          </Button>
-          <Button 
-            variant={filter === "normal" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setFilter("normal"); setPage(1); }}
-            className="mx-1 whitespace-nowrap"
-          >
-            Normal
-          </Button>
+          {["all", "warning", "good", "info", "fault", "normal"].map((type) => (
+            <Button
+              key={type}
+              variant={filter === type ? "default" : "ghost"}
+              size="sm"
+              onClick={() => {
+                setFilter(type);
+                setPage(1); // Reset to first page when changing filter
+              }}
+              className="mx-1 whitespace-nowrap capitalize"
+            >
+              {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
+            </Button>
+          ))}
         </div>
       </Card>
 
@@ -175,7 +140,7 @@ export default function Index() {
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => queryClient.refetchQueries(["notifications"])}
+            onClick={() => navigate("/notification")}
           >
             Retry
           </Button>
@@ -194,8 +159,8 @@ export default function Index() {
           </Button>
         </div>
       ) : (
-        <>
-          <ScrollArea className="h-[70vh]">
+        <div>
+          <ScrollArea className="h-[60vh]">
             {filteredNotifications.length > 0 ? (
               <div className="space-y-4">
                 {filteredNotifications.map((notification) => (
@@ -219,14 +184,23 @@ export default function Index() {
             )}
           </ScrollArea>
 
-          <Pagination1
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPagePrev={() => setPage(prev => Math.max(prev - 1, 1))}
-            onPageNext={() => setPage(prev => prev + 1)}
-            onPageSelect={(pageNum) => setPage(pageNum)}
-          />
-        </>
+          {data.totalPages > 1 && (
+             <motion.div
+                className="mt-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Pagination1
+                  currentPage={data.currentPage}
+                  totalPages={data.totalPages}
+                  onPagePrev={handlePagePrev}
+                  onPageNext={handlePageNext}
+                  onPageSelect={handlePageSelect}
+                />
+              </motion.div>
+            )}
+        </div>
       )}
     </div>
   );
@@ -253,18 +227,19 @@ function NotificationCard({ notification, onMarkAsRead }: NotificationCardProps)
     }
   };
 
-  const getBackgroundColor = () => {
+  const getHoverColor = () => {
+    if (!notification.isRead) return "";
     switch (notification.type) {
       case "warning":
-        return "hover:bg-[#FEF7CD]";
+        return "hover:bg-amber-50";
       case "good":
-        return "hover:bg-[#F2FCE2]";
+        return "hover:bg-emerald-50";
       case "info":
-        return "hover:bg-[#D3E4FD]";
+        return "hover:bg-blue-50";
       case "fault":
-        return "hover:bg-[#FFDEE2]";
+        return "hover:bg-red-50";
       default:
-        return "hover:bg-[#F1F0FB]";
+        return "hover:bg-gray-50";
     }
   };
 
@@ -280,42 +255,44 @@ function NotificationCard({ notification, onMarkAsRead }: NotificationCardProps)
   };
 
   return (
-    <Card className={`transition-all ${getBackgroundColor()} border-l-4 border-l-black h-[140px]`}>
+    <Card
+      className={`relative transition-all duration-200 ${getHoverColor()} h-[140px] ${
+        !notification.isRead
+          ? `shadow-lg brightness-110 after:w-5 after:h-5 after:bg-red-500 after:rounded-bl-md 
+          after:border-l-2 after:border-b-2 after:border-white after:-translate-x-0.5 after:-translate-y-0.5 border-l-4 border-black`
+          : "border-l-4 border-gray-400"
+      }`}
+    >
       <CardContent className="p-4 h-full">
         <div className="flex h-full items-start gap-4">
           <div className="flex-shrink-0 mt-1 bg-gray-100 p-2 rounded-full">
             {getIcon()}
           </div>
-          
           <div className="flex-1 flex flex-col h-full">
             <div className="flex items-start justify-between">
               <div className="overflow-hidden">
                 {notification.title && (
-                  <h3 className="font-semibold text-base truncate">
+                  <h3
+                    className={`font-semibold text-base truncate ${
+                      !notification.isRead ? "text-gray-900 font-bold" : ""
+                    }`}
+                  >
                     {notification.title}
                   </h3>
                 )}
-                <p className="text-sm text-gray-700 mt-1 line-clamp-2">{notification.message}</p>
-              </div>
-              
-              {/* {!notification.isRead && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => onMarkAsRead(notification.id)}
-                  className="h-8 w-8 p-0 rounded-full ml-2 flex-shrink-0"
+                <p
+                  className={`text-sm text-gray-700 mt-1 line-clamp-2 ${
+                     !notification.isRead ? "font-medium" : ""
+                  }`}
                 >
-                  <Check className="h-4 w-4" />
-                  <span className="sr-only">Mark as read</span>
-                </Button>
-              )} */}
+                  {notification.message}
+                </p>
+              </div>
             </div>
-            
             <div className="flex items-center justify-between mt-auto text-xs">
               <span className="text-muted-foreground">
                 {formatDate(notification.created_at)}
               </span>
-              
               {notification.link && (
                 <Button 
                   variant="link" 

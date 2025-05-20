@@ -1,3 +1,4 @@
+// src/components/UserHeader.tsx
 import { useEffect, useState } from "react";
 import { Menu, BookOpen, MessageCircle, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,12 +18,12 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
 import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
 import { AxiosError } from "axios";
+import { useUnreadCounts } from "@/hooks/user/notifications/useFetchUreadChatsandNotificationsCountQueries"; // Import the new hook
 
 export function UserHeader() {
   // Original UserHeader functionality
@@ -35,6 +36,11 @@ export function UserHeader() {
   const [dateTime, setDateTime] = useState(new Date());
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Fetch unread counts using the new hook
+
+
+  const { data: unreadCounts } = useUnreadCounts();
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -64,7 +70,7 @@ export function UserHeader() {
   const handleProfileClick = () => {
     setUserMenuOpen(false);
     setTimeout(() => {
-      navigate(`/profile/${user?.id}`);
+      navigate(`/profile`);
     }, 50);
   };
 
@@ -115,6 +121,14 @@ export function UserHeader() {
     second: "2-digit",
     hour12: true,
   });
+  let unReadMessagesCount = 0
+  let unReadNotificationsCount = 0
+
+  // Use fetched counts, fallback to 0 if data is not available
+  if(isLoggedIn){
+   unReadNotificationsCount = unreadCounts?.unReadNotificationsCount || 0;
+   unReadMessagesCount = unreadCounts?.unReadMessagesCount || 0;
+  }
 
   return (
     <>
@@ -130,13 +144,18 @@ export function UserHeader() {
       >
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="text-xs">
-            <span className="mr-4">{day}, {time}</span>
-            {isLoggedIn && <span>My Account</span>}
+            <span className="mr-4">
+              {day}, {time}
+            </span>
+            {isLoggedIn && <span onClick={()=>navigate("/profile")}>My Account</span>}
           </div>
           <div className="hidden md:flex space-x-4 text-xs">
-            <a href="#" className="hover:underline">Contact</a>
-            <a href="#" className="hover:underline">Donate</a>
-            <a href="#" className="hover:underline">Support Us</a>
+            <a href="/contact" className="hover:underline">
+              Contact
+            </a>
+            <a href="/about" className="hover:underline">
+              About
+            </a>
           </div>
         </div>
       </motion.div>
@@ -187,20 +206,40 @@ export function UserHeader() {
                 <>
                   {/* Mobile Chat Icon Button */}
                   <motion.button
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleChatClick}
-                    className="bg-gray-200 rounded-full p-2"
+                    className="relative group transition duration-300 ease-in-out"
                   >
-                    <MessageCircle size={20} className="text-gray-700" />
+                    <div className="bg-black rounded-full p-2 shadow-lg group-hover:shadow-xl transition-all">
+                      <MessageCircle size={23} className="text-white" />
+                    </div>
+
+                    {/* Chat badge */}
+                    {unReadMessagesCount > 0 && (
+                      <span className="absolute top-0 right-0 -mt-1 -mr-1 h-5 w-5 bg-red-600 text-white text-xs flex items-center justify-center rounded-full shadow-md">
+                        {unReadMessagesCount > 9 ? "9+" : unReadMessagesCount}
+                      </span>
+                    )}
                   </motion.button>
 
                   {/* Mobile Notification Icon Button */}
                   <motion.button
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.05 }}
                     onClick={handleNotificationClick}
-                    className="bg-gray-200 rounded-full p-2"
+                    className="relative group transition duration-300 ease-in-out"
                   >
-                    <Bell size={20} className="text-gray-700" />
+                    <div className="bg-black rounded-full p-2 shadow-lg group-hover:shadow-xl transition-all">
+                      <Bell size={23} className="text-white" />
+                    </div>
+
+                    {/* Notification badge */}
+                    {unReadNotificationsCount > 0 && (
+                      <span className="absolute top-0 right-0 -mt-1 -mr-1 h-5 w-5 bg-red-600 text-white text-xs flex items-center justify-center rounded-full shadow-md">
+                        {unReadNotificationsCount > 9 ? "9+" : unReadNotificationsCount}
+                      </span>
+                    )}
                   </motion.button>
 
                   <motion.button
@@ -249,19 +288,37 @@ export function UserHeader() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleChatClick}
-                    className="bg-gray-200 rounded-full p-2"
+                    className="relative group transition duration-300 ease-in-out"
                   >
-                    <MessageCircle size={20} className="text-gray-700" />
+                    <div className="bg-black rounded-full p-2 shadow-lg group-hover:shadow-xl transition-all">
+                      <MessageCircle size={21} className="text-white" />
+                    </div>
+
+                    {/* Chat badge */}
+                    {unReadMessagesCount > 0 && (
+                      <span className="absolute top-0 right-0 -mt-1 -mr-1 h-5 w-5 bg-red-600 text-white text-xs flex items-center justify-center rounded-full shadow-md">
+                        {unReadMessagesCount > 9 ? "9+" : unReadMessagesCount}
+                      </span>
+                    )}
                   </motion.button>
 
                   {/* Desktop Notification Icon Button */}
                   <motion.button
+                    whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                     onClick={handleNotificationClick}
-                    className="bg-gray-200 rounded-full p-2"
+                    className="relative group transition duration-300 ease-in-out"
                   >
-                    <Bell size={20} className="text-gray-700" />
+                    <div className="bg-black rounded-full p-2 shadow-lg group-hover:shadow-xl transition-all">
+                      <Bell size={21} className="text-white" />
+                    </div>
+
+                    {/* Notification badge */}
+                    {unReadNotificationsCount > 0 && (
+                      <span className="absolute top-0 right-0 -mt-1 -mr-1 h-5 w-5 bg-red-600 text-white text-xs flex items-center justify-center rounded-full shadow-md">
+                        {unReadNotificationsCount > 9 ? "9+" : unReadNotificationsCount}
+                      </span>
+                    )}
                   </motion.button>
 
                   <motion.button
@@ -407,7 +464,6 @@ export function UserHeader() {
               Are you sure you want to log out of your account?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={logoutUser}
@@ -415,7 +471,6 @@ export function UserHeader() {
             >
               Log out
             </AlertDialogAction>
-          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>

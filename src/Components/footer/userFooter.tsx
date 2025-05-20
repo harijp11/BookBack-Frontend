@@ -2,19 +2,19 @@ import { Mail } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-b from-blue-900 to-blue-950 text-blue-100 py-12">
+    <footer className="bg-black text-gray-300 py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">Bookish Local Finds</h3>
+            <h3 className="text-xl font-bold mb-4 text-white">Bookish Local Finds</h3>
             <p className="mb-4">
               Connecting readers with local books since 2023.
             </p>
             <p className="mb-4 flex items-center gap-2">
-              <Mail className="w-5 h-5 text-blue-300" />
+              <Mail className="w-5 h-5 text-gray-400" />
               <a
                 href="mailto:bookback017@gmail.com"
-                className="hover:underline"
+                className="hover:underline hover:text-white transition-colors duration-300"
               >
                 bookback017@gmail.com
               </a>
@@ -24,7 +24,7 @@ const Footer = () => {
               {/* Facebook */}
               <a
                 href="#"
-                className="text-blue-100 hover:text-white transition-colors duration-300"
+                className="text-gray-300 hover:text-white transition-colors duration-300"
               >
                 <svg
                   className="w-6 h-6"
@@ -42,7 +42,7 @@ const Footer = () => {
               {/* Twitter */}
               <a
                 href="#"
-                className="text-blue-100 hover:text-white transition-colors duration-300"
+                className="text-gray-300 hover:text-white transition-colors duration-300"
               >
                 <svg
                   className="w-6 h-6"
@@ -56,7 +56,7 @@ const Footer = () => {
               {/* Instagram */}
               <a
                 href="#"
-                className="text-blue-100 hover:text-white transition-colors duration-300"
+                className="text-gray-300 hover:text-white transition-colors duration-300"
               >
                 <svg
                   className="w-6 h-6"
@@ -75,7 +75,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Explore</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white">Explore</h3>
             <ul className="space-y-2">
               <li>
                 <a
@@ -113,7 +113,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Services</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white">Services</h3>
             <ul className="space-y-2">
               <li>
                 <a
@@ -151,7 +151,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white">Contact</h3>
             <ul className="space-y-2">
               <li>
                 <a
@@ -189,7 +189,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-blue-800/50 mt-10 pt-6 text-center text-sm">
+        <div className="border-t border-gray-800 mt-10 pt-6 text-center text-sm">
           <p>© 2023 Bookish Local Finds. All rights reserved.</p>
         </div>
       </div>

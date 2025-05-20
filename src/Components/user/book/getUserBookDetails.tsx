@@ -23,7 +23,7 @@ import {
 } from "@/hooks/common/useGetBookdetailsMutation";
 import MapLocationPicker from "@/common/maping/googleMapIframe";
 import { useSelector } from "react-redux";
-import { toast } from "react-hot-toast"; // Adjust this import if you use a different toast library
+import { useToast } from "@/hooks/ui/toast";
 import { RootState } from "@/store/store";
 
 const BookView: React.FC = () => {
@@ -42,7 +42,7 @@ const BookView: React.FC = () => {
   const descriptionRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
   const relatedRef = useRef<HTMLDivElement>(null);
-
+const toast = useToast()
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
 
@@ -175,8 +175,10 @@ const BookView: React.FC = () => {
         }
       },
       onError: (error) => {
-        toast.error(`Failed to send request. Please try again.`);
-        console.error("Contract request error:", error);
+        if(error.response.data.message === "Book not Available now"){
+           toast.info(error.response.data.message)
+        }
+        console.log("Contract request error:", error);
       },
     });
   };

@@ -60,23 +60,21 @@ export type IUpdateUserData = Pick<
 >;
 
 export const updateUserProfile = async (
-  userId: string,
   data: IUpdateUserData
 ) => {
   const response = await UserAxiosInstance.patch(
-    `/user/update-profile/${userId}`,
+    `/user/update-profile`,
     data
   );
   return response.data.data;
 };
 
 export const Changepassword = async (
-  _id:string,
   password: string,
   newPassword: string
 ) => {
   const response =  await UserAxiosInstance.patch(
-    `user/change-password/?_id=${_id}`,
+    `/user/change-password`,
     {
     password,
     newPassword
