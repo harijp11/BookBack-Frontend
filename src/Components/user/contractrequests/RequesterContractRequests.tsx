@@ -196,9 +196,9 @@ const ContractRequestsPage: React.FC = () => {
               variant="destructive" 
               size="sm" 
               onClick={() => handleCancelRequest(row._id)}
-              disabled={cancelMutation.isLoading}
+              disabled={cancelMutation.isPending}
             >
-              {cancelMutation.isLoading && cancelMutation.variables === row._id ? (
+              {cancelMutation.isPending && cancelMutation.variables === row._id ? (
                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
               ) : null}
               Cancel

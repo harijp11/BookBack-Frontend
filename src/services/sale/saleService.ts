@@ -79,6 +79,16 @@ export interface SaleContract{
                         
 }
 
+export interface CombinedBoughtContracts{
+    success:true,
+    message:string
+    boughtBooksContract:SaleContract[]
+    totalBoughtContracts:number,
+    totalPages:number,
+    currentPage:number
+                        
+}
+
 
 
 export const fetchSoldBooksContract = async (params: { page: number; limit: number; filter?: object }):Promise<CombinedSaleContracts> => {
@@ -89,7 +99,7 @@ export const fetchSoldBooksContract = async (params: { page: number; limit: numb
   };
 
 
-  export const fetchBoughtBooksContract = async (params: { page: number; limit: number; filter?: object }):Promise<CombinedSaleContracts>  => {
+  export const fetchBoughtBooksContract = async (params: { page: number; limit: number; filter?: object }):Promise<CombinedBoughtContracts>  => {
     const response = await UserAxiosInstance.get("/user/buyer/sale-contract", {
       params
     });

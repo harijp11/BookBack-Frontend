@@ -11,6 +11,8 @@ export interface AuthResponse {
     id: string;
     Name:string
     email: string;
+    phoneNumber:string
+    profileImage:string
     role: "user" | "admin" 
   };
 }

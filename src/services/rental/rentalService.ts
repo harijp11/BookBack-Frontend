@@ -95,7 +95,7 @@ export interface RentalContract{
          rentedBooksContracts:RentalContract                      
      }
 
-     export interface CombinedRentalContracts0{
+     export interface CombinedBorrowedContracts0{
       success:true,
          message:string
          borrowedBooksContract:RentalContract[]
@@ -165,7 +165,7 @@ export const fetchRentedOutBooksContract = async (params: { page: number; limit:
   };
   
 
-  export const fetchBorrowedBooksContract = async (params: { page: number; limit: number; filter?: object }):Promise<CombinedRentalContracts0> => {
+  export const fetchBorrowedBooksContract = async (params: { page: number; limit: number; filter?: object }):Promise<CombinedBorrowedContracts0> => {
     const response = await UserAxiosInstance.get("/user/borrower/rental-contract", {
       params
     });

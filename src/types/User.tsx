@@ -25,6 +25,14 @@ export interface IUser {
   role: "user";
 }
 
+export interface IUserDTO{
+   Name: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  role: "user";
+}
+
 export interface ICategory {
   _id:string 
   name:string
@@ -36,4 +44,4 @@ export interface ICategory {
 }
 
 
-export type UserDTO = IAdmin | IUser 
+export type UserDTO = IAdmin | IUserDTO 

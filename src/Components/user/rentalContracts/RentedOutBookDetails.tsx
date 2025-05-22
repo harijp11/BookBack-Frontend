@@ -161,14 +161,14 @@ const RentedOutBookDetailsPage = () => {
     }
   };
 
-  const calculatePaidAmount = () => {
-    if (rentalContract.status !== "Returned" && !isContractExceeded()) {
-      return 0;
-    }
-    return rentalContract.penalty_amount > 0
-      ? rentalContract.rent_amount.toFixed(2) + rentalContract.penalty_amount.toFixed(2)
-      : rentalContract.rent_amount.toFixed(2);
-  };
+  const calculatePaidAmount = (): number => {
+  if (rentalContract.status !== "Returned" && !isContractExceeded()) {
+    return 0;
+  }
+  const rentAmount = rentalContract.rent_amount || 0;
+  const penaltyAmount = rentalContract.penalty_amount || 0;
+  return penaltyAmount > 0 ? (rentAmount + penaltyAmount) : rentAmount;
+};
 
   const isContractExceeded = () => {
     const endDate = new Date(rentalContract.rent_end_date);

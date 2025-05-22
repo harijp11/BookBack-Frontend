@@ -1,7 +1,7 @@
 // src/hooks/useBookQueries.ts
 import { useQuery, useMutation,useQueryClient} from '@tanstack/react-query';
-import { getUserBookDetails, getRelatedBooks, type IBook, type BookListResponse } from '@/services/book/bookService';
-import { checkIfRequestExists,sendContractRequest } from '@/services/contractrequest/contractRequestService'; // Adjust import path as needed
+import { getUserBookDetails, getRelatedBooks, type IBook, BookResponse } from '@/services/book/bookService';
+import { checkIfRequestExists,CombineRequest0,sendContractRequest } from '@/services/contractrequest/contractRequestService'; // Adjust import path as needed
 import { ContractRequestPayload } from '@/services/contractrequest/contractRequestService'; // Adjust import path as needed
 
 export function useBookDetails(bookId: string | undefined) {
@@ -12,7 +12,9 @@ export function useBookDetails(bookId: string | undefined) {
         throw new Error('Book ID is missing');
       }
       
-      const data: BookListResponse = await getUserBookDetails({ _id: bookId });
+      const data: BookResponse = await getUserBookDetails({ _id: bookId });
+
+      
       
       if (data && data.book) {
         return data.book as IBook;
@@ -20,7 +22,7 @@ export function useBookDetails(bookId: string | undefined) {
         throw new Error('Book not found');
       }
     },
-    enabled: !!bookId, // Only run the query if bookId exists
+    enabled: !!bookId, 
   });
 }
 
@@ -60,14 +62,14 @@ export const useCheckIfRequestExists = (userId: string, bookId: string)=> {
       
       try {
         const response = await checkIfRequestExists(userId, bookId);
-        return response || { success: false };
+        return response as CombineRequest0;
       } catch (error) {
         console.error("Error in useCheckIfRequestExists:", error);
         return { success: false, message: "Failed to check request status" };
       }
     },
     enabled: !!userId && !!bookId,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: true
   });
 };
 

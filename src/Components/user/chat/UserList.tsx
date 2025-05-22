@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchUserChatList } from "@/services/chat/chatServices";
 import { socketClient } from '@/socket/socket';
 import { Chat, ChatPreview } from "@/types/ChatTypes";
 import { useToast } from "@/hooks/ui/toast";
@@ -9,7 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { MessageSquare, User, CircleDot } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-
+import { useUserChatList } from "@/hooks/user/chat/useFetchChatUserListQueries"; // Import the new hook
 
 interface UserListProps {
   onClose: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,12 +22,17 @@ const UserList: React.FC<UserListProps> = ({ onClose }) => {
   const userData = useSelector((state: RootState) => state.user.User);
   const { receiverId } = useParams();
   
+  // Use the new query hook
+  const { refetch: refetchChats } = useUserChatList();
+
   const fetchChats = async () => {
     try {
-      const response = await fetchUserChatList();
-      console.log("fetchUserChatList response:", response);
-      if (response.success && Array.isArray(response.chatList)) {
-        const mappedChats: ChatPreview[] = response.chatList.map(
+      setLoading(true);
+      const response = await refetchChats(); // Trigger the query manually
+      const data = response.data;
+      console.log("fetchUserChatList response:", data);
+      if (data?.success && Array.isArray(data.chatList)) {
+        const mappedChats: ChatPreview[] = data.chatList.map(
           (chat: Chat) => ({
             userId:
               chat.userId1._id === userData?._id

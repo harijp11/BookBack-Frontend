@@ -43,16 +43,18 @@ export interface CombinedResponse extends Response{
     updatedAt: Date; 
 }
 
-// export interface PurseResponse{
-//     _id: string;                     
-//     userId: string;                  
-//     balance: number;                 
-//     transactions: IPurseTransaction[];
-//     createdAt: Date;                 
-//     updatedAt: Date; 
-// }
-
-export const fetchPurseDetails = async ():Promise<CombinedResponse | undefined> => {
+export interface PurseResponse{
+  purse:{
+     _id: string;                     
+    userId: string;                  
+    balance: number;                 
+    transactions: IPurseTransaction[];
+    hold_amount:number
+    createdAt: Date;                 
+    updatedAt: Date; 
+}
+}
+export const fetchPurseDetails = async ():Promise<PurseResponse | undefined> => {
   try {
     const response = await UserAxiosInstance.get(`/user/purse`);
     return response.data;
@@ -77,7 +79,7 @@ export const createPaymentIntent = async (amount: number, currency: string): Pro
   }
 };
 
-export const testWebhook = async (event: any): Promise<WebhookResponse | undefined> => {
+export const testWebhook = async (event: string): Promise<WebhookResponse | undefined> => {
   try {
     const response = await UserAxiosInstance.post('/webhook', event, {
       headers: {

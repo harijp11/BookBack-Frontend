@@ -7,7 +7,6 @@ import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import { useFetchNotifications } from "@/hooks/user/notifications/useNotificationQueries";
 import { Loader2 } from "lucide-react";
 import { Pagination1 } from "@/Components/common/pagination/pagination1"; // Import the Pagination1 component
@@ -16,12 +15,12 @@ import { motion } from "framer-motion";
 
 // Type definitions for notifications
 interface Notification {
-  id: string;
+  _id: string;
   type: "warning" | "good" | "info" | "fault" | "normal";
   title?: string;
   message: string;
   isRead: boolean;
-  created_at: string;
+  created_at: string | Date;
   link?: string;
 }
 
@@ -37,7 +36,6 @@ export default function Index() {
   const [filter, setFilter] = useState<string>("all");
   const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const notificationFilter = useMemo(
     () =>
@@ -51,15 +49,18 @@ export default function Index() {
 
   const { data, isLoading, isError, error, isFetching, isSuccess } = useFetchNotifications(notificationFilter, page,6);
 
-  const notifications: Notification[] = (data?.notifications || []).map(notification => ({
-    id: notification._id || "",
-    type: notification.type,
-    title: notification.title,
-    message: notification.message,
-    isRead: notification.isRead,
-    created_at: notification.created_at,
-    link: notification.navlink || undefined,
-  }));
+   const notifications: Notification[] = data?.notifications.map(notification => ({
+  _id: notification._id || "",
+  type: notification.type,
+  title: notification.title,
+  message: notification.message,
+  isRead: notification.isRead,
+  created_at: notification.created_at,
+  link: notification.navlink || undefined,
+})) || [];
+
+
+
 
   const markAsRead = (id: string) => {
     console.log(`Marking notification ${id} as read`);
@@ -153,7 +154,7 @@ export default function Index() {
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => queryClient.refetchQueries(["notifications"])}
+            onClick={() => navigate("/notifications")}
           >
             Retry
           </Button>
@@ -165,7 +166,7 @@ export default function Index() {
               <div className="space-y-4">
                 {filteredNotifications.map((notification) => (
                   <NotificationCard 
-                    key={notification.id} 
+                    key={notification._id} 
                     notification={notification}
                     onMarkAsRead={markAsRead}
                   />
@@ -211,7 +212,7 @@ interface NotificationCardProps {
   onMarkAsRead: (id: string) => void;
 }
 
-function NotificationCard({ notification, onMarkAsRead }: NotificationCardProps) {
+function NotificationCard({ notification }: NotificationCardProps) {
   const getIcon = () => {
     switch (notification.type) {
       case "warning":
@@ -243,7 +244,7 @@ function NotificationCard({ notification, onMarkAsRead }: NotificationCardProps)
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
       month: "short",

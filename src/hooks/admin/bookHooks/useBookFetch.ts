@@ -4,7 +4,7 @@ import { getAllPaginatedAdminBooks, IBook } from '@/services/book/bookService';
 // Define the interface for search parameters
 export interface BookSearchParams {
   search?: string;
-  filter?: Record<string,object>;
+  filter?: Record<string,unknown>;
   page?: number;
   limit?: number;
 }

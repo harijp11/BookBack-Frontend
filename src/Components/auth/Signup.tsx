@@ -18,12 +18,19 @@ import { useSendOTPMutation } from "@/hooks/auth/useSendOtp";
 import { toast } from "sonner";
 import { useVerifyOTPMutation } from "@/hooks/auth/useVerifyOtp";
 
-type UserType = "admin" | "user" 
+type UserType = "admin" | "user";
 
 interface SignupProps {
   userType: UserType;
   onSubmit: (data: User) => void;
   setLogin?: () => void;
+}
+
+interface ErrorType {
+  name: string;
+  response: { data?: { message?: string } };
+  message: string;
+  stack?: string;
 }
 
 export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
@@ -49,8 +56,13 @@ export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
         toast.success(data.message);
         setIsSending(false);
       },
-      onError: (error: any) => {
-        toast.error(error.response.data.message);
+      onError: (error: unknown) => {
+        const err = error as ErrorType;
+        if (err && err.response) {
+          toast.error(err.response.data?.message || "Something went wrong");
+        } else {
+          toast.error("Something went wrong");
+        }
         handleCloseOTPModal();
       },
     });
@@ -69,8 +81,13 @@ export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
           submitRegister();
           setIsOTPModalOpen(false);
         },
-        onError: (error: any) => {
-          toast.error(error.response.data.message);
+        onError: (error: unknown) => {
+          const err = error as ErrorType;
+          if (err && err.response) {
+            toast.error(err.response.data?.message || "Something went wrong");
+          } else {
+            toast.error("Something went wrong");
+          }
         },
       }
     );
@@ -112,12 +129,14 @@ export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
                 type="text"
                 placeholder="Enter your name"
                 {...formik.getFieldProps("Name")}
-                className={formik.touched.Name && formik.errors.Name ? "border-red-500" : ""}
+                className={
+                  formik.touched.Name && formik.errors.Name
+                    ? "border-red-500"
+                    : ""
+                }
               />
               {formik.touched.Name && formik.errors.Name && (
-                <p className="text-sm text-red-500">
-                  {formik.errors.Name}
-                </p>
+                <p className="text-sm text-red-500">{formik.errors.Name}</p>
               )}
             </div>
           </div>
@@ -128,7 +147,11 @@ export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
               type="email"
               placeholder="Enter your email"
               {...formik.getFieldProps("email")}
-              className={formik.touched.email && formik.errors.email ? "border-red-500" : ""}
+              className={
+                formik.touched.email && formik.errors.email
+                  ? "border-red-500"
+                  : ""
+              }
             />
             {formik.touched.email && formik.errors.email && (
               <p className="text-sm text-red-500">{formik.errors.email}</p>
@@ -141,7 +164,11 @@ export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
               type="tel"
               placeholder="Enter your contact number"
               {...formik.getFieldProps("phoneNumber")}
-              className={formik.touched.phoneNumber && formik.errors.phoneNumber ? "border-red-500" : ""}
+              className={
+                formik.touched.phoneNumber && formik.errors.phoneNumber
+                  ? "border-red-500"
+                  : ""
+              }
             />
             {formik.touched.phoneNumber && formik.errors.phoneNumber && (
               <p className="text-sm text-red-500">
@@ -156,7 +183,11 @@ export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
               type="password"
               placeholder="Create a password"
               {...formik.getFieldProps("password")}
-              className={formik.touched.password && formik.errors.password ? "border-red-500" : ""}
+              className={
+                formik.touched.password && formik.errors.password
+                  ? "border-red-500"
+                  : ""
+              }
             />
             {formik.touched.password && formik.errors.password && (
               <p className="text-sm text-red-500">{formik.errors.password}</p>
@@ -169,7 +200,11 @@ export function Signup({ userType, onSubmit, setLogin }: SignupProps) {
               type="password"
               placeholder="Confirm your password"
               {...formik.getFieldProps("confirmPassword")}
-              className={formik.touched.confirmPassword && formik.errors.confirmPassword ? "border-red-500" : ""}
+              className={
+                formik.touched.confirmPassword && formik.errors.confirmPassword
+                  ? "border-red-500"
+                  : ""
+              }
             />
             {formik.touched.confirmPassword &&
               formik.errors.confirmPassword && (

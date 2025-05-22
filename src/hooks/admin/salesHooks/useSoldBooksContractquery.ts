@@ -16,6 +16,5 @@ export const useSaleContractsQuery = ({
       const response = await fetchAdminSoldBooksContracts(filter, page, limit)
       return response
     },
-    // keepPreviousData: true,
   })
 }

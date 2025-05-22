@@ -6,7 +6,7 @@ export const useGoogleMutation = () => {
   return useMutation<
     AuthResponse,
     Error,
-    { credential: any; client_id: any; role: string }
+    { credential: string; client_id: string; role: string }
   >({
     mutationFn: GoogleAuth,
   });

@@ -4,10 +4,8 @@ import type React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Edit,
-  Clock,
   DollarSign,
   Tag,
-  ShoppingBag,
   MapPin,
   ChevronLeft,
   BookOpen,

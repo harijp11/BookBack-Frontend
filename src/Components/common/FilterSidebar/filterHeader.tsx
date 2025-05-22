@@ -49,7 +49,7 @@ export const ReusableFilterTopbar: React.FC<FilterTopbarProps> = ({
     },
   })
 
-  const handleFilterChange = (category: 'dateRange' | 'priceRange', value: any) => {
+  const handleFilterChange = <K extends keyof FilterOptions>(category: K, value:  Partial<FilterOptions[K]>) => {
     setFilterOptions(prev => {
       return {
         ...prev,

@@ -9,6 +9,13 @@ interface DealTypeData {
   description?: string;
 }
 
+interface Error {
+      name: string;
+      response: { data?: { message?: string } };
+      message: string;
+      stack?: string;
+    }
+
 interface UseDealTypeMutationOptions {
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
@@ -49,9 +56,11 @@ export const useDealTypeMutation = (options?: UseDealTypeMutationOptions) => {
       }
       
       return response;
-    } catch (error: any) {
-      console.log("Error saving deal type:", error.response?.data);
-      toast.error(error.response?.data?.message || "An error occurred");
+    } catch (error) {
+      const err  =  error as Error
+
+      console.log("Error saving deal type:", err.response?.data);
+      toast.error(err.response?.data?.message || "An error occurred");
       if (options?.onError) {
         options.onError(error);
       }

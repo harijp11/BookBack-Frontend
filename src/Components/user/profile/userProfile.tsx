@@ -35,7 +35,7 @@ import {
   DialogFooter,
 } from "@/Components/ui/dialog"
 import { Alert, AlertDescription } from "@/Components/ui/alert"
-import type { z } from "zod"
+import {  SafeParseReturnType } from "zod"
 import { AxiosError } from "axios"
 import ProfileSidebar from "./profileSideBar"
 import type { IUpdateUserData } from "@/services/user/userService"
@@ -51,6 +51,7 @@ import {
 } from "@/utils/user/profileValidator"
 import { useSelector } from "react-redux"
 
+
 interface ProfileFormErrors {
   Name?: string
   phoneNumber?: string
@@ -64,6 +65,8 @@ interface PasswordFormErrors {
   confirmPassword?: string
   general?: string
 }
+
+ 
 
 const UserProfile = () => {
   const userData = useSelector((state: RootState) => state.user.User)
@@ -90,6 +93,8 @@ const UserProfile = () => {
   const [passwordErrors, setPasswordErrors] = useState<PasswordFormErrors>({})
   const { uploadImageMutation, updateProfileMutation } = useProfileMutations()
   const passwordMutation = usePasswordMutation()
+
+ 
 
   const sidebarRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -208,17 +213,22 @@ const UserProfile = () => {
     }
   }
 
-  const parseZodErrors = <T extends object>(result: z.SafeParseResult<T>) => {
-    if (!result.success) {
-      const errors: Record<string, string> = {}
-      result.error.errors.forEach((error) => {
-        const path = error.path[0].toString()
-        errors[path] = error.message
-      })
-      return errors
-    }
-    return {}
+  
+
+const parseZodErrors = <T extends object>(
+  result: SafeParseReturnType<T, T>
+): Record<string, string> => {
+  if (!result.success) {
+    const errors: Record<string, string> = {}
+    result.error.errors.forEach((error) => {
+      const path = error.path[0]?.toString() ?? "unknown"
+      errors[path] = error.message
+    })
+    return errors
   }
+  return {}
+}
+
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -20,7 +20,7 @@ interface TopComplaint {
 
 const ReturnRejectionRequestPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [filter, setFilter] = useState<{}>({});
+ const [filter, setFilter] = useState<Record<string, unknown>>({});
   const [isFiltering, setIsFiltering] = useState(false);
   const limit = 5;
 
@@ -74,7 +74,7 @@ const ReturnRejectionRequestPage: React.FC = () => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center p-8 bg-white rounded-lg shadow-md border border-gray-200">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-black mb-2">Error</h2>
+          <p>No return rejection requests found.</p>
           <p className="text-gray-600">
             {data?.message || "Failed to load return rejection requests."}
           </p>
@@ -88,6 +88,15 @@ const ReturnRejectionRequestPage: React.FC = () => {
       </div>
     );
   }
+
+  if (!isLoading && data?.returnRejectionRequest?.length === 0) {
+  return (
+    <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500">
+      <AlertTriangle className="w-10 h-10 mb-3 text-yellow-500" />
+      <p>No return rejection requests found.</p>
+    </div>
+  );
+}
 
   const {
     topFiveMostComplaintedBy,

@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  TooltipItem,
 } from "chart.js";
 import { useDashboardData } from "@/hooks/admin/dashboardHooks/useFetchDashboardQueries"; 
 
@@ -126,12 +127,12 @@ const SalesChart: React.FC<ChartProps> = ({ data, view, setView }) => {
       legend: { position: "top" as const },
       tooltip: {
         callbacks: {
-          label: (context: any) => {
+          label: (context:  TooltipItem<'line'>) => {
             const datasetLabel = context.dataset.label || "";
             const value = context.parsed.y;
             return `${datasetLabel}: $${value}`;
           },
-          footer: (tooltipItems: any[]) => {
+          footer: (tooltipItems: TooltipItem<'line'>[]) => {
             const tooltipItem = tooltipItems[0];
             const index = tooltipItem.dataIndex;
             const dataset = tooltipItem.dataset;

@@ -15,22 +15,18 @@ const contractKeys = {
   owner: (ownerId: string) => [...contractKeys.all, 'owner', ownerId] as const,
 }
 
-/**
- * Hook to fetch contract requests for an owner
- * @param ownerId The ID of the owner
- */
-export function useOwnerContractRequests(ownerId: string | undefined) {
+
+export function useOwnerContractRequests() {
   return useQuery({
-    queryKey: ownerId ? contractKeys.owner(ownerId) : null,
+    queryKey: contractKeys.all,  // just use the general key or create a new one
     queryFn: async () => {
-      if (!ownerId) throw new Error("Owner ID is required")
-      const data = await fetchOwnerContractRequests(ownerId)
-      return data.requests || []
+      const data = await fetchOwnerContractRequests();
+      return data.requests || [];
     },
-    enabled: !!ownerId,
     refetchOnWindowFocus: true,
-  })
+  });
 }
+
 
 /**
  * Hook to update contract request status
@@ -50,7 +46,7 @@ export function useUpdateContractRequestStatus() {
       // Optimistically update to the new value
       queryClient.setQueriesData(
         { queryKey: contractKeys.all },
-        (old: any) => {
+        (old: ContractRequest[]) => {
           if (!old) return old
           return old.map((request: ContractRequest) => 
             request._id === conReqId ? { ...request, status } : request

@@ -19,6 +19,7 @@ import { useGoogleMutation } from "@/hooks/auth/useGoogle";
 import GoogleAuth from "@/Components/auth/GoogleAuth";
 import { AxiosError } from "axios";
 
+
 export function UserAuth() {
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(true);
@@ -38,9 +39,16 @@ export function UserAuth() {
 
 
   const google = (credentialResponse: CredentialResponse) => {
+    const credential = credentialResponse.credential;
+
+  if (!credential) {
+    toast.error("Google credential is missing. Please try again.");
+    return;
+  }
+
     googleLogin(
       {
-        credential: credentialResponse.credential,
+        credential,
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         role: "user",
       },
@@ -62,7 +70,7 @@ export function UserAuth() {
     );
   };
 
-  const handleSignupSubmit = (data: Omit<User, "role">) => {
+  const handleSignupSubmit = (data: Omit<User, "role"> ) => {
     registerClient(
       { ...data, role: "user" },
       {

@@ -42,7 +42,7 @@ const BookView: React.FC = () => {
   const descriptionRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
   const relatedRef = useRef<HTMLDivElement>(null);
-const toast = useToast()
+  const toast = useToast();
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
 
@@ -56,9 +56,13 @@ const toast = useToast()
     error: bookError,
   } = useBookDetails(bookId);
 
+  if (!bookId) {
+    throw new Error("Book ID is required");
+  }
+
   // Check if a request already exists for this book and user
   const { data: requestExistsData, isLoading: checkingRequest } =
-    useCheckIfRequestExists(user?._id, bookId);
+    useCheckIfRequestExists(user!._id, bookId);
 
   // Contract request mutation
   const { mutate: sendContractRequest, isPending: isSubmitting } =
@@ -70,10 +74,11 @@ const toast = useToast()
     useRelatedBooks(categoryId, bookId);
 
   // Compute if a request exists
+  let requestStatus = null;
   const existingRequest = requestExistsData?.success || false;
-  const requestStatus = existingRequest
-    ? requestExistsData?.request?.status
-    : null;
+  if (requestExistsData && "request" in requestExistsData) {
+    requestStatus = existingRequest ? requestExistsData?.request?.status : null;
+  }
   console.log("existing request data", requestExistsData);
   console.log("existing request status", requestStatus);
   // Set active image when book data is loaded
@@ -161,6 +166,12 @@ const toast = useToast()
       request_type: requestType,
     };
 
+    interface Error {
+      name: string;
+      response: { data?: { message?: string } };
+      message: string;
+      stack?: string;
+    }
     // Send the contract request using the mutation
     sendContractRequest(payload, {
       onSuccess: (response) => {
@@ -174,11 +185,14 @@ const toast = useToast()
           // queryClient.invalidateQueries(['contractRequestExists', user._id, bookId]);
         }
       },
-      onError: (error) => {
-        if(error.response.data.message === "Book not Available now"){
-           toast.info(error.response.data.message)
+      onError: (error: unknown) => {
+        const err = error as Error; // now err has type any, so you can access anything
+
+        if (err?.response?.data?.message === "Book not Available now") {
+          toast.info(err.response.data.message);
         }
-        console.log("Contract request error:", error);
+
+        console.log("Contract request error:", err);
       },
     });
   };

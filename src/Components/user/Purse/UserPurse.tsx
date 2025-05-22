@@ -120,11 +120,11 @@ export default function UserPurse() {
               </TabsContent>
 
               <TabsContent value="credit">
-                <TransactionList transactions={transactions.filter((t) => t.type === "credit")} />
+                <TransactionList transactions={transactions.filter((t:{type:"debit" | "credit"}) => t.type === "credit")} />
               </TabsContent>
 
               <TabsContent value="debit">
-                <TransactionList transactions={transactions.filter((t) => t.type === "debit")} />
+                <TransactionList transactions={transactions.filter((t:{type:"debit" | "credit"}) => t.type === "debit")} />
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -248,7 +248,7 @@ function AddMoneyModal({
           <PaymentResult 
             isSuccess={paymentStatus === "success"}
             amount={amount}
-            errorMessage={combinedError}
+            errorMessage={combinedError ?? undefined}
             onDismiss={handleDismiss}
           />
         ) : (
@@ -289,10 +289,10 @@ function AddMoneyModal({
                         },
                       },
                     }}
-                    disabled={isProcessing}
+                    // disabled={isProcessing}
                   />
                 </div>
-                {combinedError && paymentStatus !== "error" && (
+                {combinedError &&(
                   <p className="text-sm text-red-500">{combinedError}</p>
                 )}
               </div>

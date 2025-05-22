@@ -25,7 +25,7 @@ export interface INotificationEntity {
 
 export interface NotificationResponse {
     response:Response,
-    notifications:INotificationEntity,
+    notifications:INotificationEntity[],
                         totalnotifications:number,
                         totalPages:number,
                         currentPage:number,

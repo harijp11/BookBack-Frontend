@@ -74,6 +74,5 @@ export const useRentedOutBooksQuery = (
       }
     },
     enabled: !isViewingDetails,
-    keepPreviousData: true, // Smooth pagination
   });
 };

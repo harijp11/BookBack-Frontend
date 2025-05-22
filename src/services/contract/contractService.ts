@@ -20,10 +20,31 @@ export interface SaleInput {
     price: number;
 }
 
+export interface RentalOut {
+  _id:string
+    bookId:string
+  borrowerId: string;
+  ownerId: string;   
+  rent_amount: number;  
+  original_amount:number 
+  rent_start_date: Date; 
+  rent_end_date: Date;
+  period_of_contract: number;
+}
+
+export interface SaleOut {
+  _id:string
+    buyerId: string;
+    ownerId: string;
+    bookId: string;
+    price: number;
+}
+
 // Define response type for the create contract API
 export interface CreateContractResponse {
   success: boolean;
   message: string;
+  data: RentalOut | SaleOut;
 }
 
 // Define request payload type

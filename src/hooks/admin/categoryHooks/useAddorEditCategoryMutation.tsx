@@ -2,12 +2,20 @@ import { useState } from 'react';
 import { addAndEditCategory } from '@/services/admin/adminService';
 import { useToast } from '@/hooks/ui/toast';
 
+
 interface CategoryData {
   id?: string;
   _id?: string; // Add this to support both formats
   name: string;
   description?: string;
 }
+
+interface Error {
+      name: string;
+      response: { data?: { message?: string } };
+      message: string;
+      stack?: string;
+    }
 
 interface UseCategoryMutationOptions {
   onSuccess?: () => void;
@@ -49,9 +57,11 @@ export const useCategoryMutation = (options?: UseCategoryMutationOptions) => {
       }
       
       return response;
-    } catch (error:any) {
-      console.log("Error saving category:", error.response.data);
-      toast.error( error.response.data.message);
+    } catch (error:unknown) {
+       const err = error as Error
+      console.log("Error saving category:", err.response.data);
+      if(err && err.response && err.response.data && err.response.data.message)
+      toast.error( err.response.data.message);
       if (options?.onError) {
         options.onError(error);
       }

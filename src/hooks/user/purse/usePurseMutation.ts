@@ -1,6 +1,7 @@
 // src/hooks/usePurseMutations.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchPurseDetails, createPaymentIntent } from "@/services/purse/purseService"
+import { Stripe, StripeCardElement } from '@stripe/stripe-js'
 
 export const usePurseQuery = () => {
   return useQuery({
@@ -38,8 +39,8 @@ export const useConfirmPaymentMutation = () => {
       cardElement, 
       clientSecret 
     }: { 
-      stripe: any; 
-      cardElement: any; 
+      stripe: Stripe; 
+      cardElement: StripeCardElement; 
       clientSecret: string 
     }) => {
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {

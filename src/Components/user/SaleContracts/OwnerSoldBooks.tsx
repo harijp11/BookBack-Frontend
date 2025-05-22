@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { format } from "date-fns"
-import {  ArrowLeft, Loader2, DollarSign, Calendar } from "lucide-react"
+import {  ArrowLeft, DollarSign, Calendar } from "lucide-react"
 import { type SaleContract } from "@/services/sale/saleService"
 import { DataTable } from "@/Components/common/tablecomponent/tableComponent"
 import { FilterOptions, ReusableFilterTopbar } from "@/Components/common/FilterSidebar/filterHeader"

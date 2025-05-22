@@ -39,7 +39,7 @@ export const useBookQueries = () => {
   });
 
   const createBookMutation = useMutation({
-    mutationFn: (bookData: Book) => createNewBook(bookData),
+    mutationFn: (bookData: Omit<Book,"_id">) => createNewBook(bookData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
     },
@@ -51,7 +51,7 @@ export const useBookQueries = () => {
   });
 
   const updateBookMutation = useMutation({
-    mutationFn: ({ bookId, bookData }: { bookId: string; bookData: Book }) =>
+    mutationFn: ({ bookId, bookData }: { bookId: string; bookData: Omit<Book,"_id"> }) =>
       updateBookDetails(bookId, bookData),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

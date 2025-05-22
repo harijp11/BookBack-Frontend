@@ -14,7 +14,6 @@ export const useRentalContractsQuery = ({ filter, page, limit }: RentalContracts
     queryFn: async () => {
       return await fetchAdminRentedOutBooksContracts(filter, page, limit);
     },
-    keepPreviousData: true, // Maintain previous data while fetching new data for smooth pagination
     retry: 1, // Retry failed requests once
   });
 };

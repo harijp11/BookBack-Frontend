@@ -20,6 +20,22 @@ import { useToast } from "@/hooks/ui/toast";
 import { AxiosError } from "axios";
 import { ArrowLeft } from "lucide-react";
 
+
+
+ type contractDetails = {
+    contractType: "rental" | "sale";
+    bookName: string;
+    ownerName: string;
+    requesterName: string;
+    amount: number;
+    period?: number;
+    contractId?: string;
+    requestType:string
+  } | null
+
+
+
+
 const ContractForm: React.FC = () => {
   const { conReqId } = useParams<{ conReqId: string }>();
   const [selectedDays, setSelectedDays] = useState<number>(0);
@@ -27,7 +43,7 @@ const ContractForm: React.FC = () => {
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string>("");
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
-  const [contractResult, setContractResult] = useState<any>(null);
+  const [contractResult, setContractResult] = useState<contractDetails>(null);
 
   const { data, isLoading, error } = useContractRequest(conReqId);
   const contractRequest = data?.request || null;
@@ -165,8 +181,8 @@ const ContractForm: React.FC = () => {
         contractRequest._id
       );
 
-      if (!response.success) {
-        toast.warning(response.message);
+      if (!response!.success) {
+        toast.warning(response!.message);
         if (
           response?.message ===
           `The Book ${contractRequest.bookId.name} is not available for deal`
@@ -182,6 +198,7 @@ const ContractForm: React.FC = () => {
         }, 700);
         return;
       }
+      
       if (response?.success) {
         toast.success(response.message);
         setContractResult({
@@ -195,7 +212,7 @@ const ContractForm: React.FC = () => {
             : totalRentAmount,
           period: isSaleForm ? undefined : selectedDays,
           contractId:
-            response.data?._id || response.data?.contractId || undefined,
+            response.data?._id ,
           requestType: contractRequest.request_type,
         });
         setIsResultModalOpen(true);

@@ -22,7 +22,6 @@ export function useContractRequests(
     queryFn: async () => {
       return await fetchPaginatedUserContractRequests(page, pageSize, filters) as PaginatedRequestsResponse;
     },
-    keepPreviousData: true,
     ...options,
     refetchOnWindowFocus:true
   });

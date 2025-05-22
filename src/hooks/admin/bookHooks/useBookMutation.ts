@@ -1,6 +1,6 @@
 // src/hooks/mutations/useBookStatusMutation.ts
 import { useMutation, UseMutationResult } from '@tanstack/react-query';
-import { updateAdminBookStatus } from '@/services/book/bookService';
+import { BookStatusUpdateResponse, updateAdminBookStatus } from '@/services/book/bookService';
 import { useToast } from '@/hooks/ui/toast';
 
 interface UseBookStatusMutationProps {
@@ -10,7 +10,7 @@ interface UseBookStatusMutationProps {
 
 export const useBookStatusMutation = ({ 
   onSuccess 
-}: UseBookStatusMutationProps = {}): UseMutationResult<any, Error, string> => {
+}: UseBookStatusMutationProps = {}): UseMutationResult<BookStatusUpdateResponse, Error, string> => {
   const toast = useToast();
 
   return useMutation({

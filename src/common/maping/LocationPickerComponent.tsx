@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet/dist/leaflet.css";
 import "leaflet-geosearch/dist/geosearch.css";
-import L from "leaflet";
+import L, { LeafletEvent, Map } from "leaflet";
 
 // Marker fix
 import iconUrl from "leaflet/dist/images/marker-icon.png";
@@ -39,6 +39,28 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
+
+interface NominatimRaw {
+  place_id?: number;
+  display_name?: string;
+  boundingbox?: [string, string, string, string]; // [minLat, maxLat, minLon, maxLon]
+  geojson?: unknown; // Could be a GeoJSON object
+  [key: string]: unknown; // Allow additional fields
+}
+
+
+interface GeoSearchResult {
+  x: number; // Longitude
+  y: number; // Latitude
+  label: string; // Display name or address
+  bounds?: L.LatLngBounds; // Optional: Bounds of the location
+  raw?: NominatimRaw; // Optional: Raw data from the search provider
+}
+
+interface ResultEvent extends LeafletEvent {
+  location: GeoSearchResult;
+}
+
 // Search control component
 const SearchControl = ({
   onSearchResultSelected,
@@ -73,7 +95,7 @@ const SearchControl = ({
 
     map.addControl(searchControl);
 
-    const handleSearchResult = (event: any) => {
+    const handleSearchResult = (event: ResultEvent) => {
       console.log("SearchControl: Search result received", event);
       if (event?.location?.y && event?.location?.x) {
         const coords: [number, number] = [event.location.y, event.location.x];
@@ -84,7 +106,7 @@ const SearchControl = ({
       }
     };
 
-    map.on("geosearch/showlocation", handleSearchResult);
+    map.on("geosearch/showlocation", handleSearchResult as L.LeafletEventHandlerFn);
 
     const focusInput = () => {
       const input = document.querySelector(
@@ -103,7 +125,7 @@ const SearchControl = ({
     return () => {
       console.log("SearchControl: Cleaning up");
       map.removeControl(searchControl);
-      map.off("geosearch/showlocation", handleSearchResult);
+      map.off("geosearch/showlocation", handleSearchResult as L.LeafletEventHandlerFn);
       clearInterval(interval);
     };
   }, [map, searchMode, onSearchResultSelected]);
@@ -148,40 +170,46 @@ const LiveLocationTracker = ({
       { enableHighAccuracy: true }
     );
 
-    const locateButton = L.control({ position: "bottomright" });
+ const LocateControl = L.Control.extend({
+  options: {
+    position: "bottomright" as const,
+  },
+  onAdd: () => {
+    const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    const button = L.DomUtil.create("a", "", div);
+    button.href = "#";
+    button.title = "Center on my location";
+    button.innerHTML = "📍";
+    button.style.fontSize = "20px";
+    button.style.textAlign = "center";
+    button.style.lineHeight = "30px";
 
-    locateButton.onAdd = () => {
-      const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-      const button = L.DomUtil.create("a", "", div);
-      button.href = "#";
-      button.title = "Center on my location";
-      button.innerHTML = "📍";
-      button.style.fontSize = "20px";
-      button.style.textAlign = "center";
-      button.style.lineHeight = "30px";
+    L.DomEvent.on(button, "click", (e) => {
+      L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
 
-      L.DomEvent.on(button, "click", (e) => {
-        L.DomEvent.stopPropagation(e);
-        L.DomEvent.preventDefault(e);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const latlng: [number, number] = [
+            position.coords.latitude,
+            position.coords.longitude,
+          ];
+          map.setView(latlng, 16);
+          onLocationChange(latlng, position.coords.accuracy);
+        },
+        (error) => {
+          console.error("Error centering on location:", error);
+        },
+        { enableHighAccuracy: true }
+      );
+    });
 
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const latlng: [number, number] = [
-              position.coords.latitude,
-              position.coords.longitude,
-            ];
-            map.setView(latlng, 16);
-            onLocationChange(latlng, position.coords.accuracy);
-          },
-          (error) => {
-            console.error("Error centering on location:", error);
-          },
-          { enableHighAccuracy: true }
-        );
-      });
+    return div;
+  },
+});
 
-      return div;
-    };
+const locateButton = new LocateControl();
+locateButton.addTo(map);
 
     locateButton.addTo(map);
 
@@ -241,7 +269,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   }, [isModalVisible]);
 
-  const handleLocationChange = (pos: [number, number], acc: number) => {
+  const handleLocationChange = (pos: [number, number]) => {
     setUserLocation(pos);
     onLocationChange(locationName, pos, secondLocation);
   };
@@ -493,7 +521,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           border: 1px solid #ccc;
         }
       `}
-      </style>
+      
+     </style>
 
       <div className="location-name-container">
         <div className="flex space-x-2 mb-3">
@@ -561,9 +590,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           style={{ height: "100%", width: "100%" }}
           dragging={!searchMode}
           tap={!searchMode}
-          whenCreated={(map) => {
+          whenCreated={(map:Map) => {
             mapRef.current = map;
-          }}
+          }} 
         >
           <TileLayer
             attribution='© <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'

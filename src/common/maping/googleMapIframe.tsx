@@ -1,13 +1,29 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
-import L from "leaflet"
+import { MapContainer, TileLayer, Marker, Popup, useMap ,useMapEvents } from "react-leaflet"
+import L,{  LeafletMouseEvent } from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { MapPin, Navigation } from "lucide-react"
 
+
+
 // Fix for default Leaflet icon issues
-delete (L.Icon.Default.prototype as any)._getIconUrl
+interface IconDefaultWithGetIconUrl extends L.Icon.Default {
+  _getIconUrl?: () => string;
+}
+
+function MapEventHandler({ onClick }: { onClick: (e: LeafletMouseEvent) => void }) {
+  useMapEvents({
+    click: onClick,
+  });
+
+  return null; // no visual output
+}
+
+// Now this is valid
+delete (L.Icon.Default.prototype as IconDefaultWithGetIconUrl)._getIconUrl;
+
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
@@ -91,25 +107,24 @@ const MapLocationPicker: React.FC<LocationPickerProps> = ({ onClose, onLocationS
           </button>
         </div>
 
-        <div className="h-[400px] rounded-lg overflow-hidden mb-4">
-          <MapContainer
-            center={position}
-            zoom={13}
-            style={{ height: "100%", width: "100%" }}
-            eventHandlers={{
-              click: handleMapClick,
-            }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <MapController position={position} />
-            <Marker position={position} ref={markerRef}>
-              <Popup>{address || "Selected location"}</Popup>
-            </Marker>
-          </MapContainer>
-        </div>
+      <div className="h-[400px] rounded-lg overflow-hidden mb-4">
+  <MapContainer
+    center={position}
+    zoom={13}
+    style={{ height: "100%", width: "100%" }}
+  >
+    <TileLayer
+      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    />
+    <MapEventHandler onClick={handleMapClick} />
+    <MapController position={position} />
+    <Marker position={position} ref={markerRef}>
+      <Popup>{address || "Selected location"}</Popup>
+    </Marker>
+  </MapContainer>
+</div>
+
 
         <div className="mb-4">
           <p className="text-gray-700 flex items-center gap-2">

@@ -167,7 +167,7 @@ const PaginatedBooksComponent: React.FC = () => {
       accessor: (book: IBook) => (
         <div className="font-medium text-gray-900">
           {formatCurrency(book.rentAmount)}
-          <span className="text-xs text-gray-500">/day</span>
+          <span className="text-xs text-gray-500">/contract</span>
         </div>
       ),
     },

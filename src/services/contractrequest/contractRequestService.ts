@@ -82,10 +82,13 @@ export interface ContractRequest {
 }
 
 export interface CombineRequest0 extends ContractRequestResponse {
-  requests:ContractRequest
+  success: boolean;
+  message: string;
+  request?:ContractRequest
 }
 
 export interface CombineRequest extends ContractRequestResponse {
+
   requests:ContractRequest[]
 }
 
@@ -102,7 +105,7 @@ export interface PaginatedRequestsResponse {
 
  
 
-export const checkIfRequestExists = async (requesterId:string,bookId: string):Promise<ContractRequestResponse | CombineRequest0 | undefined> => {
+export const checkIfRequestExists = async (requesterId:string,bookId: string):Promise< CombineRequest0> => {
   try {
     const response = await UserAxiosInstance.get('/user/check-Request-exist', {
       params: { requesterId,bookId },
@@ -111,8 +114,8 @@ export const checkIfRequestExists = async (requesterId:string,bookId: string):Pr
   } catch (error) {
     if (error instanceof AxiosError) {
     console.error('Error checking request existence:', error?.response?.data || error.message);
-    throw error;
   }
+  throw error;
 }
 };
 
@@ -153,12 +156,9 @@ export const updateContractRequestStatus = async (
 };
 
 
-export const fetchOwnerContractRequests = async (ownerId:string): Promise<CombineRequest> => {
+export const fetchOwnerContractRequests = async (): Promise<CombineRequest> => {
   try {
     const response = await UserAxiosInstance.get('/user/owner/contract-request',
-      {
-        params:{ownerId}
-      }
     );
     console.log("fetch data",response.data)
     return response.data;

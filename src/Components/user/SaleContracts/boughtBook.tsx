@@ -1,45 +1,62 @@
 "use client";
 
-import React, { useState } from 'react';
-import { ReusableFilterTopbar, FilterOptions } from '@/Components/common/FilterSidebar/filterHeader';
-import { DataTable } from '@/Components/common/tablecomponent/tableComponent';
-import { useBoughtBooksQuery } from '@/hooks/user/saleContractquries/useBoughtBooksQueries';
-import { SaleContract } from '@/services/sale/saleService';
-import { DollarSign, Calendar,} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import {
+  ReusableFilterTopbar,
+  FilterOptions,
+} from "@/Components/common/FilterSidebar/filterHeader";
+import { DataTable } from "@/Components/common/tablecomponent/tableComponent";
+import { useBoughtBooksQuery } from "@/hooks/user/saleContractquries/useBoughtBooksQueries";
+import { SaleContract } from "@/services/sale/saleService";
+import { DollarSign, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const BoughtBooks: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(5);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     dateRange: { startDate: null, endDate: null },
-    priceRange: { min: '', max: '' },
+    priceRange: { min: "", max: "" },
   });
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   // const [isViewingDetails, setIsViewingDetails] = useState<boolean>(false);
 
-  const { data, isLoading, error } = useBoughtBooksQuery(page, limit, filterOptions,);
+  const { data, isLoading, error } = useBoughtBooksQuery(
+    page,
+    limit,
+    filterOptions
+  );
 
-  console.log('API response data:', data);
+  console.log("API response data:", data);
 
   const hasActiveFilters = !!(
     filterOptions.dateRange.startDate ||
     filterOptions.dateRange.endDate ||
-    (filterOptions.priceRange.min && filterOptions.priceRange.min !== '') ||
-    (filterOptions.priceRange.max && filterOptions.priceRange.max !== '')
+    (filterOptions.priceRange.min && filterOptions.priceRange.min !== "") ||
+    (filterOptions.priceRange.max && filterOptions.priceRange.max !== "")
   );
 
   const handleApplyFilters = (filters: FilterOptions) => {
-    console.log('Applied filters:', filters);
+    console.log("Applied filters:", filters);
     const sanitizedFilters: FilterOptions = {
       dateRange: {
-        startDate: filters.dateRange.startDate ? new Date(filters.dateRange.startDate) : null,
-        endDate: filters.dateRange.endDate ? new Date(filters.dateRange.endDate) : null,
+        startDate: filters.dateRange.startDate
+          ? new Date(filters.dateRange.startDate).toISOString()
+          : null,
+        endDate: filters.dateRange.endDate
+          ? new Date(filters.dateRange.endDate).toISOString()
+          : null,
       },
       priceRange: {
-        min: filters.priceRange.min && !isNaN(Number(filters.priceRange.min)) ? filters.priceRange.min : '',
-        max: filters.priceRange.max && !isNaN(Number(filters.priceRange.max)) ? filters.priceRange.max : '',
+        min:
+          filters.priceRange.min && !isNaN(Number(filters.priceRange.min))
+            ? filters.priceRange.min
+            : "",
+        max:
+          filters.priceRange.max && !isNaN(Number(filters.priceRange.max))
+            ? filters.priceRange.max
+            : "",
       },
     };
     setFilterOptions(sanitizedFilters);
@@ -49,7 +66,7 @@ const BoughtBooks: React.FC = () => {
   const handleClearFilters = () => {
     setFilterOptions({
       dateRange: { startDate: null, endDate: null },
-      priceRange: { min: '', max: '' },
+      priceRange: { min: "", max: "" },
     });
     setPage(1);
   };
@@ -70,51 +87,51 @@ const BoughtBooks: React.FC = () => {
 
   const columns = [
     {
-          header: "Book",
-          accessor: (contract: SaleContract) => (
-            contract.bookId.images && contract.bookId.images.length > 0 ? (
-              <img
-                src={contract.bookId.images[0]}
-                alt={contract.bookId.name}
-                className="w-12 h-12 object-cover rounded"
-                onClick={()=>navigate(`/bought-book/details/${contract._id}`)}
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder-image.jpg" // Fallback image
-                }}
-              />
-            ) : (
-              <img
-                src="/placeholder-image.jpg"
-                alt="No image"
-                className="w-12 h-12 object-cover rounded"
-              />
-            )
-          )
-        },
-    {
-      header: 'Book Name',
-      accessor: (row: SaleContract) => row.bookId.name || 'Unknown',
-      className: 'text-left',
+      header: "Book",
+      accessor: (contract: SaleContract) =>
+        contract.bookId.images && contract.bookId.images.length > 0 ? (
+          <img
+            src={contract.bookId.images[0]}
+            alt={contract.bookId.name}
+            className="w-12 h-12 object-cover rounded"
+            onClick={() => navigate(`/bought-book/details/${contract._id}`)}
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder-image.jpg"; // Fallback image
+            }}
+          />
+        ) : (
+          <img
+            src="/placeholder-image.jpg"
+            alt="No image"
+            className="w-12 h-12 object-cover rounded"
+          />
+        ),
     },
     {
-      header: 'Buyer Name',
-      accessor: (row: SaleContract) => row.buyerId.Name || 'Unknown',
-      className: 'text-left',
+      header: "Book Name",
+      accessor: (row: SaleContract) => row.bookId.name || "Unknown",
+      className: "text-left",
     },
     {
-      header: 'Owner Name',
-      accessor: (row: SaleContract) => row.ownerId.Name || 'Unknown',
-      className: 'text-left',
+      header: "Buyer Name",
+      accessor: (row: SaleContract) => row.buyerId.Name || "Unknown",
+      className: "text-left",
     },
     {
-      header: 'Sale Date',
-      accessor: (row: SaleContract) => new Date(row.sale_date).toLocaleDateString(),
-      className: 'text-center',
+      header: "Owner Name",
+      accessor: (row: SaleContract) => row.ownerId.Name || "Unknown",
+      className: "text-left",
     },
     {
-      header: 'Price',
+      header: "Sale Date",
+      accessor: (row: SaleContract) =>
+        new Date(row.sale_date).toLocaleDateString(),
+      className: "text-center",
+    },
+    {
+      header: "Price",
       accessor: (row: SaleContract) => `$${row.price.toFixed(2)}`,
-      className: 'text-right',
+      className: "text-right",
     },
     // {
     //   header: 'Actions',
@@ -131,7 +148,8 @@ const BoughtBooks: React.FC = () => {
     // },
   ];
 
-  const totalItems = data?.totalBoughtContracts || data?.boughtBooksContract?.length || 0;
+  const totalItems =
+    data?.totalBoughtContracts || data?.boughtBooksContract?.length || 0;
   const totalPages = data?.totalPages || Math.ceil(totalItems / limit) || 1;
 
   return (
@@ -156,7 +174,17 @@ const BoughtBooks: React.FC = () => {
         emptyMessage="No bought books found."
         emptyStateRenderer={() => (
           <div className="text-center py-8 text-muted-foreground">
-            No bought books found for the selected filters (Price: ${filterOptions.priceRange.min || 'Any'} - ${filterOptions.priceRange.max || 'Any'}, Date: ${filterOptions.dateRange.startDate?.toLocaleDateString() || 'Any'} - ${filterOptions.dateRange.endDate?.toLocaleDateString() || 'Any'}). Try adjusting or clearing the filters.
+            No bought books found for the selected filters (Price: $
+            {filterOptions.priceRange.min || "Any"} - $
+            {filterOptions.priceRange.max || "Any"}, Date: $
+            {filterOptions.dateRange.startDate
+              ? new Date(filterOptions.dateRange.startDate).toLocaleDateString()
+              : "Any"}{" "}
+            - $
+            {filterOptions.dateRange.endDate
+              ? new Date(filterOptions.dateRange.endDate).toLocaleDateString()
+              : "Any"}
+            ). Try adjusting or clearing the filters.
           </div>
         )}
         currentPage={page}

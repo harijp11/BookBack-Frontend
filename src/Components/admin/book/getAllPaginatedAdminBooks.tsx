@@ -13,6 +13,7 @@ import { useAdminDealTypes } from '@/hooks/admin/dealtypeHooks/useFetchCategorie
 import { useBookStatusMutation } from '@/hooks/admin/bookHooks/useBookMutation';
 
 const AdminPaginatedBooksComponent: React.FC = () => {
+
   const toast = useToast();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +26,7 @@ const AdminPaginatedBooksComponent: React.FC = () => {
     search: searchTerm,
     filter,
     page: currentPage,
-    limit: 5 // You can make this configurable if needed
+    limit: 5 
   };
 
   // Use custom hooks for API calls

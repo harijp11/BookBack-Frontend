@@ -35,9 +35,11 @@ export interface ReturnRejectionRequest {
 
 
 
-interface UserInfo {
-  name: string;
+ interface UserInfo {
+  _id: string;
+  Name?: string;
   email: string;
+  phoneNumber?: string;
 }
 
 
@@ -63,9 +65,11 @@ interface UserInfo {
 
 interface ReturnRejectionItem {
   _id: string;
-  rentId: RentalContract        
-  borrowerId: string;    
-  ownerId: string;       
+  rentId: RentalContract;
+  borrowerId: UserInfo;
+  ownerId: UserInfo;
+  reason: string;
+  status: "pending" | "accepted" | "rejected";
   createdAt: string;
   updatedAt: string;
 }
@@ -79,8 +83,8 @@ interface TopComplaint {
 export interface AdminReturnRejectionResponse {
   success: boolean;
   message: string;
-  topFiveMostComplainted: TopComplaint[];
-  topFiveMostComplaintedTo: TopComplaint[];
+  topFiveMostComplaintedBy: TopComplaint[];
+  topFiveMostComplaintedAgainst: TopComplaint[];
   returnRejectionRequest: ReturnRejectionItem[];
   totalReturnRejectionRequest: number;
   totalPages: number;

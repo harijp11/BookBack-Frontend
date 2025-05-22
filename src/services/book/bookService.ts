@@ -1,8 +1,10 @@
 import { adminAxiosInstance } from "@/APIs/admin_axios";
 import { UserAxiosInstance } from "@/APIs/user_axios";
+import { GetBooksByLocationInput } from "@/Components/user/book/fetchAllAvailableBooks";
 import { AxiosError } from "axios";
 
 export interface Book {
+     _id:string
     name: string;
     categoryId: string;
     dealTypeId: string
@@ -55,6 +57,7 @@ export interface Book {
     locationName: string
     createdAt:Date,
     updatedAt:Date
+    distance:number
   }
 
 
@@ -71,7 +74,7 @@ export interface Book {
 export type BookResponse = {
   success: boolean;
   message:string
-  book:Book;
+  book:IBook;
 };
 
 export interface BookSearchParams {
@@ -89,6 +92,7 @@ export interface BookListResponse {
   totalBooks: number;
   totalPages: number;
   currentPage: number;
+  
 }
 
 export interface BookStatusUpdateResponse{
@@ -117,7 +121,7 @@ export const getCloudinarySignature = async (): Promise<CloudinarySignatureRespo
   }
 };
 
-export const createNewBook = async (bookData: Book)=>{
+export const createNewBook = async (bookData: Omit<Book,"_id">)=>{
     const response = await UserAxiosInstance.post<Book>("/user/book",bookData);
     return response
   };
@@ -165,7 +169,7 @@ export const createNewBook = async (bookData: Book)=>{
 
   export const updateBookDetails = async (
     bookId: string,
-    bookData: Book
+    bookData: Omit<Book,"_id">
   ): Promise<BookResponse> => {
     try {
       // Send the bookData directly without nesting it in a data property
@@ -239,7 +243,7 @@ export const createNewBook = async (bookData: Book)=>{
 
   export const updateAdminBookStatus = async (
     bookId: string,
-  ): Promise<BookStatusUpdateResponse | void> => {
+  ): Promise<BookStatusUpdateResponse> => {
     try {
       const response = await adminAxiosInstance.patch(`/admin/book/`,
       {data:"hhi"},
@@ -252,21 +256,12 @@ export const createNewBook = async (bookData: Book)=>{
       if(error instanceof AxiosError){
       console.error("Error updating book status:", error);
       }
+      throw error
     }
   };
 
 
-  export const fetchAvailableBooks = async (parms:{
-    userId:string
-    latitude: number,
-    longitude: number,
-    maxDistance: number,
-    page?: number,
-    limit?: number,
-    search?: string,
-    filters?: Record<string, object>,
-    sort?: Record<string, object>
-  }
+  export const fetchAvailableBooks = async (parms:GetBooksByLocationInput
   ): Promise<BookListResponse | void> => {
     try {
       const response = await UserAxiosInstance.get('/user/books-available', {
@@ -281,12 +276,13 @@ export const createNewBook = async (bookData: Book)=>{
 
   export const getUserBookDetails = async (
     { _id }: { _id: string }
-  ): Promise<IBook | void> => {
+  ): Promise<BookResponse> => {
     try {
       const response = await UserAxiosInstance.get(`/user/book-Details/${_id}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching available books:', error);
+       throw new Error("Failed to fetch book details");
     }
   };
 

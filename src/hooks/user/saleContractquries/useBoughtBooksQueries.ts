@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchBoughtBooksContract, CombinedSaleContracts } from '@/services/sale/saleService';
+import { fetchBoughtBooksContract,CombinedBoughtContracts } from '@/services/sale/saleService';
 import { FilterOptions } from '@/Components/common/FilterSidebar/filterHeader';
 
 export const useBoughtBooksQuery = (
@@ -10,7 +10,7 @@ export const useBoughtBooksQuery = (
   activeFilters: FilterOptions | null,
   isViewingDetails: boolean = false
 ) => {
-  return useQuery<CombinedSaleContracts, Error>({
+  return useQuery<CombinedBoughtContracts, Error>({
     queryKey: ['boughtBooks', currentPage, activeFilters],
     queryFn: async () => {
       // Prepare filter object
@@ -80,6 +80,5 @@ export const useBoughtBooksQuery = (
       }
     },
     enabled: !isViewingDetails,
-    keepPreviousData: true, // Smooth pagination
   });
 };

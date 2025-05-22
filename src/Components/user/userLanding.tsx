@@ -1,9 +1,20 @@
 import { Search, Calendar, Book, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRef } from 'react';
 import img from "../../assets/WhatsApp Image 2025-04-10 at 18.53.07_53f9828d.jpg";
 import BooksFetchPageInner from './book/fetchAllAvailableBooks'; // Import the BooksFetchPageInner component
 
 const UserLanding: React.FC = () => {
+    // Create a ref for the BooksFetchPageInner section
+    const booksSectionRef = useRef<HTMLDivElement>(null);
+    
+    // Function to scroll to the books section
+    const scrollToBooksSection = () => {
+        booksSectionRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    };
  
     // Animation variants
     const fadeIn = {
@@ -40,7 +51,7 @@ const UserLanding: React.FC = () => {
                                 transition={{ duration: 0.8, delay: 0.5 }}
                                 className="text-3xl md:text-4xl font-bold mb-4"
                             >
-                                Welcome to Greenwich Library
+                                Welcome to BookBack World
                             </motion.h1>
                             <motion.p
                                 initial={{ opacity: 0, x: -100 }}
@@ -60,8 +71,9 @@ const UserLanding: React.FC = () => {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     className="bg-white text-blue-800 px-6 py-2 rounded font-medium hover:bg-gray-100 transition-all duration-500"
+                                    onClick={scrollToBooksSection}
                                 >
-                                    Get a Library Card
+                                    Get All Available Books
                                 </motion.button>
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
@@ -114,10 +126,11 @@ const UserLanding: React.FC = () => {
 
             {/* Books Fetch Section */}
             <motion.div
+                ref={booksSectionRef} // Add reference to this section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5, duration: 0.8 }}
-                className="w-full"
+                className="w-full scroll-mt-16" // Added scroll-mt to adjust scroll position
             >
                 <BooksFetchPageInner />
             </motion.div>

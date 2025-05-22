@@ -17,7 +17,7 @@ export const useUpdateBookStatusMutation = () => {
       }
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Book status updated successfully");
       // Invalidate queries to refresh book data
       queryClient.invalidateQueries({ queryKey: ['books'] });

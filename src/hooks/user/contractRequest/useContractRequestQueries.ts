@@ -8,7 +8,7 @@ export function useContractRequests(userId: string | undefined) {
     queryKey: ["contractRequests", userId],
     queryFn: async () => {
       if (!userId) return []
-      const data = await fetchOwnerContractRequests(userId)
+      const data = await fetchOwnerContractRequests()
       return data.requests || []
     },
     enabled: !!userId,

@@ -4,6 +4,7 @@ import UserList from "@/Components/user/chat/UserList";
 
 
 
+
 function UserChatListPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -15,7 +16,7 @@ function UserChatListPage() {
       
       <main className="max-h-[80vh] overflow-y-auto">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <UserList />
+   <UserList onClose={() => {}}/>
   </div>
 </main>
       

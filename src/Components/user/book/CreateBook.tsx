@@ -1034,6 +1034,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
                         onClose={handleCropCancel}
                         imageSrc={currentImageSrc}
                         onCropComplete={handleCropComplete}
+                        // aspectRatio={4 / 6}
                         title="Crop Book Image"
                       />
                     </div>

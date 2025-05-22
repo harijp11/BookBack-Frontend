@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchBorrowedBooksContract, CombinedRentalContracts } from "@/services/rental/rentalService";
+import { fetchBorrowedBooksContract, CombinedBorrowedContracts0 } from "@/services/rental/rentalService";
 import { FilterOptions } from "@/Components/common/FilterSidebar/filterHeader";
 
 export const useBorrowedBooksQuery = (
@@ -10,7 +10,7 @@ export const useBorrowedBooksQuery = (
   activeFilters: FilterOptions | null,
   isViewingDetails: boolean = false
 ) => {
-  return useQuery<CombinedRentalContracts, Error>({
+  return useQuery<CombinedBorrowedContracts0, Error>({
     queryKey: ["borrowedBooks", currentPage, activeFilters],
     queryFn: async () => {
       // Prepare filter object
@@ -74,6 +74,6 @@ export const useBorrowedBooksQuery = (
       }
     },
     enabled: !isViewingDetails,
-    keepPreviousData: true, // Smooth pagination
+  
   });
 };

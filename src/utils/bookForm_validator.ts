@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+
 export interface Category {
   _id: string;
   name: string;
@@ -61,8 +62,6 @@ export const formSchema = z.object({
   );
 
   if (requiresRentValidation) {
-    // rentAmount and maxRentalPeriod have already been refined above,
-    // but here you can still perform additional relational checks:
     if (data.rentAmount && data.rentAmount > data.originalAmount) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

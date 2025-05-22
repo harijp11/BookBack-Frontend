@@ -18,20 +18,22 @@ import { useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 
 export interface GetBooksByLocationInput {
+  userId:string
   latitude: number
   longitude: number
   maxDistance: number
   page?: number
   limit?: number
   search?: string
-  filters?: Record<string, object>
-  sort?: Record<string, object>
+  filters?: Record<string, string | number | boolean | object> | undefined
+  sort?: Record<string, 1 | -1>
 }
 
-interface FilterState {
-  categoryId?: string
-  dealTypeId?: string
-}
+interface FilterState  {
+  categoryId?: string;
+  dealTypeId?: string;
+};
+
 
 interface SortState {
   field: string
@@ -66,6 +68,16 @@ const BooksFetchPageInner: React.FC = () => {
   // Use the book queries hook to access the categories and deal types queries
   const { categoriesQuery, dealTypesQuery } = useBookQueries()
   const navigate = useNavigate()
+
+  const convertedFilters: Record<string, object> | undefined =
+  Object.keys(filters).length > 0
+    ? Object.fromEntries(
+        Object.entries(filters).map(([key,value]) => [key,value])
+      )
+    : undefined;
+
+    console.log("normal filter",Object.keys(filters).length > 0 ? filters : undefined)
+    console.log("converted filter",convertedFilters)
   // Construct query params
   const queryParams: GetBooksByLocationInput = {
     userId: user?._id || "",
@@ -75,7 +87,7 @@ const BooksFetchPageInner: React.FC = () => {
     page,
     limit,
     search: debouncedSearch || undefined, // Use debounced search value
-    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    filters: convertedFilters,
     sort: { [sort.field]: sort.order },
   }
 
@@ -161,21 +173,9 @@ const BooksFetchPageInner: React.FC = () => {
     { label: "200 km", value: 200000 },
   ]
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  }
+ 
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
-  }
+
 
   return (
     <div className="bg-gradient-to-b from-white to-gray-50 text-black min-h-screen">
@@ -269,8 +269,10 @@ const BooksFetchPageInner: React.FC = () => {
               >
                 <option value="name|1">Name (A-Z)</option>
                 <option value="name|-1">Name (Z-A)</option>
-                <option value="originalAmount|1">Price (Low-High)</option>
-                <option value="originalAmount|-1">Price (High-Low)</option>
+                <option value="originalAmount|1">Original Price (Low-High)</option>
+                <option value="originalAmount|-1">Original Price (High-Low)</option>
+                <option value="rentAmount|1">Rent Price (Low-High)</option>
+                <option value="rentAmount|-1">Rent Price (High-Low)</option>
                 <option value="createdAt|-1">Newest First</option>
                 <option value="createdAt|1">Oldest First</option>
                 <option value="distance|1">Distance (Nearest)</option>
@@ -447,7 +449,7 @@ const BooksFetchPageInner: React.FC = () => {
 )}
 
             {/* Pagination */}
-            {booksResponse?.totalPages > 1 && (
+            {(booksResponse?.totalPages || 0) > 1 && (
               <motion.div
                 className="mt-8"
                 initial={{ opacity: 0, y: 20 }}
@@ -455,8 +457,8 @@ const BooksFetchPageInner: React.FC = () => {
                 transition={{ delay: 0.3 }}
               >
                 <Pagination1
-                  currentPage={booksResponse.currentPage}
-                  totalPages={booksResponse.totalPages}
+                  currentPage={booksResponse!.currentPage}
+                  totalPages={booksResponse!.totalPages}
                   onPagePrev={handlePagePrev}
                   onPageNext={handlePageNext}
                   onPageSelect={handlePageSelect}

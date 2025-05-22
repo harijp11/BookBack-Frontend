@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, type FormEvent } from "react"
 import { addAndEditCategory } from "@/services/admin/adminService"
 import { useToast } from "@/hooks/ui/toast"
+import { AxiosError } from "axios"
 
 interface CategoryData {
   id?: string
@@ -11,11 +12,7 @@ interface CategoryData {
   description?: string
 }
 
-interface IAxiosResponse {
-  success: boolean
-  data?: any
-  error?: string
-}
+
 
 const AddCategoryForm: React.FC = () => {
   const [name, setName] = useState<string>("")
@@ -41,6 +38,7 @@ const AddCategoryForm: React.FC = () => {
         setDescription("")
       }
     } catch (err) {
+      if(err instanceof AxiosError)
       toast.error("Failed to add category. Please try again.")
     } finally {
       setLoading(false)

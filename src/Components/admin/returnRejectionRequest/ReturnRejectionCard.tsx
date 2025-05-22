@@ -8,20 +8,20 @@ import { useUpdateReturnRejectionMutation } from "@/hooks/admin/returnRejectionR
 import { useQueryClient } from "@tanstack/react-query";
 import { AdminReturnRejectionResponse } from "@/services/return_rejection_request/returnRejectionRequestService";
 
-interface UserInfo {
+export interface UserInfo {
   _id: string;
   Name?: string;
   email: string;
   phoneNumber?: string;
 }
 
-interface Book {
+export interface Book {
   _id: string;
   name: string;
   images: string[];
 }
 
-interface RentalContract {
+export interface RentalContract {
   _id: string;
   borrowerId: string;
   ownerId: string;

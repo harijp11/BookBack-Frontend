@@ -13,7 +13,7 @@
   import { Link } from "react-router-dom";
 
   interface ProfileSidebarProps {
-    sidebarRef: React.RefObject<HTMLDivElement>;
+    sidebarRef: React.RefObject<HTMLDivElement | null>;
     onDragStart: (e: React.MouseEvent) => void;
   }
 

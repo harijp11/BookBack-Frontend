@@ -24,7 +24,7 @@ const {
 data: requests = [],
 isLoading,
 error
-} = useOwnerContractRequests(user?._id)
+} = useOwnerContractRequests()
 
 const updateRequestStatusMutation = useUpdateContractRequestStatus()
 
