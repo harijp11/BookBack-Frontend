@@ -18,7 +18,7 @@ import { usePurseQuery, useAddMoneyMutation, useConfirmPaymentMutation } from '@
 import { PaymentResult } from "./paymentResult"
 
 const stripePromise = loadStripe('pk_test_51RIAruRtuCub2T27DnxxEqDHZNN1Y9y3mKkkSGS6ppflKtMBH202fZBlkPdlJtnrhDNkXOn2I5lsRRckG4MAvYR600K0Oosioa')
- export const UserPurse = () => {
+ const Purse = () => {
   const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState<string>("")
   
@@ -533,3 +533,4 @@ function PurseSkeleton() {
   )
 }
 
+export default Purse
