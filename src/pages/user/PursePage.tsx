@@ -1,6 +1,7 @@
 // import Footer from "@/Components/footer/userFooter";
 import { UserHeader } from "@/Components/headers/userHeader";
-// import Purse from "@/Components/user/purse/Purse";
+import Purse from "@/Components/user/PurseDetails/Purse";
+
 
 
 
@@ -14,7 +15,7 @@ function UserPursePage() {
 
       <main className="flex-grow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -py-8">
-         {/* <Purse/> */}
+       <Purse/>
         </div>
       </main>
 
