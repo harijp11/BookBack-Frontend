@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 
 export const UserAxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_PRIVATE_API_URI || "http://localhost:5000/api/v1/pvt" + "/_us",
+  baseURL: import.meta.env.VITE_PRIVATE_API_URI ,
   withCredentials: true,
 });
 
