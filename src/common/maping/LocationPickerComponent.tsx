@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet/dist/leaflet.css";
 import "leaflet-geosearch/dist/geosearch.css";
-import L, { LeafletEvent, Map } from "leaflet";
+import L, { LeafletEvent } from "leaflet";
 
 // Marker fix
 import iconUrl from "leaflet/dist/images/marker-icon.png";
@@ -590,9 +590,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           style={{ height: "100%", width: "100%" }}
           dragging={!searchMode}
           tap={!searchMode}
-          whenCreated={(map:Map) => {
-            mapRef.current = map;
-          }} 
+          // whenCreated={(map:Map) => {
+          //   mapRef.current = map;
+          // }} 
         >
           <TileLayer
             attribution='© <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
