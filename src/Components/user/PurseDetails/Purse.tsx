@@ -15,7 +15,7 @@ import { Label } from "@/Components/ui/label"
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { usePurseQuery, useAddMoneyMutation, useConfirmPaymentMutation } from '@/hooks/user/purse/usePurseMutation'
-import { PaymentResult } from "../purse/paymentResult"
+import { PaymentResult } from "@/Components/user/purse/paymentResult"
 
 const stripePromise = loadStripe('pk_test_51RIAruRtuCub2T27DnxxEqDHZNN1Y9y3mKkkSGS6ppflKtMBH202fZBlkPdlJtnrhDNkXOn2I5lsRRckG4MAvYR600K0Oosioa')
  const Purse = () => {
