@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 
 export const UserAxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_PRIVATE_API_URI + "_us",
+  baseURL: import.meta.env.VITE_PRIVATE_API_URL + "_us",
   withCredentials: true,
 });
 
