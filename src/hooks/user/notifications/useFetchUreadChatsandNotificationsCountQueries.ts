@@ -8,7 +8,7 @@ export const useUnreadCounts = () => {
   return useQuery<UnreadCountsResponse | null, Error>({
     queryKey: ["unreadCounts"],
     queryFn: fetchUnreadCounts,
-    refetchInterval: 10 * 1000,
+    // refetchInterval: 10 * 1000,
     retry: 1,
     enabled: isLoggedIn, 
   });

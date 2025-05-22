@@ -4,6 +4,7 @@ import AdminRoutes from "./routes/AdminRoutes";
 import { Toaster } from "sonner";
 
 
+
 function App() {
   return (
     <>
@@ -12,6 +13,7 @@ function App() {
         <Routes>
           <Route path="/*" element={<UserRoutes />} />
           <Route path="/admin/*" element={<AdminRoutes />} />
+          
         </Routes>
       </Router>
     </>

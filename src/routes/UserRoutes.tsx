@@ -3,12 +3,11 @@ import { UserAuth } from "@/pages/user/UserAuth";
 import {UserLandingPage} from "@/pages/user/UserLanding";
 import ForgotPassword from "@/Components/auth/forgotPassword";
 import ResetPassword from "@/Components/auth/resetPassword";
-import { PublicRoute } from "@/protected/publicRoute"; // Update path as needed
+import { PublicRoute } from "@/protected/publicRoute"; 
 import { ProtectedRoute } from "@/protected/ProtectedRoute";
 import UserProfilePage from "@/pages/user/userProfilepage";
 import OwnerBooksMangementPage from "@/pages/user/ownerBooksMangementPage";
 import BookFormPage from "@/Components/user/book/CreateBook";
-import BooksFetchPage from "@/Components/user/book/fetchAllAvailableBooks";
 import BookView from "@/Components/user/book/getUserBookDetails";
 import OwnerBookDetailsPage from "@/Components/user/book/viewOwnerBookDetails";
 import OwnerContractRequestHandlingPage from "@/pages/user/OwnerContractRequestPage";
@@ -29,6 +28,7 @@ import UserChatPage from "@/pages/user/UserChatPage";
 import UserChatListPage from "@/pages/user/UserListPage";
 import UserAboutPage from "@/pages/user/UserAboutPage";
 import { UserContactPage } from "@/pages/user/UserContactPage";
+import NotFoundPage from "@/pages/404Page";
 
 
 
@@ -40,7 +40,6 @@ function UserRoutes() {
         <Route path="/auth" element={<UserAuth />} />
       </Route>
       
-      <Route path = "/boooks" element={<BooksFetchPage/>}/>
       <Route path="/book/:bookId" element={<BookView/>}/>
       <Route path="/forgot-password/:role" element={<ForgotPassword />} />
       <Route path="/reset-password/:token/:role" element={<ResetPassword />} />
@@ -83,6 +82,8 @@ function UserRoutes() {
       <Route path="/purse" element={<UserPursePage/>} />
       <Route path="/contract-requests" element={<UserContractRequestsPage/>} />
       <Route path="/fix-deal/:conReqId" element={<UserContractFormPage/>} />
+
+      <Route path="*" element={<NotFoundPage/>} />
       </Route> 
 
        

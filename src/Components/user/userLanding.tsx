@@ -2,7 +2,7 @@ import { Search, Calendar, Book, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import img from "../../assets/WhatsApp Image 2025-04-10 at 18.53.07_53f9828d.jpg";
-import BooksFetchPageInner from './book/fetchAllAvailableBooks'; // Import the BooksFetchPageInner component
+import BooksFetchPageInner from './book/fetchAllAvailableBooks'; 
 
 const UserLanding: React.FC = () => {
     // Create a ref for the BooksFetchPageInner section
