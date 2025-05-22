@@ -1,6 +1,7 @@
 // import Footer from "@/Components/footer/userFooter";
 import { UserHeader } from "@/Components/headers/userHeader";
-import { UserPurse } from "../../Components/user/purse/UserPurse";
+import UserPurse from "@/Components/user/purse/UserPurse";
+
 
 function UserPursePage() {
   return (
