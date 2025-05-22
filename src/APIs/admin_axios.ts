@@ -8,7 +8,7 @@ export const adminAxiosInstance = axios.create({
 	withCredentials: true,
 });
 
-let isRefreshing = false;
+let isRefreshing = false
 
 adminAxiosInstance.interceptors.response.use(
 	(response) => response,
