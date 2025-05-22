@@ -590,9 +590,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           style={{ height: "100%", width: "100%" }}
           dragging={!searchMode}
           tap={!searchMode}
-          // whenCreated={(map:Map) => {
-          //   mapRef.current = map;
-          // }} 
         >
           <TileLayer
             attribution='© <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
