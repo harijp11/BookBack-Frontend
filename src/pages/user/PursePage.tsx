@@ -3,6 +3,7 @@ import { UserHeader } from "@/Components/headers/userHeader";
 import UserPurse from "@/Components/user/purse/UserPurse";
 
 
+
 function UserPursePage() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -12,7 +13,7 @@ function UserPursePage() {
 
       <main className="flex-grow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -py-8">
-          <UserPurse />
+         <UserPurse/>
         </div>
       </main>
 
