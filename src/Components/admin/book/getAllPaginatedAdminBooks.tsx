@@ -123,7 +123,7 @@ const AdminPaginatedBooksComponent: React.FC = () => {
       header: 'Image',
       accessor: (book: IBook) => (
         <button
-          onClick={() => navigate(`/book/${book._id}`)}
+          // onClick={() => navigate(`/book/${book._id}`)}
           className="focus:outline-none"
         >
           {book.images && book.images.length > 0 ? (
