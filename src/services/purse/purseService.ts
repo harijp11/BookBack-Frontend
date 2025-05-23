@@ -12,7 +12,7 @@ export interface IPurseTransaction {
     amount: number;                
     status: 'pending' | 'completed' | 'failed';
     description?: string;            
-    createdAt: Date;               
+    createdAt: Date | string;               
   }
 
 

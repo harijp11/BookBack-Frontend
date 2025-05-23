@@ -18,7 +18,7 @@ export const useAddMoneyMutation = () => {
   
   return useMutation({
     mutationFn: async ({ amount }: { amount: number }) => {
-      const paymentIntent = await createPaymentIntent(amount, 'usd')
+      const paymentIntent = await createPaymentIntent(amount, 'inr') // Changed to 'inr'
       if (!paymentIntent) {
         throw new Error("Failed to create PaymentIntent")
       }

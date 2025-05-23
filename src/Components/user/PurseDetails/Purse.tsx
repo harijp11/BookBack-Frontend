@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { type IPurseTransaction } from "@/services/purse/purseService"
+import { CombinedResponse, type IPurseTransaction } from "@/services/purse/purseService"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card"
 import { Badge } from "@/Components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
@@ -16,7 +16,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { loadStripe } from '@stripe/stripe-js'
 import { usePurseQuery, useAddMoneyMutation, useConfirmPaymentMutation } from '@/hooks/user/purse/usePurseMutation'
 import { PaymentResult } from "@/Components/user/PurseDetails/PaymentResult"
-
+import { useQueryClient } from '@tanstack/react-query'
 
 
 
@@ -152,6 +152,9 @@ const stripePromise = loadStripe('pk_test_51RIApnCtf3xhldA5Yk7WHe7BWQ4707WcGv4Cg
   )
 }
 
+
+
+
 function AddMoneyModal({
   isOpen,
   onClose,
@@ -169,6 +172,7 @@ function AddMoneyModal({
 }) {
   const stripe = useStripe()
   const elements = useElements()
+  const queryClient = useQueryClient()
   
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [paymentError, setPaymentError] = useState<string | null>(null)
@@ -185,14 +189,32 @@ function AddMoneyModal({
       setPaymentStatus("processing")
       setPaymentError(null)
       
-      const amountInCents = Number(amount) * 100 // Convert to cents
-      if (amountInCents <= 0) {
+      const amountInPaisa = Number(amount) * 100 // Convert rupees to paisa
+      if (amountInPaisa <= 0) {
         throw new Error("Amount must be greater than zero")
       }
 
+      // Optimistic update
+      queryClient.setQueryData(['purseDetails'], (oldData:CombinedResponse) => {
+        if (!oldData) return oldData
+        const newTransaction: IPurseTransaction = {
+          tsId: `temp-${Date.now()}`, // Temporary ID
+          type: "credit",
+          amount: amountInPaisa / 100, // Convert back to rupees for display
+          status: "pending",
+          createdAt: new Date().toISOString(),
+          description: "Added money to purse",
+        }
+        return {
+          ...oldData,
+          balance: oldData.balance + amountInPaisa / 100,
+          transactions: [newTransaction, ...(oldData.transactions || [])],
+        }
+      })
+
       // Step 1: Create payment intent
       const paymentIntent = await addMoneyMutation.mutateAsync({ 
-        amount: amountInCents 
+        amount: amountInPaisa 
       })
 
       // Step 2: Confirm payment
@@ -209,8 +231,10 @@ function AddMoneyModal({
 
       // Payment successful
       setPaymentStatus("success")
+      // Hooks handle invalidation, so no need to invalidate here
     } catch (err) {
-      // Payment failed
+      // Revert optimistic update on failure
+      queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
       setPaymentStatus("error")
       setPaymentError(err instanceof Error ? err.message : "An unexpected error occurred")
       console.error(err)
@@ -224,15 +248,12 @@ function AddMoneyModal({
       setAmount("")
       setPaymentStatus("idle")
     } else if (paymentStatus === "error") {
-      // Just reset status on error so they can try again
+      // Reset status on error to allow retry
       setPaymentStatus("idle")
     }
   }
 
-  // Combined loading state
   const isProcessing = isLoading || addMoneyMutation.isPending || confirmPaymentMutation.isPending || paymentStatus === "processing"
-  
-  // Combined error state
   const combinedError = error || 
     paymentError ||
     (addMoneyMutation.error instanceof Error ? addMoneyMutation.error.message : null) ||
@@ -292,10 +313,9 @@ function AddMoneyModal({
                         },
                       },
                     }}
-                    // disabled={isProcessing}
                   />
                 </div>
-                {combinedError &&(
+                {combinedError && (
                   <p className="text-sm text-red-500">{combinedError}</p>
                 )}
               </div>
