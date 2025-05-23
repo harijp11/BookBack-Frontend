@@ -208,7 +208,7 @@ function AddMoneyModal({
         const newTransaction: IPurseTransaction = {
           tsId: `temp-${Date.now()}`,
           type: "credit",
-          amount: amountInPaisa / 100, // Convert back to rupees
+          amount: amountInPaisa / 100, 
           status: "completed",
           createdAt: new Date().toISOString(),
           description: "Added money to purse",
@@ -243,8 +243,8 @@ function AddMoneyModal({
       toast.success( `Successfully added ₹${amount} to your purse!`)
       console.log('Transaction successful, waiting for purseDetails refetch')
       
-      // // Force refetch as a fallback
-      // queryClient.refetchQueries({ queryKey: ['purseDetails'] })
+      // Force refetch as a fallback
+      queryClient.refetchQueries({ queryKey: ['purseDetails'] })
     } catch (err) {
       // Revert optimistic update
       queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
