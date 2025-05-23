@@ -241,7 +241,7 @@ function AddMoneyModal({
       // Payment successful
       setPaymentStatus("success")
       toast.success( `Successfully added ₹${amount} to your purse!`)
-      console.log('Transaction successful, waiting for purseDetails refetch')
+    
       
       // // Force refetch as a fallback
       setTimeout(()=>queryClient.refetchQueries({ queryKey: ['purseDetails'] }),1000)

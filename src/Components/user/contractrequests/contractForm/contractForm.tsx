@@ -447,7 +447,7 @@ const ContractForm: React.FC = () => {
             isOpen={isResultModalOpen}
             onClose={() => {
               setIsResultModalOpen(false);
-              console.log("contract requestb tyepe",contractRequest.request_type)
+          
               if (contractRequest.request_type === "buy") {
                 navigate("/bought-Books");
               } else {

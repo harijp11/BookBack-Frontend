@@ -19,7 +19,7 @@ const BorrowedBooks: React.FC = () => {
 
   const { data, isLoading, error } = useBorrowedBooksQuery(page, limit, filterOptions);
  const navigate = useNavigate()
-  console.log("API response data:", data); // Debugging
+ 
 
   const hasActiveFilters = !!(
     filterOptions.dateRange.startDate ||
@@ -29,7 +29,7 @@ const BorrowedBooks: React.FC = () => {
   );
 
   const handleApplyFilters = (filters: FilterOptions) => {
-    console.log("Applied filters:", filters);
+   
     const sanitizedFilters: FilterOptions = {
       dateRange: {
         startDate: filters.dateRange.startDate || null,

@@ -18,7 +18,7 @@ const RentedOutBooks: React.FC = () => {
 
   const { data, isLoading, error } = useRentedOutBooksQuery(page, limit, filterOptions);
 
-  console.log("API response data:", data); // Debugging
+ 
   const navigate = useNavigate()
   const hasActiveFilters = !!(
     filterOptions.dateRange.startDate ||
@@ -28,7 +28,7 @@ const RentedOutBooks: React.FC = () => {
   );
 
   const handleApplyFilters = (filters: FilterOptions) => {
-    console.log("Applied filters:", filters);
+ 
     const sanitizedFilters: FilterOptions = {
       dateRange: {
         startDate: filters.dateRange.startDate || null,

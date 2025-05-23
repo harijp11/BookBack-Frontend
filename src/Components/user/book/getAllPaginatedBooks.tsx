@@ -48,20 +48,7 @@ const PaginatedBooksComponent: React.FC = () => {
   }, [isError, error, toast]);
 
   // Debugging query states
-  useEffect(() => {
-    console.log('Categories Query:', {
-      isLoading: categoriesQuery.isLoading,
-      isError: categoriesQuery.isError,
-      data: categoriesQuery.data,
-      error: categoriesQuery.error,
-    });
-    console.log('Deal Types Query:', {
-      isLoading: dealTypesQuery.isLoading,
-      isError: dealTypesQuery.isError,
-      data: dealTypesQuery.data,
-      error: dealTypesQuery.error,
-    });
-  }, [categoriesQuery, dealTypesQuery]);
+ 
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

@@ -141,7 +141,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
       dealTypesQuery.data
     ) {
       const book = bookQuery.data;
-      console.log("Populating form with book data:", book);
+      
       // Validate categoryId and dealTypeId
       const categoryExists = categoriesQuery.data.some(
         (cat) => cat._id === book.categoryId._id
@@ -182,20 +182,12 @@ function BookFormPage({ mode }: BookFormPageProps) {
       );
       setImages(book.images || []);
       setIsFormReady(true);
-      console.log("Book images:", book.images);
+   
     }
   }, [bookQuery?.data, categoriesQuery.data, dealTypesQuery.data, mode, form]);
 
   // Debug form values and errors
-  useEffect(() => {
-    console.log("Form values:", {
-      categoryId: form.getValues("categoryId"),
-      dealTypeId: form.getValues("dealTypeId"),
-      rentAmount: form.getValues("rentAmount"),
-      maxRentalPeriod: form.getValues("maxRentalPeriod"),
-    });
-    console.log("Form errors:", form.formState.errors);
-  }, [form, isFormReady]);
+
 
   // Handle location change from LocationPicker
   const handleLocationChange = useCallback(
@@ -356,7 +348,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
   // Form submission
   const onSubmit = useCallback(
     async (values: FormValues) => {
-      console.log("Form submitted with values:", values);
+    
       if (!userId) {
         warning("User ID is missing. Please check your URL.");
         return;
@@ -405,7 +397,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
           location: locationData,
           locationName: values.locationName,
         };
-        console.log("Submitting book data:", bookData);
+      
 
         if (mode === "create") {
           await createBookMutation.mutateAsync(bookData);
@@ -534,7 +526,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit((values) => {
-              console.log("handleSubmit triggered");
+          
               onSubmit(values);
             })}
           >

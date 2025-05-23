@@ -28,7 +28,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
   const receiverName = receiverData?.receiverDetails?.Name || receiverId;
   const receiverProfileImage = receiverData?.receiverDetails?.profileImage || `https://placehold.co/40x40?text=${receiverName.charAt(0).toUpperCase()}`;
   const receiverOnlineStatus = receiverData?.receiverDetails?.onlineStatus || "offline";
-  console.log("receiver details", receiverData, receiverName, receiverProfileImage);
+ 
 
   const chatRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,12 +54,12 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       return;
     }
 
-    console.log('Setting up socket for chat:', { userId, receiverId });
+  
     socketClient.connect();
     socketClient.register(userId);
 
     const handleMessages = ({ messages }: { messages: Message[] }) => {
-      console.log('Messages received:', messages);
+    
       if (!Array.isArray(messages)) {
         console.error('Invalid messages format: not an array', messages);
         return;
@@ -112,7 +112,6 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     };
 
     const handleMessageStatusUpdated = ({ messageId, status }: { messageId: string; status: 'sent' | 'delivered' | 'read' }) => {
-      console.log('Updating message status:', { messageId, status });
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === messageId ? { ...msg, status } : msg
@@ -134,7 +133,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       toast.error('Failed to connect to chat server');
     };
 
-    console.log('Emitting getMessages:', { userId, receiverId });
+  
     socketClient.getMessages(userId, receiverId, handleMessages);
     socketClient.onReceiveMessage(handleReceiveMessage);
     socketClient.onMessageStatusUpdated(handleMessageStatusUpdated);
@@ -142,7 +141,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     socketClient.socket.on('connect_error', handleConnectError);
 
     return () => {
-      console.log('Cleaning up socket listeners for:', { userId, receiverId });
+   
       socketClient.socket.off('messageHistory', handleMessages);
       socketClient.socket.off('receiveMessage', handleReceiveMessage);
       socketClient.socket.off('messageStatusUpdated', handleMessageStatusUpdated);
@@ -168,7 +167,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
         !processedMessageIds.current.has(msg._id) &&
         msg._id
       ) {
-        console.log('Emitting read status for message:', { messageId: msg._id, status: 'read' });
+     
         socketClient.updateMessageStatus(msg._id, 'read');
         processedMessageIds.current.add(msg._id);
       } else if (!msg._id) {
@@ -193,7 +192,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       let mediaUrl = '';
       if (media) {
         setIsUploading(true);
-        console.log('Uploading media to Cloudinary:', media.name);
+       
         const signatureData: CloudinarySignatureResponse = await getCloudinarySignature();
         const { signature, timestamp, cloudName, apiKey, folder } = signatureData;
 
@@ -217,10 +216,10 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
 
         const uploadData = await uploadResponse.json();
         mediaUrl = uploadData.secure_url;
-        console.log('Media uploaded:', mediaUrl);
+      
       }
 
-      console.log('Sending message:', { userId, receiverId, content, mediaUrl, messageType: media ? 'media' : 'text' });
+    
       socketClient.sendMessage(userId, receiverId, content, mediaUrl, media ? 'media' : 'text');
       socketClient.emitMessageSent({ senderId: userId, receiverId });
       setContent('');

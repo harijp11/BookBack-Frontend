@@ -28,7 +28,7 @@ const BoughtBooks: React.FC = () => {
     filterOptions
   );
 
-  console.log("API response data:", data);
+ 
 
   const hasActiveFilters = !!(
     filterOptions.dateRange.startDate ||

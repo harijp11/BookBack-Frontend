@@ -8,7 +8,6 @@ import {
   DollarSign,
   User,
   ArrowLeft,
-  Heart,
   Share2,
   BookOpen,
   FileText,
@@ -28,7 +27,7 @@ import { RootState } from "@/store/store";
 
 const BookView: React.FC = () => {
   const [activeImage, setActiveImage] = useState<string>("");
-  const [isHeartActive, setIsHeartActive] = useState<boolean>(false);
+  // const [isHeartActive, setIsHeartActive] = useState<boolean>(false);
   const [showShareTooltip, setShowShareTooltip] = useState<boolean>(false);
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -79,8 +78,7 @@ const BookView: React.FC = () => {
   if (requestExistsData && "request" in requestExistsData) {
     requestStatus = existingRequest ? requestExistsData?.request?.status : null;
   }
-  console.log("existing request data", requestExistsData);
-  console.log("existing request status", requestStatus);
+
   // Set active image when book data is loaded
   useEffect(() => {
     if (book?.images && book.images.length > 0) {
@@ -311,7 +309,7 @@ const BookView: React.FC = () => {
             <span className="font-medium">Back to Library</span>
           </Link>
           <div className="flex items-center gap-4">
-            <button
+            {/* <button
               onClick={() => setIsHeartActive(!isHeartActive)}
               className={cn(
                 "p-2 rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 transition-all duration-300 hover:scale-110",
@@ -319,7 +317,7 @@ const BookView: React.FC = () => {
               )}
             >
               <Heart size={20} fill={isHeartActive ? "currentColor" : "none"} />
-            </button>
+            </button> */}
             <div className="relative">
               <button
                 onClick={() => setShowShareTooltip(!showShareTooltip)}

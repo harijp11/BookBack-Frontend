@@ -11,7 +11,7 @@ interface GoogleAuthProps {
 
 const GoogleAuth: React.FC<GoogleAuthProps> = ({ handleGoogleSuccess }) => {
   const userId: string = import.meta.env.VITE_GOOGLE_CLIENT_ID
-   console.log(userId)
+
   return (
     <GoogleOAuthProvider clientId={userId}>
       <GoogleLogin

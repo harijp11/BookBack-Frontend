@@ -24,7 +24,7 @@ const BoughtBookDetailsPage: React.FC = () => {
   const [showToast, setShowToast] = useState<string | null>(null);
 
   // Debug render phase
-  console.log("Rendering BoughtBookDetailsPage", isLoading, error, data);
+ 
 
   // Set toast message when error occurs
   useEffect(() => {
@@ -39,7 +39,6 @@ const BoughtBookDetailsPage: React.FC = () => {
   // Trigger toast in a separate effect
   useEffect(() => {
     if (showToast) {
-      console.log("Triggering toast.error with state:", showToast);
       toast.error(showToast);
       setShowToast(null); // Reset to prevent re-triggering
     }

@@ -30,7 +30,7 @@ const UserList: React.FC<UserListProps> = ({ onClose }) => {
       setLoading(true);
       const response = await refetchChats(); // Trigger the query manually
       const data = response.data;
-      console.log("fetchUserChatList response:", data);
+  
       if (data?.success && Array.isArray(data.chatList)) {
         const mappedChats: ChatPreview[] = data.chatList.map(
           (chat: Chat) => ({
@@ -54,7 +54,7 @@ const UserList: React.FC<UserListProps> = ({ onClose }) => {
           })
         );
         setChats(mappedChats);
-        console.log("mappedChats:", mappedChats);
+       
       } else {
         setChats([]);
         toast.info("No Chats available");
@@ -80,7 +80,7 @@ const UserList: React.FC<UserListProps> = ({ onClose }) => {
     fetchChats();
 
     const handleNewChat = ({ chat }: { chat: Chat }) => {
-      console.log('New chat received:', chat);
+  
       const newChat: ChatPreview = {
         userId:
           chat.userId1._id === userData._id ? chat.userId2._id : chat.userId1._id,
@@ -109,7 +109,7 @@ const UserList: React.FC<UserListProps> = ({ onClose }) => {
     };
 
     const handleMessageSent = ({ senderId, receiverId }: { senderId: string; receiverId: string }) => {
-      console.log('Message sent received:', { senderId, receiverId });
+    
       const otherUserId = senderId === userData._id ? receiverId : senderId;
       setNewMessageUsers((prev) => new Set(prev).add(otherUserId));
       if (senderId === userData._id || receiverId === userData._id) {

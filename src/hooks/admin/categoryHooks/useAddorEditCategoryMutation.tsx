@@ -43,7 +43,7 @@ export const useCategoryMutation = (options?: UseCategoryMutationOptions) => {
         name: data.name,
         description: data.description
       });
-      console.log("addoeedit",response)
+    
       if (response.success) {
         toast.success(response.message || `Category ${categoryId ? "updated" : "created"} successfully`);
         if (options?.onSuccess) {

@@ -62,9 +62,7 @@ export default function Index() {
 
 
 
-  const markAsRead = (id: string) => {
-    console.log(`Marking notification ${id} as read`);
-  };
+ 
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
   const filteredNotifications = notifications;
@@ -168,7 +166,7 @@ export default function Index() {
                   <NotificationCard 
                     key={notification._id} 
                     notification={notification}
-                    onMarkAsRead={markAsRead}
+                  
                   />
                 ))}
               </div>
@@ -209,7 +207,6 @@ export default function Index() {
 
 interface NotificationCardProps {
   notification: Notification;
-  onMarkAsRead: (id: string) => void;
 }
 
 function NotificationCard({ notification }: NotificationCardProps) {

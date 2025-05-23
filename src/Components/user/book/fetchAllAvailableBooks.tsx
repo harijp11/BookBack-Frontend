@@ -76,8 +76,7 @@ const BooksFetchPageInner: React.FC = () => {
       )
     : undefined;
 
-    console.log("normal filter",Object.keys(filters).length > 0 ? filters : undefined)
-    console.log("converted filter",convertedFilters)
+  
   // Construct query params
   const queryParams: GetBooksByLocationInput = {
     userId: user?._id || "",
@@ -104,10 +103,7 @@ const BooksFetchPageInner: React.FC = () => {
   }, [location.point1, fetchBooks])
 
 
-  useEffect(() => {
-    console.log("Books data:", booksResponse);
-    console.log("Loading state:", loading);
-  }, [booksResponse, loading]);
+  
 
   // Effect to refetch when debounced search changes
   useEffect(() => {
