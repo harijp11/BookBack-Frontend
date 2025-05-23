@@ -279,6 +279,42 @@ const BookView: React.FC = () => {
   // Check if the book is available
   const isAvailable = book.status === "Available";
 
+  // Handle share functionality
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/book/${bookId}`;
+    const shareData = {
+      title: book.name,
+      text: `Check out this book: ${book.name}`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (err) {
+      toast.error("Failed to share the book link");
+      console.error("Share error:", err);
+    }
+    setShowShareTooltip(false);
+  };
+
+  // Handle copy link
+  const handleCopyLink = async () => {
+    const shareUrl = `${window.location.origin}/book/${bookId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard!");
+    } catch (err) {
+      toast.error("Failed to copy the link");
+      console.error("Copy link error:", err);
+    }
+    setShowShareTooltip(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {showLocationPicker && (
@@ -310,7 +346,6 @@ const BookView: React.FC = () => {
             <span className="font-medium">Back to Library</span>
           </Link>
           <div className="flex items-center gap-4">
-           
             <div className="relative">
               <button
                 onClick={() => setShowShareTooltip(!showShareTooltip)}
@@ -321,35 +356,31 @@ const BookView: React.FC = () => {
               {showShareTooltip && (
                 <div className="absolute right-0 mt-2 py-2 px-4 bg-white rounded-md shadow-xl border border-gray-100 z-30 animate-scale-in min-w-[130px]">
                   <div className="flex flex-col gap-2 text-sm">
-                    <button className="text-left hover:text-black transition-colors flex items-center gap-2 py-1">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" />
-                      </svg>
-                      Facebook
+                    <button
+                      onClick={handleShare}
+                      className="text-left hover:text-black transition-colors flex items-center gap-2 py-1"
+                    >
+                      <Share2 size={16} />
+                      Share via...
                     </button>
-                    <button className="text-left hover:text-black transition-colors flex items-center gap-2 py-1">
+                    <button
+                      onClick={handleCopyLink}
+                      className="text-left hover:text-black transition-colors flex items-center gap-2 py-1"
+                    >
                       <svg
                         className="w-4 h-4"
-                        fill="currentColor"
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
                       </svg>
-                      Twitter
-                    </button>
-                    <button className="text-left hover:text-black transition-colors flex items-center gap-2 py-1">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z" />
-                      </svg>
-                      Instagram
+                      Copy Link
                     </button>
                   </div>
                 </div>

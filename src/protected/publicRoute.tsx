@@ -2,6 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store'; // Update this path to match your store location
 
+
 export const PublicRoute = ({ 
     authType,
     children,
@@ -11,7 +12,7 @@ export const PublicRoute = ({
     children?: React.ReactNode;
     redirectLoggedInTo?: string;
   }) => {
-    
+   
     const isAuthenticated = useSelector((state: RootState) => 
       authType === 'admin' 
         ? Boolean(state.admin.admin) 

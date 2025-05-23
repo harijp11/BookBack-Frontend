@@ -4,8 +4,12 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import type { RootState } from "@/store/store"
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/Components/ui/tabs"
+import { Card, CardContent,
+  //  CardDescription, CardHeader, CardTitle
+   } from "@/Components/ui/card"
+import { 
+  // Tabs, TabsList, TabsTrigger, TabsContent
+ } from "@/Components/ui/tabs"
 import { Badge } from "@/Components/ui/badge"
 import { Button } from "@/Components/ui/button"
 import {
@@ -20,9 +24,9 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  BarChart3,
-  Clock,
-  Settings,
+  // BarChart3,
+  // Clock,
+  // Settings,
 } from "lucide-react"
 import { Input } from "@/Components/ui/input"
 import { Label } from "@/Components/ui/label"
@@ -393,7 +397,7 @@ const parseZodErrors = <T extends object>(
         </div>
 
         {/* Tabs Section */}
-        <div className="w-full md:w-2/3 p-4">
+        {/* <div className="w-full md:w-2/3 p-4">
           <Tabs defaultValue="current" className="w-full">
             <div className="flex justify-between items-center mb-6">
               <TabsList className="bg-white border border-gray-200 p-1 rounded-lg shadow-md">
@@ -469,7 +473,7 @@ const parseZodErrors = <T extends object>(
               </TabsContent>
             ))}
           </Tabs>
-        </div>
+        </div> */}
       </div>
 
       {/* Dialogs */}
