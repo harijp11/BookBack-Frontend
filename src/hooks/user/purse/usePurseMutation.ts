@@ -8,13 +8,13 @@ export const usePurseQuery = () => {
     queryKey: ['purseDetails'],
     queryFn: async () => {
       const data = await fetchPurseDetails()
+      console.log('fetchPurseDetails response:', data) // Add logging for debugging
       return data?.purse
     }
   })
 }
 
 export const useAddMoneyMutation = () => {
-  const queryClient = useQueryClient()
   
   return useMutation({
     mutationFn: async ({ amount }: { amount: number }) => {
@@ -22,11 +22,10 @@ export const useAddMoneyMutation = () => {
       if (!paymentIntent) {
         throw new Error("Failed to create PaymentIntent")
       }
+      console.log('PaymentIntent created:', paymentIntent) // Add logging
       return paymentIntent
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
     }
+    // Remove onSuccess invalidation to avoid premature refetch
   })
 }
 
@@ -52,7 +51,7 @@ export const useConfirmPaymentMutation = () => {
       if (error) {
         throw new Error(error.message)
       }
-      
+      console.log('Payment confirmed:', paymentIntent) // Add logging
       return paymentIntent
     },
     onSuccess: () => {

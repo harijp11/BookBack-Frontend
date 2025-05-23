@@ -17,6 +17,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { usePurseQuery, useAddMoneyMutation, useConfirmPaymentMutation } from '@/hooks/user/purse/usePurseMutation'
 import { PaymentResult } from "@/Components/user/PurseDetails/PaymentResult"
 import { useQueryClient } from '@tanstack/react-query'
+import { useToast } from "@/hooks/ui/toast"
 
 
 
@@ -24,7 +25,6 @@ const stripePromise = loadStripe('pk_test_51RIApnCtf3xhldA5Yk7WHe7BWQ4707WcGv4Cg
  const Purse = () => {
   const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState<string>("")
-  
  
   const { 
     data: purseData, 
@@ -176,14 +176,18 @@ function AddMoneyModal({
   
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [paymentError, setPaymentError] = useState<string | null>(null)
-  
+   const toast = useToast()
   const addMoneyMutation = useAddMoneyMutation()
   const confirmPaymentMutation = useConfirmPaymentMutation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!stripe || !elements) return
+    if (!stripe || !elements) {
+      setPaymentError("Stripe or card element not initialized")
+      setPaymentStatus("error")
+      return
+    }
     
     try {
       setPaymentStatus("processing")
@@ -195,12 +199,12 @@ function AddMoneyModal({
       }
 
       // Optimistic update
-      queryClient.setQueryData(['purseDetails'], (oldData:CombinedResponse) => {
+      queryClient.setQueryData(['purseDetails'], (oldData: CombinedResponse | undefined) => {
         if (!oldData) return oldData
         const newTransaction: IPurseTransaction = {
-          tsId: `temp-${Date.now()}`, // Temporary ID
+          tsId: `temp-${Date.now()}`,
           type: "credit",
-          amount: amountInPaisa / 100, // Convert back to rupees for display
+          amount: amountInPaisa / 100, // Convert back to rupees
           status: "pending",
           createdAt: new Date().toISOString(),
           description: "Added money to purse",
@@ -231,24 +235,25 @@ function AddMoneyModal({
 
       // Payment successful
       setPaymentStatus("success")
-      // Hooks handle invalidation, so no need to invalidate here
+      toast.success(`Successfully added ₹${amount} to your purse!`) // Add toast
+      console.log('Transaction successful, waiting for purseDetails refetch')
     } catch (err) {
-      // Revert optimistic update on failure
+      // Revert optimistic update
       queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
       setPaymentStatus("error")
-      setPaymentError(err instanceof Error ? err.message : "An unexpected error occurred")
-      console.error(err)
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred"
+      setPaymentError(errorMessage)
+      toast.error(errorMessage) // Add toast
+      console.error('Transaction failed:', err)
     }
   }
 
   const handleDismiss = () => {
     if (paymentStatus === "success") {
-      // Reset and close on success
       onClose()
       setAmount("")
       setPaymentStatus("idle")
     } else if (paymentStatus === "error") {
-      // Reset status on error to allow retry
       setPaymentStatus("idle")
     }
   }
