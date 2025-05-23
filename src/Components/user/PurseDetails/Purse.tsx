@@ -20,7 +20,7 @@ import { PaymentResult } from "@/Components/user/PurseDetails/PaymentResult"
 
 
 
-const stripePromise = loadStripe('pk_test_51RIAruRtuCub2T27DnxxEqDHZNN1Y9y3mKkkSGS6ppflKtMBH202fZBlkPdlJtnrhDNkXOn2I5lsRRckG4MAvYR600K0Oosioa')
+const stripePromise = loadStripe('pk_test_51RIApnCtf3xhldA5Yk7WHe7BWQ4707WcGv4CgIwnuY7qDF0HHIAx16m6n86MS1Q6JNTNRcXmQ6v29UIWncfcsJq900X4vKbJBz')
  const Purse = () => {
   const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState<string>("")
