@@ -244,7 +244,7 @@ function AddMoneyModal({
       console.log('Transaction successful, waiting for purseDetails refetch')
       
       // // Force refetch as a fallback
-      // queryClient.refetchQueries({ queryKey: ['purseDetails'] })
+      setTimeout(()=>queryClient.refetchQueries({ queryKey: ['purseDetails'] }),1000)
     } catch (err) {
       // Revert optimistic update
       queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
