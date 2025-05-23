@@ -58,9 +58,11 @@ const BookView: React.FC = () => {
     throw new Error("Book ID is required");
   }
 
-  // Check if a request already exists for this book and user, only if user exists
-  const { data: requestExistsData, isLoading: checkingRequest } =  useCheckIfRequestExists(user!._id, bookId)
-  
+  // Check if a request already exists for this book and user, only enabled if user exists
+  const { data: requestExistsData, isLoading: checkingRequest } = useCheckIfRequestExists(
+    user?._id ?? "",
+    bookId,
+  );
 
   // Contract request mutation
   const { mutate: sendContractRequest, isPending: isSubmitting } =
