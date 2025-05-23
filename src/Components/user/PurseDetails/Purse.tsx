@@ -173,10 +173,11 @@ function AddMoneyModal({
   const stripe = useStripe()
   const elements = useElements()
   const queryClient = useQueryClient()
+  const  toast  = useToast() // Use the toast hook
   
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [paymentError, setPaymentError] = useState<string | null>(null)
-   const toast = useToast()
+  
   const addMoneyMutation = useAddMoneyMutation()
   const confirmPaymentMutation = useConfirmPaymentMutation()
 
@@ -184,8 +185,11 @@ function AddMoneyModal({
     e.preventDefault()
     
     if (!stripe || !elements) {
-      setPaymentError("Stripe or card element not initialized")
+      const errorMessage = "Stripe or card element not initialized"
+      setPaymentError(errorMessage)
       setPaymentStatus("error")
+      toast.error(errorMessage)
+      console.error(errorMessage)
       return
     }
     
@@ -209,6 +213,7 @@ function AddMoneyModal({
           createdAt: new Date().toISOString(),
           description: "Added money to purse",
         }
+        console.log('Applying optimistic update:', { newBalance: oldData.balance + amountInPaisa / 100, newTransaction })
         return {
           ...oldData,
           balance: oldData.balance + amountInPaisa / 100,
@@ -235,15 +240,18 @@ function AddMoneyModal({
 
       // Payment successful
       setPaymentStatus("success")
-      toast.success(`Successfully added ₹${amount} to your purse!`) // Add toast
+      toast.success( `Successfully added ₹${amount} to your purse!`)
       console.log('Transaction successful, waiting for purseDetails refetch')
+      
+      // Force refetch as a fallback
+      queryClient.refetchQueries({ queryKey: ['purseDetails'] })
     } catch (err) {
       // Revert optimistic update
       queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
       setPaymentStatus("error")
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred"
       setPaymentError(errorMessage)
-      toast.error(errorMessage) // Add toast
+      toast.error(errorMessage)
       console.error('Transaction failed:', err)
     }
   }
