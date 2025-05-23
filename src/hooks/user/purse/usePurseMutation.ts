@@ -1,5 +1,5 @@
 // src/hooks/usePurseMutations.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { fetchPurseDetails, createPaymentIntent } from "@/services/purse/purseService"
 import { Stripe, StripeCardElement } from '@stripe/stripe-js'
 
@@ -32,7 +32,6 @@ export const useAddMoneyMutation = () => {
 }
 
 export const useConfirmPaymentMutation = () => {
-  const queryClient = useQueryClient()
   
   return useMutation({
     mutationFn: async ({ 
@@ -60,7 +59,6 @@ export const useConfirmPaymentMutation = () => {
     },
     onSuccess: () => {
       console.log('Invalidating purseDetails after successful payment confirmation')
-      queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
     },
     onError: (error) => {
       console.error('useConfirmPaymentMutation error:', error)

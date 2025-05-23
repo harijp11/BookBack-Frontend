@@ -216,7 +216,7 @@ function AddMoneyModal({
         console.log('Applying optimistic update:', { newBalance: oldData.balance + amountInPaisa / 100, newTransaction })
         return {
           ...oldData,
-          balance: oldData.balance + amountInPaisa / 100,
+          balance: oldData.balance,
           transactions: [newTransaction, ...(oldData.transactions || [])],
         }
       })

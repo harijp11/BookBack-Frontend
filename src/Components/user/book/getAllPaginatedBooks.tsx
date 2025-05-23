@@ -139,7 +139,7 @@ const PaginatedBooksComponent: React.FC = () => {
       header: 'Name',
       accessor: (book: IBook) => (
         <button
-          onClick={() => navigate(`/book/${book._id}`)}
+           onClick={() => navigate(`/book/owner/${book._id}`)}
           className="font-medium text-gray-900 hover:text-primary transition-colors focus:outline-none"
         >
           {book.name}
