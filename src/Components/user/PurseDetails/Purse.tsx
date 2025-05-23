@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CombinedResponse, type IPurseTransaction } from "@/services/purse/purseService"
+import { type IPurseTransaction } from "@/services/purse/purseService"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card"
 import { Badge } from "@/Components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
@@ -202,24 +202,24 @@ function AddMoneyModal({
         throw new Error("Amount must be greater than zero")
       }
 
-      // Optimistic update
-      queryClient.setQueryData(['purseDetails'], (oldData: CombinedResponse | undefined) => {
-        if (!oldData) return oldData
-        const newTransaction: IPurseTransaction = {
-          tsId: `temp-${Date.now()}`,
-          type: "credit",
-          amount: amountInPaisa / 100, 
-          status: "completed",
-          createdAt: new Date().toISOString(),
-          description: "Added money to purse",
-        }
-        console.log('Applying optimistic update:', { newBalance: oldData.balance + amountInPaisa / 100, newTransaction })
-        return {
-          ...oldData,
-          balance: oldData.balance + amountInPaisa / 100,
-          transactions: [newTransaction, ...(oldData.transactions || [])],
-        }
-      })
+      // // Optimistic update
+      // queryClient.setQueryData(['purseDetails'], (oldData: CombinedResponse | undefined) => {
+      //   if (!oldData) return oldData
+      //   const newTransaction: IPurseTransaction = {
+      //     tsId: `temp-${Date.now()}`,
+      //     type: "credit",
+      //     amount: amountInPaisa / 100, 
+      //     status: "completed",
+      //     createdAt: new Date().toISOString(),
+      //     description: "Added money to purse",
+      //   }
+      //   console.log('Applying optimistic update:', { newBalance: oldData.balance + amountInPaisa / 100, newTransaction })
+      //   return {
+      //     ...oldData,
+      //     balance: oldData.balance + amountInPaisa / 100,
+      //     transactions: [newTransaction, ...(oldData.transactions || [])],
+      //   }
+      // })
 
       // Step 1: Create payment intent
       const paymentIntent = await addMoneyMutation.mutateAsync({ 
