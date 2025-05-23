@@ -243,8 +243,8 @@ function AddMoneyModal({
       toast.success( `Successfully added ₹${amount} to your purse!`)
       console.log('Transaction successful, waiting for purseDetails refetch')
       
-      // Force refetch as a fallback
-      queryClient.refetchQueries({ queryKey: ['purseDetails'] })
+      // // Force refetch as a fallback
+      // queryClient.refetchQueries({ queryKey: ['purseDetails'] })
     } catch (err) {
       // Revert optimistic update
       queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
