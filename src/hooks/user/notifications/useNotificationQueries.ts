@@ -14,7 +14,6 @@ export const useFetchNotifications = (
     queryFn: async () => {
       try {
         const response = await fetchUserNotifications(filter, page, limit);
-        console.log("fetchUserNotifications Response:", response);
         return response;
       } catch (error) {
         console.error("fetchUserNotifications Error:", error);

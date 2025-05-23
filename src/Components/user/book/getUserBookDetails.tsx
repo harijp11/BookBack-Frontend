@@ -27,7 +27,6 @@ import { RootState } from "@/store/store";
 
 const BookView: React.FC = () => {
   const [activeImage, setActiveImage] = useState<string>("");
-  // const [isHeartActive, setIsHeartActive] = useState<boolean>(false);
   const [showShareTooltip, setShowShareTooltip] = useState<boolean>(false);
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -144,7 +143,7 @@ const BookView: React.FC = () => {
   // Handle contract request (for both rent and buy)
   const handleContractRequest = (requestType: "borrow" | "buy") => {
     // Check if user is logged in
-    if (!user || !user._id) {
+    if (!user || !user?._id) {
       toast.error("Please login to continue");
       navigate("/auth");
       return;
@@ -158,8 +157,8 @@ const BookView: React.FC = () => {
 
     // Prepare request payload
     const payload = {
-      requesterId: user._id,
-      ownerId: book.ownerId._id,
+      requesterId: user?._id,
+      ownerId: book.ownerId?._id,
       bookId: bookId || "",
       request_type: requestType,
     };
@@ -309,15 +308,7 @@ const BookView: React.FC = () => {
             <span className="font-medium">Back to Library</span>
           </Link>
           <div className="flex items-center gap-4">
-            {/* <button
-              onClick={() => setIsHeartActive(!isHeartActive)}
-              className={cn(
-                "p-2 rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 transition-all duration-300 hover:scale-110",
-                isHeartActive && "text-red-500 hover:text-red-600 bg-red-50"
-              )}
-            >
-              <Heart size={20} fill={isHeartActive ? "currentColor" : "none"} />
-            </button> */}
+           
             <div className="relative">
               <button
                 onClick={() => setShowShareTooltip(!showShareTooltip)}
@@ -612,8 +603,8 @@ const BookView: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {relatedBooks.map((relatedBook) => (
                 <Link
-                  key={relatedBook._id}
-                  to={`/book/${relatedBook._id}`}
+                  key={relatedBook?._id}
+                  to={`/book/${relatedBook?._id}`}
                   className="group"
                 >
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 h-full flex flex-col border border-gray-100 transform group-hover:-translate-y-2">

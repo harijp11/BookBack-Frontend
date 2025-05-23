@@ -3,7 +3,7 @@
 import { Card } from "@/Components/ui/card"
 import { Badge } from "@/Components/ui/badge"
 import { MapPin, Navigation, } from 'lucide-react'
-import { useEffect } from "react"
+
 
 
 export interface BookCardProps {
@@ -18,9 +18,7 @@ export interface BookCardProps {
 }
 
 export function BookCard({ title, imageUrl, category, originalPrice, rentalPrice, location, distance }: BookCardProps) {
-  useEffect(() => {
-    console.log("card data", title, imageUrl, category, originalPrice, rentalPrice, location, distance)
-  }, [])
+  
 
   const truncateText = (text:string, maxLength = 20) => {
 if (text.length <= maxLength) return text;
