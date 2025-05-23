@@ -3,8 +3,7 @@
 import { io, Socket } from 'socket.io-client';
 import { MessageHistory, ChatMessage, Chat } from '@/types/ChatTypes';
 
-const SOCKET_URL = 'http://localhost:5000';
-//  'https://bookback-server.harijp.tech'  
+const SOCKET_URL = 'https://bookback-server.harijp.tech';
 
 export class SocketClient {
   public socket: Socket;
