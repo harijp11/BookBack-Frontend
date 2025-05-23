@@ -49,7 +49,7 @@ const stripePromise = loadStripe('pk_test_51RIAruRtuCub2T27DnxxEqDHZNN1Y9y3mKkkS
           <CardContent className="pt-6">
             <div className="text-center">
               <XCircle className="mx-auto h-12 w-12 text-red-500" />
-              <h3 className="mt-2 text-lg font-medium">Failed to load Purse details</h3>
+              <h3 className="mt-2 text-lg font-medium">Failed to load purse details</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 {queryError instanceof Error ? queryError.message : "Please try again later"}
               </p>
