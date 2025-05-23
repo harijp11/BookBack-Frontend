@@ -128,7 +128,7 @@ const AdminPaginatedBooksComponent: React.FC = () => {
         >
           {book.images && book.images.length > 0 ? (
             <img
-              src={book.images[0]}
+              src={book.images[0]}              
               alt={book.name}
               className="h-14 w-14 rounded-lg object-cover shadow-sm hover:opacity-80 transition-opacity"
             />

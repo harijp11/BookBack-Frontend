@@ -104,6 +104,42 @@ const RentalManagement: React.FC = () => {
       accessor: (rental: RentalContract) => rental.bookId.name,
     },
     {
+  header: "Status",
+  accessor: (rental: RentalContract) => {
+    let color = "bg-gray-200 text-gray-800"; // default
+
+    switch (rental.status) {
+      case "On Rental":
+        color = "bg-green-100 text-green-800";
+        break;
+      case "Returned":
+        color = "bg-blue-100 text-blue-800";
+        break;
+      case "Return Requested":
+        color = "bg-yellow-100 text-yellow-800";
+        break;
+      case "Return Rejected":
+        color = "bg-red-100 text-red-800";
+        break;
+      case "Contract Date Exceeded":
+        color = "bg-orange-100 text-orange-800";
+        break;
+      case "Return Rejection Requested":
+        color = "bg-amber-100 text-amber-800";
+        break;
+    }
+
+    return (
+      <span
+        className={`text-xs font-medium px-3 py-1 rounded-full ${color}`}
+      >
+        {rental.status}
+      </span>
+    );
+  }
+}
+,
+    {
       header: "Borrower Name",
       accessor: (rental: RentalContract) => rental.borrowerId.Name || rental.borrowerId.email,
     },
