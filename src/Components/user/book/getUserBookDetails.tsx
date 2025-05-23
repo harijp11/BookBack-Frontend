@@ -58,9 +58,9 @@ const BookView: React.FC = () => {
     throw new Error("Book ID is required");
   }
 
-  // Check if a request already exists for this book and user
-  const { data: requestExistsData, isLoading: checkingRequest } =
-    useCheckIfRequestExists(user!._id, bookId);
+  // Check if a request already exists for this book and user, only if user exists
+  const { data: requestExistsData, isLoading: checkingRequest } =  useCheckIfRequestExists(user!._id, bookId)
+  
 
   // Contract request mutation
   const { mutate: sendContractRequest, isPending: isSubmitting } =
@@ -183,7 +183,7 @@ const BookView: React.FC = () => {
         }
       },
       onError: (error: unknown) => {
-        const err = error as Error; // now err has type any, so you can access anything
+        const err = error as Error;
 
         if (err?.response?.data?.message === "Book not Available now") {
           toast.info(err.response.data.message);
@@ -239,7 +239,7 @@ const BookView: React.FC = () => {
               {error}
             </h2>
             <p className="text-gray-600 mb-6">
-              Sorry, we couldn&apos;t find the book you&apos;re looking for.
+              Sorry, we couldn't find the book you're looking for.
             </p>
           </div>
           <Link
@@ -433,8 +433,7 @@ const BookView: React.FC = () => {
                 <MapPin size={16} className="text-black" />
                 <span>
                   {selectedLocation?.address ||
-                    book.locationName ||
-                    "Location unavailable"}
+                    book.locationName || "Location unavailable"}
                 </span>
               </button>
 
