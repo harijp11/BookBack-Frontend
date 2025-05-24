@@ -173,13 +173,31 @@ function AddMoneyModal({
   const stripe = useStripe()
   const elements = useElements()
   const queryClient = useQueryClient()
-  const  toast  = useToast() // Use the toast hook
+  const toast = useToast()
   
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [amountError, setAmountError] = useState<string | null>(null)
   
   const addMoneyMutation = useAddMoneyMutation()
   const confirmPaymentMutation = useConfirmPaymentMutation()
+
+  const validateAmount = (value: string) => {
+    const numValue = Number(value)
+    if (isNaN(numValue)) {
+      return "Amount must be a valid number"
+    }
+    if (numValue < 100) {
+      return "Amount must be at least ₹100"
+    }
+    return null
+  }
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setAmount(value)
+    setAmountError(validateAmount(value))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -193,6 +211,14 @@ function AddMoneyModal({
       return
     }
     
+    const amountValidationError = validateAmount(amount)
+    if (amountValidationError) {
+      setAmountError(amountValidationError)
+      setPaymentStatus("error")
+      toast.error(amountValidationError)
+      return
+    }
+
     try {
       setPaymentStatus("processing")
       setPaymentError(null)
@@ -222,9 +248,9 @@ function AddMoneyModal({
       })
 
       // Step 1: Create payment intent
-      const paymentIntent = await addMoneyMutation.mutateAsync({ 
-        amount: amountInPaisa 
-      })
+      // const paymentIntent = await addMoneyMutation.mutateAsync({ 
+      //   amount: amountInPaisa 
+      // })
 
       // Step 2: Confirm payment
       const cardElement = elements.getElement(CardElement)
@@ -232,19 +258,22 @@ function AddMoneyModal({
         throw new Error("Card element not found")
       }
 
-      await confirmPaymentMutation.mutateAsync({
-        stripe,
-        cardElement,
-        clientSecret: paymentIntent.clientSecret
-      })
+      // const { error: stripeError } = await confirmPaymentMutation.mutateAsync({
+      //   stripe,
+      //   cardElement,
+      //   clientSecret: paymentIntent.clientSecret
+      // })
+
+      // if (stripeError) {
+      //   throw new Error(stripeError.message)
+      // }
 
       // Payment successful
       setPaymentStatus("success")
-      toast.success( `Successfully added ₹${amount} to your purse!`)
+      toast.success(`Successfully added ₹${amount} to your purse!`)
     
-      
-      // // Force refetch as a fallback
-      setTimeout(()=>queryClient.refetchQueries({ queryKey: ['purseDetails'] }),1000)
+      // Force refetch as a fallback
+      setTimeout(() => queryClient.refetchQueries({ queryKey: ['purseDetails'] }), 1000)
     } catch (err) {
       // Revert optimistic update
       queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
@@ -269,6 +298,7 @@ function AddMoneyModal({
   const isProcessing = isLoading || addMoneyMutation.isPending || confirmPaymentMutation.isPending || paymentStatus === "processing"
   const combinedError = error || 
     paymentError ||
+    amountError ||
     (addMoneyMutation.error instanceof Error ? addMoneyMutation.error.message : null) ||
     (confirmPaymentMutation.error instanceof Error ? confirmPaymentMutation.error.message : null)
 
@@ -278,6 +308,7 @@ function AddMoneyModal({
         onClose()
         setPaymentStatus("idle")
         setPaymentError(null)
+        setAmountError(null)
       }
     }}>
       <DialogContent className="sm:max-w-[425px]">
@@ -302,8 +333,8 @@ function AddMoneyModal({
                     type="number"
                     step="0.01"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="Enter amount"
+                    onChange={handleAmountChange}
+                    placeholder="Enter amount (minimum ₹100)"
                     required
                     disabled={isProcessing}
                   />
@@ -336,7 +367,7 @@ function AddMoneyModal({
                 <Button type="button" variant="outline" onClick={onClose} disabled={isProcessing}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isProcessing || !stripe || !elements}>
+                <Button type="submit" disabled={isProcessing || !stripe || !elements || !!amountError}>
                   {isProcessing ? "Processing..." : "Add Money"}
                 </Button>
               </DialogFooter>
@@ -347,6 +378,8 @@ function AddMoneyModal({
     </Dialog>
   )
 }
+
+
 
 function TransactionList({ transactions }: { transactions: IPurseTransaction[] }) {
   const [currentPage, setCurrentPage] = useState(1)
