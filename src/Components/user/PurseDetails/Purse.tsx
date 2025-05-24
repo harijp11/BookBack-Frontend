@@ -248,9 +248,9 @@ function AddMoneyModal({
       })
 
       // Step 1: Create payment intent
-      // const paymentIntent = await addMoneyMutation.mutateAsync({ 
-      //   amount: amountInPaisa 
-      // })
+      const paymentIntent = await addMoneyMutation.mutateAsync({ 
+        amount: amountInPaisa 
+      })
 
       // Step 2: Confirm payment
       const cardElement = elements.getElement(CardElement)
@@ -258,15 +258,13 @@ function AddMoneyModal({
         throw new Error("Card element not found")
       }
 
-      // const { error: stripeError } = await confirmPaymentMutation.mutateAsync({
-      //   stripe,
-      //   cardElement,
-      //   clientSecret: paymentIntent.clientSecret
-      // })
+      await confirmPaymentMutation.mutateAsync({
+        stripe,
+        cardElement,
+        clientSecret: paymentIntent.clientSecret
+      })
 
-      // if (stripeError) {
-      //   throw new Error(stripeError.message)
-      // }
+      
 
       // Payment successful
       setPaymentStatus("success")
@@ -378,7 +376,6 @@ function AddMoneyModal({
     </Dialog>
   )
 }
-
 
 
 function TransactionList({ transactions }: { transactions: IPurseTransaction[] }) {
