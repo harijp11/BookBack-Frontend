@@ -526,7 +526,9 @@ const BookView: React.FC = () => {
 
               <div className="flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200/30 mb-10 transform transition-all duration-300 hover:shadow-xl shadow-lg">
                 <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-md">
-                  <User size={24} className="text-blue-500" />
+                  {book?.ownerId?.profileImage ? ( <img
+                  src={book?.ownerId?.profileImage}
+                  className="text-blue-500 rounded-full"/>):( <User size={24} className="text-blue-500" />)}
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800 text-lg">

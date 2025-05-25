@@ -223,12 +223,12 @@ function AddMoneyModal({
       setPaymentStatus("processing")
       setPaymentError(null)
       
-      const amountInPaisa = Number(amount) * 100 // Convert rupees to paisa
+      const amountInPaisa = Number(amount) * 100 
       if (amountInPaisa <= 0) {
         throw new Error("Amount must be greater than zero")
       }
 
-      // Optimistic update
+    
       queryClient.setQueryData(['purseDetails'], (oldData: CombinedResponse | undefined) => {
         if (!oldData) return oldData
         const newTransaction: IPurseTransaction = {
@@ -247,12 +247,11 @@ function AddMoneyModal({
         }
       })
 
-      // Step 1: Create payment intent
       const paymentIntent = await addMoneyMutation.mutateAsync({ 
         amount: amountInPaisa 
       })
 
-      // Step 2: Confirm payment
+     
       const cardElement = elements.getElement(CardElement)
       if (!cardElement) {
         throw new Error("Card element not found")
@@ -266,14 +265,14 @@ function AddMoneyModal({
 
       
 
-      // Payment successful
+     
       setPaymentStatus("success")
       toast.success(`Successfully added ₹${amount} to your purse!`)
     
-      // Force refetch as a fallback
+      
       setTimeout(() => queryClient.refetchQueries({ queryKey: ['purseDetails'] }), 1000)
     } catch (err) {
-      // Revert optimistic update
+     
       queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
       setPaymentStatus("error")
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred"

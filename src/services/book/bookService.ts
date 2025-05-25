@@ -35,6 +35,7 @@ export interface Book {
   export interface ownerId {
     _id: string;
     Name: string;
+    profileImage:string
   }
   
   export interface IBook{
@@ -213,7 +214,7 @@ export const createNewBook = async (bookData: Omit<Book,"_id">)=>{
     try {
       const queryParams = {
         search: params.search || "",
-        filter: params.filter || {},
+        filter: params.filter || {}, 
         page: params.page || 1,
         limit: params.limit || 5
       };
