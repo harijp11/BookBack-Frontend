@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, } from 'react-router-dom';
 import { useToast } from '@/hooks/ui/toast';
 import { DataTable } from '@/Components/common/tablecomponent/tableComponent';
 import { BookOpen, Edit, Filter, PlusCircle, Search } from 'lucide-react';
@@ -8,9 +8,12 @@ import { useBookQueries } from '@/hooks/common/useBookMutation';
 import { useUpdateBookStatusMutation } from '@/hooks/common/useUpdateBookStatusMutation'; // Import the new hook
 import FilterSidebar from '@/Components/common/FilterSidebar/filterSideBar';
 import { Category, DealType, IBook } from '@/services/book/bookService';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 const PaginatedBooksComponent: React.FC = () => {
-  const { userId } = useParams<{ userId: string }>();
+  const user = useSelector((state:RootState)=>state.user.User)
+  const userId = user?._id
   const toast = useToast();
   const {
     data,

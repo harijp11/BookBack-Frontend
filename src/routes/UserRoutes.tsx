@@ -50,7 +50,7 @@ function UserRoutes() {
       
       <Route element={<ProtectedRoute authType="user" />}>
       <Route path="/profile" element={<UserProfilePage />} />
-      <Route path="/books/:userId"  element ={<OwnerBooksMangementPage/> }/>
+      <Route path="/books"  element ={<OwnerBooksMangementPage/> }/>
       <Route path="/book/owner/:bookId" element ={<OwnerBookDetailsPage/>}/>
       <Route path="/newBook/:userId" element={<BookFormPage mode="create" />} />
       <Route path="/editBook/:userId/:bookId" element={<BookFormPage mode="update" />} />

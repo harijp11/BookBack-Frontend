@@ -82,7 +82,7 @@ const UserLanding: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="bg-transparent border border-white text-white px-6 py-2 rounded font-medium hover:bg-gray-800 transition-all duration-500"
-                    onClick={() => navigate(`/Books/${user._id}`)}
+                    onClick={() => navigate(`/books`)}
                   >
                     My Books List
                   </motion.button>

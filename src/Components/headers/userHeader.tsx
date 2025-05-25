@@ -44,7 +44,7 @@ export function UserHeader() {
 
   const navItems = [
     { name: "Home", href: "/" },
-    { name: "Books", href: `/Books/${user?._id}` },
+    { name: "Books", href: `/books` },
     { name: "Buyings", href: "/bought-books" },
     { name: "Borrowels", href: "/borrowed-books" },
   ];
