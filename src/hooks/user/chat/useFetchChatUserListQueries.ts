@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchUserChatList } from "@/services/chat/chatServices";
 import { Chat } from "@/types/ChatTypes";
 
@@ -8,11 +8,21 @@ interface FetchUserChatListResponse {
 }
 
 export const useUserChatList = () => {
-  return useQuery<FetchUserChatListResponse, Error>({
+  const queryClient = useQueryClient();
+
+  const query = useQuery<FetchUserChatListResponse, Error>({
     queryKey: ["userChatList"],
     queryFn: fetchUserChatList,
-    refetchInterval: 10 * 1000, 
-    retry: 1, 
+    retry: 1,
     enabled: false,
   });
+
+  const setChatListCache = (newData: FetchUserChatListResponse) => {
+    queryClient.setQueryData(["userChatList"], newData);
+  };
+
+  return {
+    ...query,
+    setChatListCache,
+  };
 };

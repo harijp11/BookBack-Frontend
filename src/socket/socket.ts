@@ -1,9 +1,8 @@
-
-
 import { io, Socket } from 'socket.io-client';
 import { MessageHistory, ChatMessage, Chat } from '@/types/ChatTypes';
 
-const SOCKET_URL = 'https://bookback-server.harijp.tech';
+const SOCKET_URL = 'https://bookback-server.harijp.tech'
+//  ;
 
 export class SocketClient {
   public socket: Socket;
@@ -65,6 +64,12 @@ export class SocketClient {
     this.socket.emit('messageSent', data);
   }
 
+  // Added: Emit typing status
+  emitTyping(data: { senderId: string; receiverId: string; isTyping: boolean }): void {
+    console.log('Emitting typing:', data);
+    this.socket.emit('typing', data);
+  }
+
   updateMessageStatus(messageId: string, status: 'delivered' | 'read'): void {
     console.log('Emitting updateMessageStatus:', { messageId, status });
     this.socket.emit('updateMessageStatus', { messageId, status });
@@ -109,6 +114,15 @@ export class SocketClient {
     });
   }
 
+  // Added: Listen for typing status
+  onTypingStatus(callback: (data: { senderId: string; isTyping: boolean }) => void): void {
+    this.socket.off('typingStatus');
+    this.socket.on('typingStatus', (data: { senderId: string; isTyping: boolean }) => {
+      console.log('Received typingStatus:', data);
+      callback(data);
+    });
+  }
+
   onError(callback: (data: { message: string }) => void): void {
     this.socket.off('error');
     this.socket.on('error', (data: { message: string }) => {
@@ -119,4 +133,3 @@ export class SocketClient {
 }
 
 export const socketClient = new SocketClient();
-

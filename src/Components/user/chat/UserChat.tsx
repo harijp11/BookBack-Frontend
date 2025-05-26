@@ -21,6 +21,8 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
   const [media, setMedia] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isReceiverTyping, setIsReceiverTyping] = useState(false); // Added for typing status
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Added for typing timeout
 
   const userData = useSelector((state: RootState) => state.user.User);
   
@@ -119,6 +121,14 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       );
     };
 
+    // Added: Handle typing status
+    const handleTypingStatus = ({ senderId, isTyping }: { senderId: string; isTyping: boolean }) => {
+      console.log('Typing status received:', { senderId, receiverId, isTyping });
+      if (senderId === receiverId) {
+        setIsReceiverTyping(isTyping);
+      }
+    };
+
     const handleError = ({ message }: { message: string }) => {
       console.error('Socket error:', message, { userId, receiverId });
       if (message === 'Failed to update message status') {
@@ -137,6 +147,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     socketClient.getMessages(userId, receiverId, handleMessages);
     socketClient.onReceiveMessage(handleReceiveMessage);
     socketClient.onMessageStatusUpdated(handleMessageStatusUpdated);
+    socketClient.onTypingStatus(handleTypingStatus); // Added: Listen for typing status
     socketClient.onError(handleError);
     socketClient.socket.on('connect_error', handleConnectError);
 
@@ -145,6 +156,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       socketClient.socket.off('messageHistory', handleMessages);
       socketClient.socket.off('receiveMessage', handleReceiveMessage);
       socketClient.socket.off('messageStatusUpdated', handleMessageStatusUpdated);
+      socketClient.socket.off('typingStatus', handleTypingStatus); // Added: Cleanup typing status
       socketClient.socket.off('error', handleError);
       socketClient.socket.off('connect_error', handleConnectError);
       socketClient.disconnect();
@@ -182,6 +194,19 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
     }
   }, [messages]);
 
+  // Added: Handle typing event
+  const handleTyping = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    if (content.trim() || showEmojiPicker) {
+      socketClient.emitTyping({ senderId: userId, receiverId, isTyping: true });
+      typingTimeoutRef.current = setTimeout(() => {
+        socketClient.emitTyping({ senderId: userId, receiverId, isTyping: false });
+      },1000);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!content && !media) {
       toast.error('Please enter a message or select a media file');
@@ -194,14 +219,14 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
         setIsUploading(true);
        
         const signatureData: CloudinarySignatureResponse = await getCloudinarySignature();
-        const { signature, timestamp, cloudName, apiKey, folder } = signatureData;
+        const { signature, timestamp, cloudName } = signatureData;
 
         const formData = new FormData();
         formData.append('file', media);
-        formData.append('api_key', apiKey);
+        formData.append('api_key', signatureData.apiKey);
         formData.append('timestamp', timestamp.toString());
         formData.append('signature', signature);
-        formData.append('folder', folder);
+        formData.append('folder', signatureData.folder);
         formData.append('resource_type', 'auto');
 
         const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
@@ -292,241 +317,276 @@ const getStatusStyle = (status: string, type: string) => {
   return `${baseStyle} ${mediaStyle} ${statusStyle}`;
 };
 
-
   return (
-    <div className="flex flex-col h-[80vh] w-full max-w-full">
-      <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center">
-        <div className="flex items-center flex-grow">
-          {isReceiverLoading ? (
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
-              <div className="ml-3">
-                <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse mt-2"></div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center">
-              <div className="relative">
-                <img 
-                  src={receiverProfileImage} 
-                  alt={receiverName} 
-                  className="w-10 h-10 rounded-full"
-                />
-                {receiverOnlineStatus === "online" ?
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                  : <span className="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-white rounded-full"></span>
-                }
-              </div>
-              <div className="ml-3">
-                <h2 className="font-medium text-gray-900">{receiverName}</h2>
-                <p className={receiverOnlineStatus === "online" ? "text-xs text-green-500" : "text-xs text-gray-500"}>
-                  {receiverOnlineStatus}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      <div 
-        ref={chatRef} 
-        className="flex-grow p-4 overflow-y-auto bg-gray-50"
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-              <Paperclip className="h-6 w-6 text-gray-400" />
-            </div>
-            <p>No messages yet</p>
-            <p className="text-sm">Start the conversation by sending a message</p>
-          </div>
-        ) : (
-          messages.map((msg) => {
-            const senderId = typeof msg.senderId === 'object' && msg.senderId?._id 
-              ? msg.senderId._id 
-              : msg.senderId;
-            const isCurrentUser = senderId === userData?._id;
-
-            return (
-              <div 
-                key={msg._id}
-                className={`mb-4 ${isCurrentUser ? 'flex justify-end' : 'flex justify-start'}`}
-              >
-                <div className={`max-w-[70%]`}>
-                  {msg.messageType === 'text' ? (
-                    <div
-                      className={`px-4 py-2 rounded-2xl ${
-                        isCurrentUser
-                          ? 'bg-black text-white rounded-tr-none'
-                          : 'bg-white text-gray-900 border border-gray-200 rounded-tl-none'
-                      }`}
-                    >
-                      <p className="break-words">{msg.content}</p>
-                      <div className="text-xs mt-1 opacity-70 text-right flex justify-end items-center gap-2">
-                        <span>{formatTime(msg.created_at)}</span>
-                        {isCurrentUser && (
-                          <span
-                            className={getStatusStyle(msg.status,msg.messageType)}
-                            style={{
-                              letterSpacing: msg.status !== 'sent' ? '-3px' : 'normal',
-                            }}
-                          >
-                            {msg.status === 'sent' && '✓'}
-                            {msg.status === 'delivered' && '✓✓'}
-                            {msg.status === 'read' && '✓✓'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={`rounded-lg overflow-hidden ${isCurrentUser ? 'ml-auto' : ''}`}>
-                      {(() => {
-                        const mediaType = getMediaType(msg.mediaUrl!);
-                        switch (mediaType) {
-                          case 'image':
-                            return (
-                              <img
-                                src={msg.mediaUrl}
-                                alt="chat media"
-                                className="max-w-full rounded-lg shadow-sm"
-                                style={{ maxHeight: '250px' }}
-                              />
-                            );
-                          case 'video':
-                            return (
-                              <video
-                                src={msg.mediaUrl}
-                                controls
-                                className="max-w-full rounded-lg shadow-sm"
-                                style={{ maxHeight: '250px' }}
-                              />
-                            );
-                          case 'pdf':
-                          case 'text':
-                            return (
-                              <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg">
-                                <FileText className="h-8 w-8 text-gray-500 mr-2" />
-                                <a
-                                  href={msg.mediaUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline"
-                                >
-                                  {mediaType === 'pdf' ? 'View PDF' : 'View Text File'}
-                                </a>
-                              </div>
-                            );
-                          default:
-                            return (
-                              <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg">
-                                <FileText className="h-8 w-8 text-gray-500 mr-2" />
-                                <a
-                                  href={msg.mediaUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline"
-                                >
-                                  View File
-                                </a>
-                              </div>
-                            );
-                        }
-                      })()}
-                      <div className={`text-xs mt-1 flex justify-end items-center gap-2 ${isCurrentUser ? 'text-right text-gray-800' : 'text-gray-800'}`}>
-                        <span>{formatTime(msg.created_at)}</span>
-                        {isCurrentUser && (
-                          <span
-                            className={getStatusStyle(msg.status,msg.messageType)}
-                            style={{
-                              letterSpacing: msg.status !== 'sent' ? '-3px' : 'normal',
-                            }}
-                          >
-                            {msg.status === 'sent' && '✓'}
-                            {msg.status === 'delivered' && '✓✓'}
-                            {msg.status === 'read' && '✓✓'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
+    <>
+      {/* Added: CSS for color-changing typing dots */}
+      <style>
+        {`
+          @keyframes colorCycle {
+            0% { background-color: #2563eb; } /* Blue-600 */
+            33% { background-color: #60a5fa; } /* Blue-400 */
+            66% { background-color: #bfdbfe; } /* Blue-200 */
+            100% { background-color: #2563eb; } /* Blue-600 */
+          }
+          .dot1 {
+            animation: colorCycle 1.2s infinite;
+          }
+          .dot2 {
+            animation: colorCycle 1.2s infinite 0.4s;
+          }
+          .dot3 {
+            animation: colorCycle 1.2s infinite 0.8s;
+          }
+        `}
+      </style>
+      <div className="flex flex-col h-[80vh] w-full max-w-full">
+        <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center">
+          <div className="flex items-center flex-grow">
+            {isReceiverLoading ? (
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="ml-3">
+                  <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="w-16 h-3 bg-gray-200 rounded animate-pulse mt-2"></div>
                 </div>
               </div>
-            );
-          })
-        )}
-      </div>
-      <div className="px-4 py-3 bg-white border-t border-gray-200">
-        {media && (
-          <div className="mb-2 p-2 bg-gray-100 rounded-md flex items-center justify-between">
-            <span className="text-sm truncate max-w-[200px]">{media.name}</span>
-            <button
-              onClick={() => setMedia(null)}
-              className="text-gray-500 hover:text-red-500"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-        <div className="relative flex items-center">
-          <button
-            onClick={handleFileClick}
-            className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-            title="Attach file"
-          >
-            <Paperclip className="h-5 w-5" />
-          </button>
-          <div className="relative">
-            <button
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-              title="Add emoji"
-            >
-              <Smile className="h-5 w-5" />
-            </button>
-            {showEmojiPicker && (
-              <div className="absolute bottom-12 left-0 z-10">
-                <div className="shadow-xl rounded-lg">
-                  <EmojiPicker onEmojiClick={handleEmojiClick} />
+            ) : (
+              <div className="flex items-center">
+                <div className="relative">
+                  <img 
+                    src={receiverProfileImage} 
+                    alt={receiverName} 
+                    className="w-10 h-10 rounded-full"
+                  />
+                  {receiverOnlineStatus === "online" ?
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                    : <span className="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-white rounded-full"></span>
+                  }
+                </div>
+                <div className="ml-3">
+                  <h2 className="font-medium text-gray-900">{receiverName}</h2>
+                  <p className={receiverOnlineStatus === "online" ? "text-xs text-green-500" : "text-xs text-gray-500"}>
+                    {receiverOnlineStatus}
+                  </p>
                 </div>
               </div>
             )}
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/mp4,video/webm,application/pdf,text/plain"
-            onChange={(e) => setMedia(e.target.files ? e.target.files[0] : null)}
-            className="hidden"
-          />
-          <input
-            type="text"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-grow mx-2 py-2 px-4 bg-gray-100 rounded-full border border-transparent focus:outline-none focus:border-gray-300 transition-colors"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && !isUploading) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={isUploading || (!content && !media)}
-            className={`p-2 rounded-full ${
-              isUploading || (!content && !media)
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            } focus:outline-none transition-colors`}
-            title="Send message"
-          >
-            <Send className="h-5 w-5" />
-          </button>
+        </div>
+        <div 
+          ref={chatRef} 
+          className="flex-grow p-4 overflow-y-auto bg-gray-50"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+                <Paperclip className="h-6 w-6 text-gray-400" />
+              </div>
+              <p>No messages yet</p>
+              <p className="text-sm">Start the conversation by sending a message</p>
+            </div>
+          ) : (
+            messages.map((msg) => {
+              const senderId = typeof msg.senderId === 'object' && msg.senderId?._id 
+                ? msg.senderId._id 
+                : msg.senderId;
+              const isCurrentUser = senderId === userData?._id;
+
+              return (
+                <div 
+                  key={msg._id}
+                  className={`mb-4 ${isCurrentUser ? 'flex justify-end' : 'flex justify-start'}`}
+                >
+                  <div className={`max-w-[70%]`}>
+                    {msg.messageType === 'text' ? (
+                      <div
+                        className={`px-4 py-2 rounded-2xl ${
+                          isCurrentUser
+                            ? 'bg-black text-white rounded-tr-none'
+                            : 'bg-white text-gray-900 border border-gray-200 rounded-tl-none'
+                        }`}
+                      >
+                        <p className="break-words">{msg.content}</p>
+                        <div className="text-xs mt-1 opacity-70 text-right flex justify-end items-center gap-2">
+                          <span>{formatTime(msg.created_at)}</span>
+                          {isCurrentUser && (
+                            <span
+                              className={getStatusStyle(msg.status,msg.messageType)}
+                              style={{
+                                letterSpacing: msg.status !== 'sent' ? '-3px' : 'normal',
+                              }}
+                            >
+                              {msg.status === 'sent' && '✓'}
+                              {msg.status === 'delivered' && '✓✓'}
+                              {msg.status === 'read' && '✓✓'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={`rounded-lg overflow-hidden ${isCurrentUser ? 'ml-auto' : ''}`}>
+                        {(() => {
+                          const mediaType = getMediaType(msg.mediaUrl!);
+                          switch (mediaType) {
+                            case 'image':
+                              return (
+                                <img
+                                  src={msg.mediaUrl}
+                                  alt="chat media"
+                                  className="max-w-full rounded-lg shadow-sm"
+                                  style={{ maxHeight: '250px' }}
+                                />
+                              );
+                            case 'video':
+                              return (
+                                <video
+                                  src={msg.mediaUrl}
+                                  controls
+                                  className="max-w-full rounded-lg shadow-sm"
+                                  style={{ maxHeight: '250px' }}
+                                />
+                              );
+                            case 'pdf':
+                            case 'text':
+                              return (
+                                <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg">
+                                  <FileText className="h-8 w-8 text-gray-500 mr-2" />
+                                  <a
+                                    href={msg.mediaUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {mediaType === 'pdf' ? 'View PDF' : 'View Text File'}
+                                  </a>
+                                </div>
+                              );
+                            default:
+                              return (
+                                <div className="flex items-center justify-center bg-gray-100 p-4 rounded-lg">
+                                  <FileText className="h-8 w-8 text-gray-500 mr-2" />
+                                  <a
+                                    href={msg.mediaUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    View File
+                                  </a>
+                                </div>
+                              );
+                          }
+                        })()}
+                        <div className={`text-xs mt-1 flex justify-end items-center gap-2 ${isCurrentUser ? 'text-right text-gray-800' : 'text-gray-800'}`}>
+                          <span>{formatTime(msg.created_at)}</span>
+                          {isCurrentUser && (
+                            <span
+                              className={getStatusStyle(msg.status,msg.messageType)}
+                              style={{
+                                letterSpacing: msg.status !== 'sent' ? '-3px' : 'normal',
+                              }}
+                            >
+                              {msg.status === 'sent' && '✓'}
+                              {msg.status === 'delivered' && '✓✓'}
+                              {msg.status === 'read' && '✓✓'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        <div className="px-4 py-3 bg-white border-t border-gray-200">
+          {/* Added: Typing indicator with color-changing dots */}
+          {isReceiverTyping && (
+            <div className="text-sm text-gray-600 italic mb-2">
+              typing
+              <span className="inline-flex">
+                <span className="dot1 w-1 h-1.5 rounded-full mx-1" />
+                <span className="dot2 w-1 h-1.5 rounded-full mx-1" />
+                <span className="dot3 w-1 h-1.5 rounded-full mx-1" />
+              </span>
+            </div>
+          )}
+          {media && (
+            <div className="mb-2 p-2 bg-gray-100 rounded-md flex items-center justify-between">
+              <span className="text-sm truncate max-w-[200px]">{media.name}</span>
+              <button
+                onClick={() => setMedia(null)}
+                className="text-gray-500 hover:text-red-500"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          <div className="relative flex items-center">
+            <button
+              onClick={handleFileClick}
+              className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              title="Attach file"
+            >
+              <Paperclip className="h-5 w-5" />
+            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                title="Add emoji"
+              >
+                <Smile className="h-5 w-5" />
+              </button>
+              {showEmojiPicker && (
+                <div className="absolute bottom-12 left-0 z-10">
+                  <div className="shadow-xl rounded-lg">
+                    <EmojiPicker onEmojiClick={handleEmojiClick} />
+                  </div>
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/mp4,video/webm,application/pdf,text/plain"
+              onChange={(e) => setMedia(e.target.files ? e.target.files[0] : null)}
+              className="hidden"
+            />
+            <input
+              type="text"
+              value={content}
+              onChange={(e) => {
+                setContent(e.target.value);
+                handleTyping(); // Added: Trigger typing event
+              }}
+              placeholder="Type a message..."
+              className="flex-grow mx-2 py-2 px-4 bg-gray-100 rounded-full border border-transparent focus:outline-none focus:border-gray-300 transition-colors"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !isUploading) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={isUploading || (!content && !media)}
+              className={`p-2 rounded-full ${
+                isUploading || (!content && !media)
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } focus:outline-none transition-colors`}
+              title="Send message"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
