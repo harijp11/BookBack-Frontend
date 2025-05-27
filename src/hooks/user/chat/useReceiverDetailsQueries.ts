@@ -9,6 +9,7 @@ export const useFetchReceiverDetails = (receiverId: string) => {
       return response;
     },
     enabled: !!receiverId, 
-    staleTime: 5 * 60 * 1000, 
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 };

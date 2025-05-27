@@ -67,6 +67,11 @@ const UserList: React.FC<UserListProps> = ({ onClose }) => {
     }
   };
 
+
+  useEffect(()=>{
+    fetchChats()
+  },[receiverId])
+
   useEffect(() => {
     if (!userData?._id) {
       toast.error("Please log in to view chats");
@@ -78,7 +83,7 @@ const UserList: React.FC<UserListProps> = ({ onClose }) => {
     socketClient.register(userData._id);
 
     fetchChats();
-
+  
     const handleNewChat = ({ chat }: { chat: Chat }) => {
   
       const newChat: ChatPreview = {

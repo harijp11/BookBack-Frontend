@@ -26,7 +26,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
 
   const userData = useSelector((state: RootState) => state.user.User);
   
-  const { data: receiverData, isLoading: isReceiverLoading, error: receiverError } = useFetchReceiverDetails(receiverId);
+  const { data: receiverData, isLoading: isReceiverLoading, error: receiverError,refetch,} = useFetchReceiverDetails(receiverId);
   const receiverName = receiverData?.receiverDetails?.Name || receiverId;
   const receiverProfileImage = receiverData?.receiverDetails?.profileImage || `https://placehold.co/40x40?text=${receiverName.charAt(0).toUpperCase()}`;
   const receiverOnlineStatus = receiverData?.receiverDetails?.onlineStatus || "offline";
@@ -169,6 +169,10 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
       console.error('Receiver details fetch failed:', receiverError);
       toast.error('Failed to load receiver details');
     }
+
+    if (receiverId) {
+    refetch();
+  }
   }, [receiverError]);
 
   useEffect(() => {
