@@ -6,7 +6,6 @@ export const useFetchReceiverDetails = (receiverId: string) => {
     queryKey: ["receiverDetails", receiverId],
     queryFn: async () => {
       const response = await fetchReceiverDetails(receiverId);
-      console.log("fetchReceiverDetails Response:", response);
       return response;
     },
     enabled: !!receiverId, 

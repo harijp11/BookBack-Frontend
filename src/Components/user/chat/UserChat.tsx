@@ -30,6 +30,7 @@ const Chat: React.FC<ChatProps> = ({ userId, receiverId }) => {
   const receiverName = receiverData?.receiverDetails?.Name || receiverId;
   const receiverProfileImage = receiverData?.receiverDetails?.profileImage || `https://placehold.co/40x40?text=${receiverName.charAt(0).toUpperCase()}`;
   const receiverOnlineStatus = receiverData?.receiverDetails?.onlineStatus || "offline";
+  const receiverLastUserStatusUPdate = receiverData?.receiverDetails?.lastStatusUpdated
  
 
   const chatRef = useRef<HTMLDivElement>(null);
@@ -317,6 +318,43 @@ const getStatusStyle = (status: string, type: string) => {
   return `${baseStyle} ${mediaStyle} ${statusStyle}`;
 };
 
+
+
+const formatLastSeen = (timestamp: string | Date) => {
+  const lastSeenDate = new Date(timestamp);
+  const now = new Date();
+
+  const isToday = lastSeenDate.toDateString() === now.toDateString();
+
+  const yesterday = new Date();
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = lastSeenDate.toDateString() === yesterday.toDateString();
+
+  const time = lastSeenDate.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  if (isToday) {
+    return `Today, ${time}`;
+  }
+
+  if (isYesterday) {
+    return `Yesterday, ${time}`;
+  }
+
+  const dateOptions: Intl.DateTimeFormatOptions =
+    lastSeenDate.getFullYear() === now.getFullYear()
+      ? { month: "short", day: "2-digit" }
+      : { month: "short", day: "2-digit", year: "numeric" };
+
+  const date = lastSeenDate.toLocaleDateString("en-US", dateOptions);
+
+  return `${date}, ${time}`;
+};
+
+
   return (
     <>
       {/* Added: CSS for color-changing typing dots */}
@@ -351,25 +389,32 @@ const getStatusStyle = (status: string, type: string) => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center">
-                <div className="relative">
-                  <img 
-                    src={receiverProfileImage} 
-                    alt={receiverName} 
-                    className="w-10 h-10 rounded-full"
-                  />
-                  {receiverOnlineStatus === "online" ?
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                    : <span className="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-white rounded-full"></span>
-                  }
-                </div>
-                <div className="ml-3">
-                  <h2 className="font-medium text-gray-900">{receiverName}</h2>
-                  <p className={receiverOnlineStatus === "online" ? "text-xs text-green-500" : "text-xs text-gray-500"}>
-                    {receiverOnlineStatus}
-                  </p>
-                </div>
-              </div>
+             <div className="flex items-center">
+  <div className="relative">
+    <img 
+      src={receiverProfileImage} 
+      alt={receiverName} 
+      className="w-10 h-10 rounded-full"
+    />
+    <span
+      className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full ${
+        receiverOnlineStatus === "online" ? "bg-green-500" : "bg-gray-500"
+      }`}
+    ></span>
+  </div>
+  <div className="ml-3">
+    <h2 className="font-medium text-gray-900">{receiverName}</h2>
+    <p className="text-xs text-gray-500">
+      {receiverOnlineStatus === "online"
+        ? "Online"
+        : receiverLastUserStatusUPdate
+          ? `Last seen ${formatLastSeen(receiverLastUserStatusUPdate)}`
+          : "Offline"}
+    </p>
+  </div>
+</div>
+
+
             )}
           </div>
         </div>
