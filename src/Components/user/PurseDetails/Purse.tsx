@@ -174,11 +174,12 @@ function AddMoneyModal({
   const elements = useElements()
   const queryClient = useQueryClient()
   const toast = useToast()
-  
+
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
-  
+  const [cardError, setCardError] = useState<string | null>(null)
+
   const addMoneyMutation = useAddMoneyMutation()
   const confirmPaymentMutation = useConfirmPaymentMutation()
 
@@ -201,7 +202,7 @@ function AddMoneyModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!stripe || !elements) {
       const errorMessage = "Stripe or card element not initialized"
       setPaymentError(errorMessage)
@@ -210,7 +211,7 @@ function AddMoneyModal({
       console.error(errorMessage)
       return
     }
-    
+
     const amountValidationError = validateAmount(amount)
     if (amountValidationError) {
       setAmountError(amountValidationError)
@@ -219,22 +220,27 @@ function AddMoneyModal({
       return
     }
 
+    if (cardError) {
+      setPaymentStatus("error")
+      toast.error(cardError)
+      return
+    }
+
     try {
       setPaymentStatus("processing")
       setPaymentError(null)
-      
-      const amountInPaisa = Number(amount) * 100 
+
+      const amountInPaisa = Number(amount) * 100
       if (amountInPaisa <= 0) {
         throw new Error("Amount must be greater than zero")
       }
 
-    
       queryClient.setQueryData(['purseDetails'], (oldData: CombinedResponse | undefined) => {
         if (!oldData) return oldData
         const newTransaction: IPurseTransaction = {
           tsId: `temp-${Date.now()}`,
           type: "credit",
-          amount: amountInPaisa / 100, 
+          amount: amountInPaisa / 100,
           status: "pending",
           createdAt: new Date().toISOString(),
           description: "Added money to purse",
@@ -246,11 +252,8 @@ function AddMoneyModal({
         }
       })
 
-      const paymentIntent = await addMoneyMutation.mutateAsync({ 
-        amount: amountInPaisa 
-      })
+      const paymentIntent = await addMoneyMutation.mutateAsync({ amount: amountInPaisa })
 
-     
       const cardElement = elements.getElement(CardElement)
       if (!cardElement) {
         throw new Error("Card element not found")
@@ -264,12 +267,9 @@ function AddMoneyModal({
 
       setPaymentStatus("success")
       toast.success(`Successfully added ₹${amount} to your purse!`)
-    
-      
       setTimeout(() => queryClient.refetchQueries({ queryKey: ['purseDetails'] }), 1000)
     } catch (err) {
-     
-      setTimeout(() =>queryClient.invalidateQueries({ queryKey: ['purseDetails'] }), 1000)
+      setTimeout(() => queryClient.invalidateQueries({ queryKey: ['purseDetails'] }), 1000)
       setPaymentStatus("error")
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred"
       setPaymentError(errorMessage)
@@ -289,9 +289,10 @@ function AddMoneyModal({
   }
 
   const isProcessing = isLoading || addMoneyMutation.isPending || confirmPaymentMutation.isPending || paymentStatus === "processing"
-  const combinedError = error || 
+  const combinedError = error ||
     paymentError ||
     amountError ||
+    cardError ||
     (addMoneyMutation.error instanceof Error ? addMoneyMutation.error.message : null) ||
     (confirmPaymentMutation.error instanceof Error ? confirmPaymentMutation.error.message : null)
 
@@ -302,11 +303,12 @@ function AddMoneyModal({
         setPaymentStatus("idle")
         setPaymentError(null)
         setAmountError(null)
+        setCardError(null)
       }
     }}>
       <DialogContent className="sm:max-w-[425px]">
         {paymentStatus === "success" || paymentStatus === "error" ? (
-          <PaymentResult 
+          <PaymentResult
             isSuccess={paymentStatus === "success"}
             amount={amount}
             errorMessage={combinedError ?? undefined}
@@ -336,6 +338,15 @@ function AddMoneyModal({
                   <Label htmlFor="card">Card Details</Label>
                   <CardElement
                     id="card"
+                    onChange={(event) => {
+                      if (event.error) {
+                        setCardError(event.error.message)
+                      } else if (!event.complete) {
+                        setCardError("Please complete all card fields")
+                      } else {
+                        setCardError(null)
+                      }
+                    }}
                     options={{
                       style: {
                         base: {
@@ -360,7 +371,7 @@ function AddMoneyModal({
                 <Button type="button" variant="outline" onClick={onClose} disabled={isProcessing}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isProcessing || !stripe || !elements || !!amountError}>
+                <Button type="submit" disabled={isProcessing || !stripe || !elements || !!amountError || !!cardError}>
                   {isProcessing ? "Processing..." : "Add Money"}
                 </Button>
               </DialogFooter>
@@ -371,6 +382,7 @@ function AddMoneyModal({
     </Dialog>
   )
 }
+
 
 
 function TransactionList({ transactions }: { transactions: IPurseTransaction[] }) {
