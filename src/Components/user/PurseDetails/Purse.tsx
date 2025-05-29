@@ -239,7 +239,6 @@ function AddMoneyModal({
           createdAt: new Date().toISOString(),
           description: "Added money to purse",
         }
-        console.log('Applying optimistic update:', { newBalance: oldData.balance + amountInPaisa / 100, newTransaction })
         return {
           ...oldData,
           balance: oldData.balance,
@@ -263,9 +262,6 @@ function AddMoneyModal({
         clientSecret: paymentIntent.clientSecret
       })
 
-      
-
-     
       setPaymentStatus("success")
       toast.success(`Successfully added ₹${amount} to your purse!`)
     
@@ -273,7 +269,7 @@ function AddMoneyModal({
       setTimeout(() => queryClient.refetchQueries({ queryKey: ['purseDetails'] }), 1000)
     } catch (err) {
      
-      queryClient.invalidateQueries({ queryKey: ['purseDetails'] })
+      setTimeout(() =>queryClient.invalidateQueries({ queryKey: ['purseDetails'] }), 1000)
       setPaymentStatus("error")
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred"
       setPaymentError(errorMessage)

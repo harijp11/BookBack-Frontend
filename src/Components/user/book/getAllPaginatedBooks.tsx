@@ -1,19 +1,19 @@
-import React, { useEffect } from 'react';
-import { useNavigate, } from 'react-router-dom';
-import { useToast } from '@/hooks/ui/toast';
-import { DataTable } from '@/Components/common/tablecomponent/tableComponent';
-import { BookOpen, Edit, Filter, PlusCircle, Search } from 'lucide-react';
-import { useBooksQuery } from '@/hooks/common/useGetAllBooksMutation';
-import { useBookQueries } from '@/hooks/common/useBookMutation';
-import { useUpdateBookStatusMutation } from '@/hooks/common/useUpdateBookStatusMutation'; // Import the new hook
-import FilterSidebar from '@/Components/common/FilterSidebar/filterSideBar';
-import { Category, DealType, IBook } from '@/services/book/bookService';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/ui/toast";
+import { DataTable } from "@/Components/common/tablecomponent/tableComponent";
+import { BookOpen, Edit, Filter, PlusCircle, Search } from "lucide-react";
+import { useBooksQuery } from "@/hooks/common/useGetAllBooksMutation";
+import { useBookQueries } from "@/hooks/common/useBookMutation";
+import { useUpdateBookStatusMutation } from "@/hooks/common/useUpdateBookStatusMutation"; // Import the new hook
+import FilterSidebar from "@/Components/common/FilterSidebar/filterSideBar";
+import { Category, DealType, IBook } from "@/services/book/bookService";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const PaginatedBooksComponent: React.FC = () => {
-  const user = useSelector((state:RootState)=>state.user.User)
-  const userId = user?._id
+  const user = useSelector((state: RootState) => state.user.User);
+  const userId = user?._id;
   const toast = useToast();
   const {
     data,
@@ -30,11 +30,11 @@ const PaginatedBooksComponent: React.FC = () => {
     handlePageNext,
     handlePageSelect,
     refetch,
-  } = useBooksQuery(userId || '');
+  } = useBooksQuery(userId || "");
   const { categoriesQuery, dealTypesQuery } = useBookQueries();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const navigate = useNavigate();
-  
+
   // Use the update book status mutation
   const updateBookStatusMutation = useUpdateBookStatusMutation();
 
@@ -46,12 +46,13 @@ const PaginatedBooksComponent: React.FC = () => {
 
   useEffect(() => {
     if (isError && error) {
-      toast.error(`Failed to load books: ${(error as Error).message || 'Unknown error'}`);
+      toast.error(
+        `Failed to load books: ${(error as Error).message || "Unknown error"}`
+      );
     }
   }, [isError, error, toast]);
 
   // Debugging query states
- 
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -84,9 +85,9 @@ const PaginatedBooksComponent: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(amount);
   };
 
@@ -97,14 +98,15 @@ const PaginatedBooksComponent: React.FC = () => {
       </div>
       <p className="text-xl font-medium mb-2">No books found</p>
       <p className="text-gray-500 text-center max-w-md">
-        Try adjusting your search or filters, or add a new book to your collection
+        Try adjusting your search or filters, or add a new book to your
+        collection
       </p>
     </div>
   );
 
   const columns = [
     {
-      header: 'Image',
+      header: "Image",
       accessor: (book: IBook) => (
         <button
           onClick={() => navigate(`/book/owner/${book._id}`)}
@@ -123,13 +125,13 @@ const PaginatedBooksComponent: React.FC = () => {
           )}
         </button>
       ),
-      className: 'w-20',
+      className: "w-20",
     },
     {
-      header: 'Name',
+      header: "Name",
       accessor: (book: IBook) => (
         <button
-           onClick={() => navigate(`/book/owner/${book._id}`)}
+          onClick={() => navigate(`/book/owner/${book._id}`)}
           className="font-medium text-gray-900 hover:text-primary transition-colors focus:outline-none"
         >
           {book.name}
@@ -137,23 +139,25 @@ const PaginatedBooksComponent: React.FC = () => {
       ),
     },
     {
-      header: 'Category',
+      header: "Category",
       accessor: (book: IBook) => (
         <div className="text-gray-900">
-          {categoriesQuery.data?.find(cat => cat._id === book.categoryId._id)?.name || 'N/A'}
+          {categoriesQuery.data?.find((cat) => cat._id === book.categoryId._id)
+            ?.name || "N/A"}
         </div>
       ),
     },
     {
-      header: 'Deal Type',
+      header: "Deal Type",
       accessor: (book: IBook) => (
         <div className="text-gray-900">
-          {dealTypesQuery.data?.find(deal => deal._id === book.dealTypeId._id)?.name || 'N/A'}
+          {dealTypesQuery.data?.find((deal) => deal._id === book.dealTypeId._id)
+            ?.name || "N/A"}
         </div>
       ),
     },
     {
-      header: 'Rent',
+      header: "Rent",
       accessor: (book: IBook) => (
         <div className="font-medium text-gray-900">
           {formatCurrency(book.rentAmount)}
@@ -162,24 +166,24 @@ const PaginatedBooksComponent: React.FC = () => {
       ),
     },
     {
-      header: 'Status',
+      header: "Status",
       accessor: (book: IBook) => (
         <span
           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-            book.status === 'Available'
-              ? 'bg-green-100 text-green-800'
-              : book.status === 'Borrowed'
-              ? 'bg-amber-100 text-amber-800'
-              : 'bg-red-100 text-red-800'
+            book.status === "Available"
+              ? "bg-green-100 text-green-800"
+              : book.status === "Borrowed"
+              ? "bg-amber-100 text-amber-800"
+              : "bg-red-100 text-red-800"
           }`}
-        >  
+        >
           <span
             className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
-              book.status === 'Available'
-                ? 'bg-green-500'
-                : book.status === 'Borrowed'
-                ? 'bg-amber-500'
-                : 'bg-red-500'
+              book.status === "Available"
+                ? "bg-green-500"
+                : book.status === "Borrowed"
+                ? "bg-amber-500"
+                : "bg-red-500"
             }`}
           ></span>
           {book.status}
@@ -187,41 +191,41 @@ const PaginatedBooksComponent: React.FC = () => {
       ),
     },
     {
-      header: 'Active',
+      header: "Active",
       accessor: (book: IBook) => (
         <span
           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-            book.isActive 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-gray-100 text-gray-800'
+            book.isActive
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
           }`}
         >
           <span
             className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
-              book.isActive ? 'bg-green-500' : 'bg-gray-500'
+              book.isActive ? "bg-green-500" : "bg-gray-500"
             }`}
           ></span>
-          {book.isActive ? 'Active' : 'Inactive'}
+          {book.isActive ? "Active" : "Inactive"}
         </span>
       ),
     },
     {
-      header: 'Actions',
+      header: "Actions",
       accessor: (book: IBook) => (
         <div className="flex flex-col sm:flex-row items-center gap-2 justify-end">
-         <button
-  className={`w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-200 text-xs font-medium rounded transition-colors focus:outline-none
+          <button
+            className={`w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-200 text-xs font-medium rounded transition-colors focus:outline-none
     ${
-      (book.status === "Sold Out" || book.status === "Borrowed")
+      book.status === "Sold Out" || book.status === "Borrowed"
         ? "cursor-not-allowed opacity-50 text-primary"
         : "text-primary hover:text-primary-foreground hover:bg-primary"
     }`}
-  onClick={() => handleEditBook(book._id)}
-  disabled={book.status === "Sold Out" || book.status === "Borrowed"}
->
-  <Edit className="h-3.5 w-3.5 mr-1" />
-  Edit
-</button>
+            onClick={() => handleEditBook(book._id)}
+            disabled={book.status === "Sold Out" || book.status === "Borrowed"}
+          >
+            <Edit className="h-3.5 w-3.5 mr-1" />
+            Edit
+          </button>
 
           {book.isActive ? (
             <button
@@ -229,8 +233,10 @@ const PaginatedBooksComponent: React.FC = () => {
               onClick={() => handleToggleActiveStatus(book._id)}
               disabled={updateBookStatusMutation.isPending}
             >
-              {updateBookStatusMutation.isPending && book._id === updateBookStatusMutation.variables ? 
-                'Updating...' : 'Deactivate'}
+              {updateBookStatusMutation.isPending &&
+              book._id === updateBookStatusMutation.variables
+                ? "Updating..."
+                : "Deactivate"}
             </button>
           ) : (
             <button
@@ -238,20 +244,22 @@ const PaginatedBooksComponent: React.FC = () => {
               onClick={() => handleToggleActiveStatus(book._id)}
               disabled={updateBookStatusMutation.isPending}
             >
-              {updateBookStatusMutation.isPending && book._id === updateBookStatusMutation.variables ? 
-                'Updating...' : 'Activate'}
+              {updateBookStatusMutation.isPending &&
+              book._id === updateBookStatusMutation.variables
+                ? "Updating..."
+                : "Activate"}
             </button>
           )}
         </div>
       ),
-      className: 'text-right w-40',
+      className: "text-right w-40",
     },
   ];
 
   const filterConfig = [
     {
-      key: 'categoryId',
-      label: 'Category',
+      key: "categoryId",
+      label: "Category",
       options:
         categoriesQuery.data?.map((category: Category) => ({
           value: category._id,
@@ -260,8 +268,8 @@ const PaginatedBooksComponent: React.FC = () => {
       isLoading: categoriesQuery.isLoading,
     },
     {
-      key: 'dealTypeId',
-      label: 'Deal Type',
+      key: "dealTypeId",
+      label: "Deal Type",
       options:
         dealTypesQuery.data?.map((dealType: DealType) => ({
           value: dealType._id,
@@ -270,21 +278,21 @@ const PaginatedBooksComponent: React.FC = () => {
       isLoading: dealTypesQuery.isLoading,
     },
     {
-      key: 'status',
-      label: 'Status',
+      key: "status",
+      label: "Status",
       options: [
-        { value: 'Available', label: 'Available' },
-        { value: 'Borrowed', label: 'Borrowed' },
-        { value: 'Sold Out', label: 'Sold Out' },
+        { value: "Available", label: "Available" },
+        { value: "Borrowed", label: "Borrowed" },
+        { value: "Sold Out", label: "Sold Out" },
       ],
       isLoading: false,
     },
     {
-      key: 'isActive',
-      label: 'Active',
+      key: "isActive",
+      label: "Active",
       options: [
-        { value: 'true', label: 'Active' },
-        { value: 'false', label: 'Inactive' },
+        { value: "true", label: "Active" },
+        { value: "false", label: "Inactive" },
       ],
       isLoading: false,
     },
@@ -313,7 +321,7 @@ const PaginatedBooksComponent: React.FC = () => {
           className="w-full flex items-center justify-center space-x-2 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200"
         >
           <Filter className="h-5 w-5 text-gray-500" />
-          <span>{isFilterOpen ? 'Hide Filters' : 'Show Filters'}</span>
+          <span>{isFilterOpen ? "Hide Filters" : "Show Filters"}</span>
         </button>
       </div>
 
@@ -389,7 +397,8 @@ const PaginatedBooksComponent: React.FC = () => {
               </div>
               <div className="ml-3 flex-1">
                 <p className="text-sm text-red-700">
-                  Error loading books: {(error as Error)?.message || 'Unknown error'}
+                  Error loading books:{" "}
+                  {(error as Error)?.message || "Unknown error"}
                 </p>
               </div>
             </div>
@@ -413,7 +422,8 @@ const PaginatedBooksComponent: React.FC = () => {
             {data?.books && data.books.length > 0 && (
               <div className="px-6 py-3 bg-white border-t border-gray-200 rounded-b-xl">
                 <div className="text-sm text-gray-700 text-center">
-                  Showing <span className="font-medium">{data.books.length}</span> of{' '}
+                  Showing{" "}
+                  <span className="font-medium">{data.books.length}</span> of{" "}
                   <span className="font-medium">{data.totalBooks}</span> books
                 </div>
               </div>
