@@ -8,7 +8,6 @@ export const usePurseQuery = () => {
     queryKey: ['purseDetails'],
     queryFn: async () => {
       const data = await fetchPurseDetails()
-      console.log('fetchPurseDetails response:', JSON.stringify(data, null, 2))
       return data?.purse
     },
   })
@@ -17,12 +16,10 @@ export const usePurseQuery = () => {
 export const useAddMoneyMutation = () => {
   return useMutation({
     mutationFn: async ({ amount }: { amount: number }) => {
-      console.log('Creating payment intent with amount:', amount, 'currency: inr')
       const paymentIntent = await createPaymentIntent(amount, 'inr')
       if (!paymentIntent) {
         throw new Error("Failed to create PaymentIntent")
       }
-      console.log('PaymentIntent created:', JSON.stringify(paymentIntent, null, 2))
       return paymentIntent
     },
     onError: (error) => {
@@ -43,7 +40,6 @@ export const useConfirmPaymentMutation = () => {
       cardElement: StripeCardElement; 
       clientSecret: string 
     }) => {
-      console.log('Confirming payment with clientSecret:', clientSecret)
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
