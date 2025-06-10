@@ -20,13 +20,7 @@ import { useToast } from "@/hooks/ui/toast";
 import { AxiosError } from "axios";
 import { ArrowLeft } from "lucide-react";
 
- interface ErrorResponse{
-      response:{
-        data:{
-          message:string
-        }
-      }
- }
+ type ErrorResponse = string
 
  type contractDetails = {
     contractType: "rental" | "sale";
@@ -132,8 +126,9 @@ const ContractForm: React.FC = () => {
       }
     } catch (error) {
       console.log("error in otp validation",error)
+        // const err = error as ErrorResponse
         const err = error as ErrorResponse
-        toast.error(err.response.data.message || "Invalid OTP. Please try again.");
+        toast.error(err|| "Invalid OTP. Please try again.");
    }
   };
 
