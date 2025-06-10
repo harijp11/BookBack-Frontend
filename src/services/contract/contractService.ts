@@ -80,7 +80,7 @@ export const sendOtpEmail = async (
     if (error instanceof AxiosError)
       // Handle errors (e.g., network issues, 4xx/5xx responses)
       throw new Error(
-        error.response?.data?.message || "Failed to send OTP. Please try again."
+        error.response?.data || "Failed to send OTP. Please try again."
       );
   }
 };
@@ -88,11 +88,9 @@ export const sendOtpEmail = async (
 export const verifyOtp = async (
   payload: VerifyOtpPayload
 ): Promise<VerifyOtpResponse | undefined> => {
-
-    const response: AxiosResponse<VerifyOtpResponse> =
-      await UserAxiosInstance.post("/user/contract/verify-otp", payload);
-    return response.data;
- 
+  const response: AxiosResponse<VerifyOtpResponse> =
+    await UserAxiosInstance.post("/user/contract/verify-otp", payload);
+  return response.data;
 };
 
 // Function to create a new contract

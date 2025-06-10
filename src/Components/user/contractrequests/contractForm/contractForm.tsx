@@ -20,20 +20,24 @@ import { useToast } from "@/hooks/ui/toast";
 import { AxiosError } from "axios";
 import { ArrowLeft } from "lucide-react";
 
+type contractDetails = {
+  contractType: "rental" | "sale";
+  bookName: string;
+  ownerName: string;
+  requesterName: string;
+  amount: number;
+  period?: number;
+  contractId?: string;
+  requestType: string;
+} | null;
 
- type contractDetails = {
-    contractType: "rental" | "sale";
-    bookName: string;
-    ownerName: string;
-    requesterName: string;
-    amount: number;
-    period?: number;
-    contractId?: string;
-    requestType:string
-  } | null
-
-
-
+interface ErrorResponse {
+  response: {
+    data: {
+      message: string;
+    };
+  };
+}
 
 const ContractForm: React.FC = () => {
   const { conReqId } = useParams<{ conReqId: string }>();
@@ -124,9 +128,11 @@ const ContractForm: React.FC = () => {
         await submitContract();
       }
     } catch (error) {
-      console.log("error in otp validation",error)
-      if (error instanceof AxiosError)
-        toast.error(error.message || "Invalid OTP. Please try again.");
+      console.log("error in otp validation", error);
+      const err = error as ErrorResponse;
+      toast.error(
+        err.response.data.message || "Invalid OTP. Please try again."
+      );
     }
   };
 
@@ -198,7 +204,7 @@ const ContractForm: React.FC = () => {
         }, 700);
         return;
       }
-      
+
       if (response?.success) {
         toast.success(response.message);
         setContractResult({
@@ -211,8 +217,7 @@ const ContractForm: React.FC = () => {
             ? contractRequest.bookId.originalAmount || 0
             : totalRentAmount,
           period: isSaleForm ? undefined : selectedDays,
-          contractId:
-            response.data?._id ,
+          contractId: response.data?._id,
           requestType: contractRequest.request_type,
         });
         setIsResultModalOpen(true);
@@ -447,7 +452,7 @@ const ContractForm: React.FC = () => {
             isOpen={isResultModalOpen}
             onClose={() => {
               setIsResultModalOpen(false);
-          
+
               if (contractRequest.request_type === "buy") {
                 navigate("/bought-Books");
               } else {
