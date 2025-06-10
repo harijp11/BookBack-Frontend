@@ -377,32 +377,32 @@ function TransactionList({ transactions }: { transactions: IPurseTransaction[] }
   const [currentPage, setCurrentPage] = useState(1)
   const transactionsPerPage = 5
   
-  // Sort transactions by creation date (newest first)
+
   const sortedTransactions = [...transactions].sort((a, b) => {
     const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
     const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-    return dateB - dateA // Descending order (newest first)
+    return dateB - dateA 
   })
   
-  // Calculate pagination values
+  
   const totalPages = Math.ceil(sortedTransactions.length / transactionsPerPage)
   const indexOfLastTransaction = currentPage * transactionsPerPage
   const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage
   const currentTransactions = sortedTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction)
   
-  // Change page
+  
   const goToPage = (pageNumber: number) => {
     setCurrentPage(Math.max(1, Math.min(pageNumber, totalPages)))
   }
   
-  // Go to next page
+ 
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1)
     }
   }
   
-  // Go to previous page
+  
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1)
@@ -442,10 +442,10 @@ function TransactionList({ transactions }: { transactions: IPurseTransaction[] }
               <span className="sr-only">Previous page</span>
             </Button>
             
-            {/* Page numbers */}
+        
             <div className="flex items-center space-x-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                // Logic to display page numbers around current page
+              
                 let pageNum = i + 1
                 if (totalPages > 5) {
                   if (currentPage <= 3) {
