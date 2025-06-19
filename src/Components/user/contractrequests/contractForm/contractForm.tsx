@@ -128,7 +128,6 @@ const ContractForm: React.FC = () => {
         await submitContract();
       }
     } catch (error) {
-      console.log("error in otp validation", error);
       const err = error as ErrorResponse;
       toast.error(
         err.response.data.message || "Invalid OTP. Please try again."

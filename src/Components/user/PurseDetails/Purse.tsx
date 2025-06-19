@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/ui/toast"
 
 
 
-const stripePromise = loadStripe('pk_test_51RIApnCtf3xhldA5Yk7WHe7BWQ4707WcGv4CgIwnuY7qDF0HHIAx16m6n86MS1Q6JNTNRcXmQ6v29UIWncfcsJq900X4vKbJBz')
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
  const Purse = () => {
   const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState<string>("")
