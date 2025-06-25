@@ -6,7 +6,7 @@ import { adminLogin } from "@/store/slice/admin_slice";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-export function AdminAuth() {
+function AdminAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { mutate: loginClient } = useLoginMutation();
@@ -34,3 +34,4 @@ export function AdminAuth() {
     </div>
   );
 }
+export default AdminAuth
