@@ -2,7 +2,7 @@ import { UserHeader } from "@/Components/headers/userHeader";
 import Footer from "@/Components/footer/userFooter";
 import ContactPage from "@/Components/user/ContactPage";
 
-export function UserContactPage() {
+ function UserContactPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header section with subtle shadow for depth */}
@@ -23,4 +23,5 @@ export function UserContactPage() {
     </div>
   );
 }
+export default UserContactPage
 

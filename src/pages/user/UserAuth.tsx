@@ -20,7 +20,7 @@ import GoogleAuth from "@/Components/auth/GoogleAuth";
 import { AxiosError } from "axios";
 
 
-export function UserAuth() {
+ function UserAuth() {
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(true);
   const dispatch = useDispatch();
@@ -196,3 +196,5 @@ export function UserAuth() {
     </div>
   );
 }
+
+export default UserAuth

@@ -2,7 +2,7 @@ import UserLanding from "@/Components/user/userLanding";
 import { UserHeader } from "@/Components/headers/userHeader";
 import Footer from "@/Components/footer/userFooter";
 
-export function UserLandingPage() {
+ function UserLandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header section with subtle shadow for depth */}
@@ -23,4 +23,6 @@ export function UserLandingPage() {
     </div>
   );
 }
+
+export default UserLandingPage
 
