@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback,useEffect  } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/ui/toast";
 import { DataTable } from "@/Components/common/tablecomponent/tableComponent";
@@ -14,7 +14,7 @@ import { RootState } from "@/store/store";
 const PaginatedBooksComponent: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.User);
   const userId = user?._id;
-  const toast = useToast();
+  
   const {
     data,
     isLoading,
@@ -34,7 +34,7 @@ const PaginatedBooksComponent: React.FC = () => {
   const { categoriesQuery, dealTypesQuery } = useBookQueries();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const navigate = useNavigate();
-
+  const toast = useToast()
   // Use the update book status mutation
   const updateBookStatusMutation = useUpdateBookStatusMutation(userId || "");
 
@@ -42,7 +42,7 @@ const PaginatedBooksComponent: React.FC = () => {
     if (data && searchTerm && data.books.length === 0) {
       toast.info(`No books found for "${searchTerm}"`);
     }
-  }, [data, searchTerm]);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (isError && error) {

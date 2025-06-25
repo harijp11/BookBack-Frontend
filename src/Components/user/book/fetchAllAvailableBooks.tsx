@@ -1,12 +1,14 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import {
+  //  useEffect,
+    useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { IBook } from "@/services/book/bookService"
 import { LocationPicker } from "@/common/maping/LocationPickerComponent"
 import { Pagination1 } from "@/Components/common/pagination/pagination1"
-import { useToast } from "@/hooks/ui/toast"
+// import { useToast } from "@/hooks/ui/toast"
 import { useAvailableBooks } from "@/hooks/common/useBookQueries"
 import { useBookQueries } from "@/hooks/common/useBookMutation"
 import { Search, MapPin, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react"
@@ -61,7 +63,7 @@ const BooksFetchPageInner: React.FC = () => {
   const limit: number = 4
 
   const user = useSelector((state: RootState) => state.user.User);
-  const { error } = useToast()
+  // const { error } = useToast()
   const { categoriesQuery, dealTypesQuery } = useBookQueries()
   const navigate = useNavigate()
 
@@ -84,21 +86,23 @@ const BooksFetchPageInner: React.FC = () => {
     sort: { [sort.field]: sort.order },
   }
 
-  const { data: booksResponse, isLoading: loading, refetch: fetchBooks } = useAvailableBooks(queryParams)
+  const { data: booksResponse, isLoading: loading,
+    //  refetch: fetchBooks 
+    } = useAvailableBooks(queryParams)
 
-  useEffect(() => {
-    if (location.point1) {
-      fetchBooks()
-    } else {
-      error("Please select a location")
-    }
-  }, [location.point1, fetchBooks])
+  // useEffect(() => {
+  //   if (location.point1) {
+  //     fetchBooks()
+  //   } else {
+  //     error("Please select a location")
+  //   }
+  // }, [location.point1])
 
-  useEffect(() => {
-    if (location.point1) {
-      fetchBooks()
-    }
-  }, [debouncedSearch, page, filters, sort, location.point1, maxDistance])
+  // useEffect(() => {
+  //   if (location.point1) {
+  //     fetchBooks()
+  //   }
+  // }, [debouncedSearch, filters, location.point1,page,sort])
 
   const handleLocationChange = (name: string, point1: [number, number]) => {
     setLocation({ name, point1 })

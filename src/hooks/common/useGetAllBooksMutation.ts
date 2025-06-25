@@ -1,6 +1,6 @@
 // hooks/useBooksQuery.ts
-import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getAllPaginatedBooks } from '@/services/book/bookService';
 import { useDebounce } from '@/Components/common/useDebounceHook/useDebounce';
 import { BookSearchParams, BookListResponse } from '@/services/book/bookService';
@@ -28,7 +28,7 @@ interface ExtendedBookSearchParams extends BookSearchParams {
 }
 
 export const useBooksQuery = (initialOwnerId: string) => {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useState<ExtendedBookSearchParams>({
     ownerId: initialOwnerId,
     page: 1,
@@ -91,9 +91,6 @@ export const useBooksQuery = (initialOwnerId: string) => {
     setSearchParams((prev) => ({ ...prev, page }));
   };
 
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ['books', searchParams.ownerId] });
-  }, [debouncedSearch, debouncedFilter, searchParams.ownerId, queryClient]);
 
   return {
     data,
