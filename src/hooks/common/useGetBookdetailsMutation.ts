@@ -58,7 +58,11 @@ export const useCheckIfRequestExists = (userId: string, bookId: string)=> {
   return useQuery({
     queryKey: ['contractRequestExists', userId, bookId],
     queryFn: async () => {
-      if (!userId || !bookId) return { success: false };
+      if (!userId || !bookId) return {
+      success: false,
+      message: "Missing user or book ID",
+      request: undefined,
+    } satisfies CombineRequest0;
       
       try {
         const response = await checkIfRequestExists(userId, bookId);

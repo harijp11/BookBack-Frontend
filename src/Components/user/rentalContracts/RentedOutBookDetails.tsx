@@ -189,7 +189,10 @@ const RentedOutBookDetailsPage = () => {
 
   const handleInitiateReturn = async () => {
     try {
-      await sendOtpMutation.mutateAsync(rentalContract.borrowerId.email);
+      await sendOtpMutation.mutateAsync({
+      email: rentalContract.borrowerId.email,
+      bookId: rentalContract?.bookId?._id,
+    });
       toast.success("An OTP has been sent to the borrower's email.");
       setIsReturnActionModalOpen(false);
       setIsOTPModalOpen(true);
@@ -212,6 +215,7 @@ const RentedOutBookDetailsPage = () => {
       const payload = {
         email: rentalContract.borrowerId.email,
         otp,
+        bookId:rentalContract.bookId._id
       };
       await verifyOtpMutation.mutateAsync(payload);
       await updateStatusMutation.mutateAsync({ rentalId, status: "Returned" });
@@ -231,7 +235,10 @@ const RentedOutBookDetailsPage = () => {
 
   const handleResendOTP = async () => {
     try {
-      await sendOtpMutation.mutateAsync(rentalContract.borrowerId.email);
+      await sendOtpMutation.mutateAsync({
+      email: rentalContract.borrowerId.email,
+      bookId: rentalContract?.bookId?._id,
+    });
       toast.success("A new OTP has been sent to the borrower's email.");
     } catch (error) {
       if (error instanceof AxiosError) {

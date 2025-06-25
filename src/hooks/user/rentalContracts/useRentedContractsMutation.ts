@@ -14,6 +14,7 @@ import { renewal_details } from '@/services/rental/rentalService';
 interface VerifyOtpPayload {
   email: string;
   otp: string;
+  bookId?:string
 }
 
 interface UpdateStatusPayload {
@@ -43,7 +44,13 @@ export const useRentalMutations = () => {
   const queryClient = useQueryClient();
 
   const sendOtpMutation = useMutation({
-    mutationFn: (email: string) => sendOtpEmailForContractReturn(email),
+    mutationFn: ({
+    email,
+    bookId,
+  }: {
+    email: string;
+    bookId?: string;
+  }) => sendOtpEmailForContractReturn(email,bookId),
     onSuccess: (response) => {
       if (response?.success) {
         return response;

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/ui/toast";
 import { DataTable } from "@/Components/common/tablecomponent/tableComponent";
@@ -36,13 +36,13 @@ const PaginatedBooksComponent: React.FC = () => {
   const navigate = useNavigate();
 
   // Use the update book status mutation
-  const updateBookStatusMutation = useUpdateBookStatusMutation();
+  const updateBookStatusMutation = useUpdateBookStatusMutation(userId || "");
 
   useEffect(() => {
     if (data && searchTerm && data.books.length === 0) {
       toast.info(`No books found for "${searchTerm}"`);
     }
-  }, [data, searchTerm, toast]);
+  }, [data, searchTerm]);
 
   useEffect(() => {
     if (isError && error) {
@@ -50,7 +50,7 @@ const PaginatedBooksComponent: React.FC = () => {
         `Failed to load books: ${(error as Error).message || "Unknown error"}`
       );
     }
-  }, [isError, error, toast]);
+  }, [isError, error]);
 
   // Debugging query states
 
@@ -84,12 +84,12 @@ const PaginatedBooksComponent: React.FC = () => {
     setIsFilterOpen(!isFilterOpen);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(amount);
-  };
+  const formatCurrency = useCallback((amount: number) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+  }).format(amount);
+}, []);
 
   const renderEmptyState = () => (
     <div className="flex flex-col justify-center items-center py-16 text-gray-500">
@@ -344,7 +344,7 @@ const PaginatedBooksComponent: React.FC = () => {
                 <div className="relative flex-1">
                   <input
                     type="text"
-                    placeholder="Search books by title, author, or category..."
+                    placeholder="Search books by title..."
                     value={searchTerm}
                     onChange={handleSearchChange}
                     className="w-full px-4 pl-10 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"

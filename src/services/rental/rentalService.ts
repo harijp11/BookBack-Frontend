@@ -120,16 +120,17 @@ export interface RentalContract{
     export interface VerifyOtpPayload {
       email: string;
       otp: string;
+      bookId?:string
     }
 
 
 
 
-     export const sendOtpEmailForContractReturn = async (email: string): Promise<SendOtpResponse | undefined> => {
+     export const sendOtpEmailForContractReturn = async (email: string,bookId?:string): Promise<SendOtpResponse | undefined> => {
          try {
            const response: AxiosResponse<SendOtpResponse> = await UserAxiosInstance.post(
              '/user/rental-book/return/send-otp',
-             { email }
+             { email,bookId }
            );
            return response.data;
          } catch (error) {

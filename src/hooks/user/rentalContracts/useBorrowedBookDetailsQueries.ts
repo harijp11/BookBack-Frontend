@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchRentalContractDetails, RentalContract, SingleCombinedRentalContracts } from '@/services/rental/rentalService';
 import { AxiosError, isAxiosError } from 'axios';
+import { ErrorResponse } from '@/types/ErrorType,';
 
-interface ErrorResponse {
-  message: string;
-}
+
 
 
 export const useRentalContract = (rentalId: string | undefined) => {

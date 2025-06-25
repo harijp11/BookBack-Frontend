@@ -190,30 +190,31 @@ const ContractRequestsPage: React.FC = () => {
     {
       header: "Action",
       accessor: (row: ContractRequest) => {
-        if (row.status === "pending") {
+        if (row.status === "pending" || row.status === "accepted") {
           return (
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={() => handleCancelRequest(row._id)}
-              disabled={cancelMutation.isPending}
-            >
-              {cancelMutation.isPending && cancelMutation.variables === row._id ? (
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              ) : null}
-              Cancel
-            </Button>
-          );
-        } else if (row.status === "accepted") {
-          return (
-            <Button
-              variant="default"
-              size="sm"
-              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
-              onClick={() => handleFixDeal(row._id)}
-            >
-              Fix Deal
-            </Button>
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => handleCancelRequest(row._id)}
+                disabled={cancelMutation.isPending}
+              >
+                {cancelMutation.isPending && cancelMutation.variables === row._id ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : null}
+                Cancel
+              </Button>
+              {row.status === "accepted" && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
+                  onClick={() => handleFixDeal(row._id)}
+                >
+                  Fix Deal
+                </Button>
+              )}
+            </div>
           );
         } else {
           return null;

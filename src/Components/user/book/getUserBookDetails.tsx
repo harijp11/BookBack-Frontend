@@ -12,6 +12,7 @@ import {
   BookOpen,
   FileText,
   XCircle,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +21,7 @@ import {
   useSendContractRequest,
   useCheckIfRequestExists,
 } from "@/hooks/common/useGetBookdetailsMutation";
+import { useAddUserNotify } from "@/hooks/common/useNotifyUserMutation";
 import MapLocationPicker from "@/common/maping/googleMapIframe";
 import { useSelector } from "react-redux";
 import { useToast } from "@/hooks/ui/toast";
@@ -59,14 +61,20 @@ const BookView: React.FC = () => {
   }
 
   // Check if a request already exists for this book and user, only enabled if user exists
-  const { data: requestExistsData, isLoading: checkingRequest } = useCheckIfRequestExists(
-    user?._id ?? "",
-    bookId,
-  );
+  const {
+    data: requestExistsData,
+    isLoading: checkingRequest,
+    refetch,
+  } = useCheckIfRequestExists(user?._id ?? "", bookId);
 
   // Contract request mutation
   const { mutate: sendContractRequest, isPending: isSubmitting } =
     useSendContractRequest();
+
+  // Notification mutation
+  const { mutate: addNotify, isPending: isNotifying } = useAddUserNotify(
+    user?._id || ""
+  );
 
   // Fetch related books once we have the category ID from the book
   const categoryId = book?.categoryId?._id;
@@ -80,6 +88,9 @@ const BookView: React.FC = () => {
     requestStatus = existingRequest ? requestExistsData?.request?.status : null;
   }
 
+  // Check if user is in notifyUsers array
+  const isUserNotified = user?._id && book?.notifyUsers?.includes(user._id);
+
   // Set active image when book data is loaded
   useEffect(() => {
     if (book?.images && book.images.length > 0) {
@@ -87,7 +98,7 @@ const BookView: React.FC = () => {
     }
   }, [book]);
 
-  // Initialize selectedLocation with book coordinates if available
+ 
   useEffect(() => {
     if (book?.location?.coordinates) {
       const [lng, lat] = book.location.coordinates;
@@ -99,18 +110,15 @@ const BookView: React.FC = () => {
     }
   }, [book]);
 
-  // Handle scroll animations
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
 
-      // Parallax effect for the header
       if (headerRef.current) {
         headerRef.current.style.backgroundPositionY = `${
           scrollPosition * 0.5
         }px`;
       }
-      // Reveal animations when elements come into view
       [descriptionRef, galleryRef, relatedRef].forEach((ref) => {
         if (ref.current) {
           const rect = ref.current.getBoundingClientRect();
@@ -125,39 +133,48 @@ const BookView: React.FC = () => {
     };
 
     window.addEventListener("scroll", handleScroll);
-    // Trigger once on mount
+
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Handle location selection
   const handleLocationSelect = (lat: number, lng: number, address: string) => {
     setSelectedLocation({ lat, lng, address });
     setShowLocationPicker(false);
   };
 
-  // Navigate to My Requests page
   const navigateToMyRequests = () => {
     navigate("/contract-requests");
   };
 
-  // Handle contract request (for both rent and buy)
-  const handleContractRequest = (requestType: "borrow" | "buy") => {
-    // Check if user is logged in
+  const handleContractRequest = async (requestType: "borrow" | "buy") => {
     if (!user || !user?._id) {
       toast.error("Please login to continue");
       navigate("/auth");
       return;
     }
 
-    // Check if book exists
     if (!book || !book.ownerId?._id) {
       toast.error("Book details not available");
       return;
     }
 
-    // Prepare request payload
+    try {
+      const { data: refetchedData } = await refetch();
+      if (
+        refetchedData?.success &&
+        refetchedData?.request?.status !== "rejected"
+      ) {
+        toast.info("You've already sent a request for this book.");
+        return;
+      }
+    } catch (error) {
+      toast.error("Failed to verify request status. Please try again.");
+      console.error("Refetch error:", error);
+      return;
+    }
+
     const payload = {
       requesterId: user?._id,
       ownerId: book.ownerId?._id,
@@ -180,8 +197,6 @@ const BookView: React.FC = () => {
               requestType === "borrow" ? "rental" : "purchase"
             } request has been sent!`
           );
-          // You could invalidate the check request query here if needed
-          // queryClient.invalidateQueries(['contractRequestExists', user._id, bookId]);
         }
       },
       onError: (error: unknown) => {
@@ -196,7 +211,34 @@ const BookView: React.FC = () => {
     });
   };
 
-  // Error handling for React Query errors
+  // Updated handleNotifyMe function for BookView component
+  const [localIsUserNotified, setLocalIsUserNotified] =
+    useState(isUserNotified);
+
+  useEffect(() => {
+    setLocalIsUserNotified(user?._id && book?.notifyUsers?.includes(user._id));
+  }, [book, user]);
+
+  const handleNotifyMe = () => {
+    if (!user || !user?._id) {
+      toast.error("Please login to continue");
+      navigate("/auth");
+      return;
+    }
+    if (!bookId) {
+      toast.error("Book ID not available");
+      return;
+    }
+    addNotify(bookId, {
+      onSuccess: (data) => {
+        setLocalIsUserNotified(data.success);
+      },
+      onError: (error) => {
+        console.error("Failed to set notification:", error);
+      },
+    });
+  };
+
   const error = bookError ? (bookError as Error).message : null;
 
   if (loading) {
@@ -466,7 +508,8 @@ const BookView: React.FC = () => {
                 <MapPin size={16} className="text-black" />
                 <span>
                   {selectedLocation?.address ||
-                    book.locationName || "Location unavailable"}
+                    book.locationName ||
+                    "Location unavailable"}
                 </span>
               </button>
 
@@ -512,6 +555,27 @@ const BookView: React.FC = () => {
                     </span>
                   </span>
                 </div>
+
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <span className="text-sm text-gray-500 block mb-2">
+                    Number of Pages
+                  </span>
+                  <span className="text-2xl font-bold text-gray-800 flex items-end gap-1">
+                    {book.numberOfPages}
+                    <span className="text-sm font-normal text-gray-500 ml-1">
+                      pages
+                    </span>
+                  </span>
+                </div>
+
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <span className="text-sm text-gray-500 block mb-2">
+                    Avg. Reading Time
+                  </span>
+                  <span className="text-2xl font-bold text-gray-800 flex items-end gap-1">
+                    {book.avgReadingTime}
+                  </span>
+                </div>
               </div>
 
               <div className="p-6 bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-100 mb-10 transform transition-all duration-300 hover:shadow-xl">
@@ -526,9 +590,15 @@ const BookView: React.FC = () => {
 
               <div className="flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200/30 mb-10 transform transition-all duration-300 hover:shadow-xl shadow-lg">
                 <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-md">
-                  {book?.ownerId?.profileImage ? ( <img
-                  src={book?.ownerId?.profileImage}
-                  className="text-blue-500 rounded-full"/>):( <User size={24} className="text-blue-500" />)}
+                  {book?.ownerId?.profileImage ? (
+                    <img
+                      src={book.ownerId.profileImage}
+                      className="w-full h-full rounded-full object-cover"
+                      alt="Owner profile"
+                    />
+                  ) : (
+                    <User size={24} className="text-blue-500" />
+                  )}
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800 text-lg">
@@ -547,14 +617,37 @@ const BookView: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 {!isAvailable ? (
-                  // Not Available button when status is not "Available"
-                  <button
-                    className="w-full bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 cursor-not-allowed opacity-80"
-                    disabled={true}
-                  >
-                    <XCircle size={20} />
-                    Not Available For Deal
-                  </button>
+                  <>
+                    {/* Not Available button */}
+                    <button
+                      className="w-full bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 cursor-not-allowed opacity-80"
+                      disabled={true}
+                    >
+                      <XCircle size={20} />
+                      Not Available For Deal
+                    </button>
+                    {/* Notify Me button */}
+                    <button
+                      className={cn(
+                        "w-full px-6 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transform hover:-translate-y-1 transition-all duration-300",
+                        localIsUserNotified
+                          ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white hover:shadow-lg hover:shadow-yellow-200/50"
+                          : "bg-gradient-to-r from-gray-50 to-gray-200 text-gray-800 hover:shadow-lg hover:shadow-gray-200/50",
+                        isNotifying && "opacity-75 cursor-wait"
+                      )}
+                      onClick={handleNotifyMe}
+                      disabled={isNotifying}
+                    >
+                      {isNotifying ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      ) : (
+                        <Bell size={20} />
+                      )}
+                      {localIsUserNotified
+                        ? "You will be notified"
+                        : "Notify Me"}
+                    </button>
+                  </>
                 ) : user &&
                   existingRequest &&
                   (requestStatus === "pending" ||

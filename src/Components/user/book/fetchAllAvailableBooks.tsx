@@ -9,10 +9,9 @@ import { Pagination1 } from "@/Components/common/pagination/pagination1"
 import { useToast } from "@/hooks/ui/toast"
 import { useAvailableBooks } from "@/hooks/common/useBookQueries"
 import { useBookQueries } from "@/hooks/common/useBookMutation"
-import { Search, MapPin, Filter, Loader2, X, ChevronDown } from "lucide-react"
+import { Search, MapPin, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useDebounce } from "@/Components/common/useDebounceHook/useDebounce" 
-// Import the BookCard component
 import { BookCard } from "@/Components/ui/bookcard" 
 import { useSelector } from "react-redux"
 import { RootState } from "@/store/store"
@@ -34,66 +33,59 @@ interface FilterState  {
   dealTypeId?: string;
 };
 
-
 interface SortState {
   field: string
   order: 1 | -1
 }
 
 const BooksFetchPageInner: React.FC = () => {
-  // State for location
   const [location, setLocation] = useState<{
     name: string
     point1: [number, number]
   }>({
     name: "",
-    point1: [9.941777, 76.320992], // Default to London
+    point1: [9.941777, 76.320992],
   })
 
-  // State for filters, sorting, and pagination
   const [filters, setFilters] = useState<FilterState>({})
   const [sort, setSort] = useState<SortState>({ field: "createdAt", order: 1 })
   const [page, setPage] = useState<number>(1)
-  const [searchInput, setSearchInput] = useState<string>("") // Raw search input
-  const debouncedSearch = useDebounce<string>(searchInput, 500) // Debounce search input
+  const [searchInput, setSearchInput] = useState<string>("")
+  const debouncedSearch = useDebounce<string>(searchInput, 500)
   const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false)
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false)
-  const [maxDistance, setMaxDistance] = useState<number>(5000) // Default 5km in meters
+  const [maxDistance, setMaxDistance] = useState<number>(5000)
+  const [showDealTypes, setShowDealTypes] = useState<boolean>(false)
+  const [showCategories, setShowCategories] = useState<boolean>(false)
+  const [showDistance, setShowDistance] = useState<boolean>(false)
   const limit: number = 4
 
   const user = useSelector((state: RootState) => state.user.User);
-  // Use toast hook
   const { error } = useToast()
-
-  // Use the book queries hook to access the categories and deal types queries
   const { categoriesQuery, dealTypesQuery } = useBookQueries()
   const navigate = useNavigate()
 
   const convertedFilters: Record<string, object> | undefined =
-  Object.keys(filters).length > 0
-    ? Object.fromEntries(
-        Object.entries(filters).map(([key,value]) => [key,value])
-      )
-    : undefined;
+    Object.keys(filters).length > 0
+      ? Object.fromEntries(
+          Object.entries(filters).map(([key, value]) => [key, value])
+        )
+      : undefined;
 
-  
-  // Construct query params
   const queryParams: GetBooksByLocationInput = {
     userId: user?._id || "",
     latitude: location.point1[0],
     longitude: location.point1[1],
-    maxDistance: maxDistance, // Use the maxDistance state
+    maxDistance: maxDistance,
     page,
     limit,
-    search: debouncedSearch || undefined, // Use debounced search value
+    search: debouncedSearch || undefined,
     filters: convertedFilters,
     sort: { [sort.field]: sort.order },
   }
 
-  // Use the custom hook for fetching books
   const { data: booksResponse, isLoading: loading, refetch: fetchBooks } = useAvailableBooks(queryParams)
 
-  // Trigger fetch when dependencies change
   useEffect(() => {
     if (location.point1) {
       fetchBooks()
@@ -102,24 +94,18 @@ const BooksFetchPageInner: React.FC = () => {
     }
   }, [location.point1, fetchBooks])
 
-
-  
-
-  // Effect to refetch when debounced search changes
   useEffect(() => {
     if (location.point1) {
       fetchBooks()
     }
   }, [debouncedSearch, page, filters, sort, location.point1, maxDistance])
 
-  // Handle location change from LocationPicker
   const handleLocationChange = (name: string, point1: [number, number]) => {
     setLocation({ name, point1 })
     setShowLocationPicker(false)
     setPage(1)
   }
 
-  // Handle filter changes
   const handleFilterChange = (key: keyof FilterState, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
@@ -128,25 +114,20 @@ const BooksFetchPageInner: React.FC = () => {
     setPage(1)
   }
 
-  // Handle max distance change
   const handleMaxDistanceChange = (distance: number) => {
     setMaxDistance(distance)
     setPage(1)
   }
 
-  // Handle sort change
   const handleSortChange = (field: string, order: 1 | -1) => {
     setSort({ field, order })
     setPage(1)
   }
 
-  // Handle search change - updated to use debounce pattern
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value) // Update raw input immediately for UI feedback
-    // No need to call setPage(1) here as it will be handled when debouncedSearch changes
+    setSearchInput(e.target.value)
   }
 
-  // Handle pagination
   const handlePagePrev = () => {
     setPage((prev) => Math.max(prev - 1, 1))
   }
@@ -159,7 +140,12 @@ const BooksFetchPageInner: React.FC = () => {
     setPage(newPage)
   }
 
-  // Distance options in meters
+  const handleClearFilters = () => {
+    setFilters({})
+    setMaxDistance(5000)
+    setPage(1)
+  }
+
   const distanceOptions = [
     { label: "1 km", value: 1000 },
     { label: "5 km", value: 5000 },
@@ -169,13 +155,8 @@ const BooksFetchPageInner: React.FC = () => {
     { label: "200 km", value: 200000 },
   ]
 
- 
-
-
-
   return (
     <div className="bg-gradient-to-b from-white to-gray-50 text-black min-h-screen">
-      {/* Location Picker Modal */}
       <AnimatePresence>
         {showLocationPicker && (
           <motion.div
@@ -220,7 +201,6 @@ const BooksFetchPageInner: React.FC = () => {
           Find Books Nearby
         </motion.h1>
 
-        {/* Top Search and Location Bar */}
         <motion.div
           className="flex flex-col md:flex-row gap-4 mb-8"
           initial={{ opacity: 0, y: -10 }}
@@ -288,7 +268,6 @@ const BooksFetchPageInner: React.FC = () => {
         </motion.div>
 
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Sidebar Filters */}
           <AnimatePresence>
             {(showMobileFilters || !showMobileFilters) && (
               <motion.aside
@@ -301,113 +280,178 @@ const BooksFetchPageInner: React.FC = () => {
                 <div className="sticky top-8 bg-gradient-to-b from-gray-50 to-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold">Filters</h2>
-                    <button
-                      onClick={() => setShowMobileFilters(false)}
-                      className="md:hidden p-2 rounded-full hover:bg-gray-200"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleClearFilters}
+                        className="text-sm text-gray-600 hover:text-black underline"
+                      >
+                        Clear Filters
+                      </button>
+                      <button
+                        onClick={() => setShowMobileFilters(false)}
+                        className="md:hidden p-2 rounded-full hover:bg-gray-200"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-6">
-                    {/* Distance Range Filter */}
                     <div>
-                      <h3 className="text-sm font-semibold uppercase text-gray-500 mb-3">Search Radius</h3>
-                      <div className="space-y-2">
-                        {distanceOptions.map((option) => (
-                          <div key={option.value} className="flex items-center">
-                            <input
-                              type="radio"
-                              id={`distance-${option.value}`}
-                              name="distance"
-                              checked={maxDistance === option.value}
-                              onChange={() => handleMaxDistanceChange(option.value)}
-                              className="h-4 w-4 border-gray-300 text-black focus:ring-black"
-                            />
-                            <label htmlFor={`distance-${option.value}`} className="ml-2 text-sm text-gray-700">
-                              {option.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-semibold uppercase text-gray-500 mb-3">Categories</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="category-all"
-                            name="category"
-                            checked={!filters.categoryId}
-                            onChange={() => handleFilterChange("categoryId", undefined)}
-                            className="h-4 w-4 border-gray-300 text-black focus:ring-black"
-                          />
-                          <label htmlFor="category-all" className="ml-2 text-sm text-gray-700">
-                            All Categories
-                          </label>
-                        </div>
-
-                        {categoriesQuery.isLoading ? (
-                          <div className="py-2 px-3 bg-gray-100 rounded animate-pulse">Loading categories...</div>
+                      <button
+                        className="flex items-center justify-between w-full text-sm font-semibold uppercase text-gray-500 mb-3"
+                        onClick={() => setShowDealTypes(!showDealTypes)}
+                      >
+                        Deal Types
+                        {showDealTypes ? (
+                          <ChevronUp className="h-5 w-5" />
                         ) : (
-                          categoriesQuery.data?.map((cat) => (
-                            <div key={cat._id} className="flex items-center">
-                              <input
-                                type="radio"
-                                id={`category-${cat._id}`}
-                                name="category"
-                                checked={filters.categoryId === cat._id}
-                                onChange={() => handleFilterChange("categoryId", cat._id)}
-                                className="h-4 w-4 border-gray-300 text-black focus:ring-black"
-                              />
-                              <label htmlFor={`category-${cat._id}`} className="ml-2 text-sm text-gray-700">
-                                {cat.name}
-                              </label>
-                            </div>
-                          ))
+                          <ChevronDown className="h-5 w-5" />
                         )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-semibold uppercase text-gray-500 mb-3">Deal Types</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="deal-all"
-                            name="deal"
-                            checked={!filters.dealTypeId}
-                            onChange={() => handleFilterChange("dealTypeId", undefined)}
-                            className="h-4 w-4 border-gray-300 text-black focus:ring-black"
-                          />
-                          <label htmlFor="deal-all" className="ml-2 text-sm text-gray-700">
-                            All Deal Types
-                          </label>
-                        </div>
-
-                        {dealTypesQuery.isLoading ? (
-                          <div className="py-2 px-3 bg-gray-100 rounded animate-pulse">Loading deal types...</div>
-                        ) : (
-                          dealTypesQuery.data?.map((deal) => (
-                            <div key={deal._id} className="flex items-center">
+                      </button>
+                      <AnimatePresence>
+                        {showDealTypes && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-2"
+                          >
+                            <div className="flex items-center">
                               <input
                                 type="radio"
-                                id={`deal-${deal._id}`}
+                                id="deal-all"
                                 name="deal"
-                                checked={filters.dealTypeId === deal._id}
-                                onChange={() => handleFilterChange("dealTypeId", deal._id)}
+                                checked={!filters.dealTypeId}
+                                onChange={() => handleFilterChange("dealTypeId", undefined)}
                                 className="h-4 w-4 border-gray-300 text-black focus:ring-black"
                               />
-                              <label htmlFor={`deal-${deal._id}`} className="ml-2 text-sm text-gray-700">
-                                {deal.name}
+                              <label htmlFor="deal-all" className="ml-2 text-sm text-gray-700">
+                                All Deal Types
                               </label>
                             </div>
-                          ))
+                            {dealTypesQuery.isLoading ? (
+                              <div className="py-2 px-3 bg-gray-100 rounded animate-pulse">Loading deal types...</div>
+                            ) : (
+                              dealTypesQuery.data?.map((deal) => (
+                                <div key={deal._id} className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    id={`deal-${deal._id}`}
+                                    name="deal"
+                                    checked={filters.dealTypeId === deal._id}
+                                    onChange={() => handleFilterChange("dealTypeId", deal._id)}
+                                    className="h-4 w-4 border-gray-300 text-black focus:ring-black"
+                                  />
+                                  <label htmlFor={`deal-${deal._id}`} className="ml-2 text-sm text-gray-700">
+                                    {deal.name}
+                                  </label>
+                                </div>
+                              ))
+                            )}
+                          </motion.div>
                         )}
-                      </div>
+                      </AnimatePresence>
+                    </div>
+
+                    <div>
+                      <button
+                        className="flex items-center justify-between w-full text-sm font-semibold uppercase text-gray-500 mb-3"
+                        onClick={() => setShowDistance(!showDistance)}
+                      >
+                        Search Radius
+                        {showDistance ? (
+                          <ChevronUp className="h-5 w-5" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5" />
+                        )}
+                      </button>
+                      <AnimatePresence>
+                        {showDistance && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-2"
+                          >
+                            {distanceOptions.map((option) => (
+                              <div key={option.value} className="flex items-center">
+                                <input
+                                  type="radio"
+                                  id={`distance-${option.value}`}
+                                  name="distance"
+                                  checked={maxDistance === option.value}
+                                  onChange={() => handleMaxDistanceChange(option.value)}
+                                  className="h-4 w-4 border-gray-300 text-black focus:ring-black"
+                                />
+                                <label htmlFor={`distance-${option.value}`} className="ml-2 text-sm text-gray-700">
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    <div>
+                      <button
+                        className="flex items-center justify-between w-full text-sm font-semibold uppercase text-gray-500 mb-3"
+                        onClick={() => setShowCategories(!showCategories)}
+                      >
+                        Categories
+                        {showCategories ? (
+                          <ChevronUp className="h-5 w-5" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5" />
+                        )}
+                      </button>
+                      <AnimatePresence>
+                        {showCategories && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-2"
+                          >
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                id="category-all"
+                                name="category"
+                                checked={!filters.categoryId}
+                                onChange={() => handleFilterChange("categoryId", undefined)}
+                                className="h-4 w-4 border-gray-300 text-black focus:ring-black"
+                              />
+                              <label htmlFor="category-all" className="ml-2 text-sm text-gray-700">
+                                All Categories
+                              </label>
+                            </div>
+                            {categoriesQuery.isLoading ? (
+                              <div className="py-2 px-3 bg-gray-100 rounded animate-pulse">Loading categories...</div>
+                            ) : (
+                              categoriesQuery.data?.map((cat) => (
+                                <div key={cat._id} className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    id={`category-${cat._id}`}
+                                    name="category"
+                                    checked={filters.categoryId === cat._id}
+                                    onChange={() => handleFilterChange("categoryId", cat._id)}
+                                    className="h-4 w-4 border-gray-300 text-black focus:ring-black"
+                                  />
+                                  <label htmlFor={`category-${cat._id}`} className="ml-2 text-sm text-gray-700">
+                                    {cat.name}
+                                  </label>
+                                </div>
+                              ))
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
                 </div>
@@ -415,36 +459,33 @@ const BooksFetchPageInner: React.FC = () => {
             )}
           </AnimatePresence>
 
-          {/* Main Content */}
           <main className="flex-grow">
-            {/* Loading Message */}
             {!loading && booksResponse?.books?.length ? (
-  <div className="grid grid-cols-2 gap-4 sm:gap-6">
-    {booksResponse.books.map((book: IBook) => (
-      <div key={book._id} onClick={() => navigate(`/book/${book._id}`)} className="cursor-pointer">
-        <BookCard
-          id={book._id}
-          title={book.name}
-          imageUrl={book.images?.[0] || "/placeholder.svg"}
-          category={book.categoryId.name}
-          originalPrice={book.originalAmount}
-          rentalPrice={book.rentAmount}
-          location={book.locationName}
-          distance={book.distance}
-        />
-      </div>
-    ))}
-  </div>
-) : (
-  !loading && !categoriesQuery.isLoading && !dealTypesQuery.isLoading && (
-    <div className="text-center py-16 bg-white rounded-lg border border-gray-100">
-      <p className="text-xl font-medium text-gray-600">No books found for the selected criteria.</p>
-      <p className="text-gray-500 mt-2">Try adjusting your filters or search terms.</p>
-    </div>
-  )
-)}
+              <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                {booksResponse.books.map((book: IBook) => (
+                  <div key={book._id} onClick={() => navigate(`/book/${book._id}`)} className="cursor-pointer">
+                    <BookCard
+                      id={book._id}
+                      title={book.name}
+                      imageUrl={book.images?.[0] || "/placeholder.svg"}
+                      category={book.categoryId.name}
+                      originalPrice={book.originalAmount}
+                      rentalPrice={book.rentAmount}
+                      location={book.locationName}
+                      distance={book.distance}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              !loading && !categoriesQuery.isLoading && !dealTypesQuery.isLoading && (
+                <div className="text-center py-16 bg-white rounded-lg border border-gray-100">
+                  <p className="text-xl font-medium text-gray-600">No books found for the selected criteria.</p>
+                  <p className="text-gray-500 mt-2">Try adjusting your filters or search terms.</p>
+                </div>
+              )
+            )}
 
-            {/* Pagination */}
             {(booksResponse?.totalPages || 0) > 1 && (
               <motion.div
                 className="mt-8"

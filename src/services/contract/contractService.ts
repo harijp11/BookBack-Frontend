@@ -62,6 +62,8 @@ export interface VerifyOtpResponse {
 export interface VerifyOtpPayload {
   email: string;
   otp: string;
+  purpose?:string;
+  bookId?:string
 }
 
 export interface SendOtpResponse {
@@ -70,11 +72,13 @@ export interface SendOtpResponse {
 }
 
 export const sendOtpEmail = async (
-  email: string
+  email: string,
+  purpose?:string,
+  bookId?:string
 ): Promise<SendOtpResponse | undefined> => {
   try {
     const response: AxiosResponse<SendOtpResponse> =
-      await UserAxiosInstance.post("/user/contract/send-otp", { email });
+      await UserAxiosInstance.post("/user/contract/send-otp", { email ,purpose,bookId });
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError)

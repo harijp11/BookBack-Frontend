@@ -97,14 +97,17 @@ function BookFormPage({ mode }: BookFormPageProps) {
       categoryId: "",
       dealTypeId: "",
       originalAmount: 0,
-      rentAmount: undefined, // Changed to undefined to align with optional schema
+      rentAmount: undefined,
       description: "",
-      maxRentalPeriod: undefined, // Changed to undefined to align with optional schema
+      maxRentalPeriod: undefined,
       locationName: "",
       latitude: 0,
       longitude: 0,
       latitude2: undefined,
       longitude2: undefined,
+      numberOfPages: 0,
+      avgReadingTimeDuration: 30,
+      avgReadingTimeUnit: "days",
     },
   });
 
@@ -131,6 +134,40 @@ function BookFormPage({ mode }: BookFormPageProps) {
   const isRentFieldsEnabled =
     selectedDealType?.name === "For Rent Only" ||
     selectedDealType?.name === "For Rent And Sale";
+
+  const numberOfPages = form.watch("numberOfPages");
+
+  useEffect(() => {
+    if (numberOfPages > 0) {
+      const totalMinutes = numberOfPages * 10;
+      const averageDailyReadingMinutes = 120; // 2.5 hours/day
+
+      let duration: number;
+      let unit: "hours" | "days" | "months" | "years";
+
+      const estimatedDays = totalMinutes / averageDailyReadingMinutes;
+
+      if (estimatedDays <= 0.5) {
+        duration = Math.ceil(totalMinutes / 60); // convert to hours
+        unit = "hours";
+      } else if (estimatedDays <= 30) {
+        duration = Math.ceil(estimatedDays);
+        unit = "days";
+      } else if (estimatedDays <= 365) {
+        duration = Math.ceil(estimatedDays / 30); // convert to months
+        unit = "months";
+      } else {
+        duration = Math.ceil(estimatedDays / 365); // convert to years
+        unit = "years";
+      }
+
+      form.setValue("avgReadingTimeDuration", duration);
+      form.setValue("avgReadingTimeUnit", unit);
+    } else {
+      form.setValue("avgReadingTimeDuration", 30);
+      form.setValue("avgReadingTimeUnit", "days");
+    }
+  }, [numberOfPages, form]);
 
   // Populate form with book data when all queries are ready
   useEffect(() => {
@@ -161,6 +198,20 @@ function BookFormPage({ mode }: BookFormPageProps) {
         );
         warning("Deal Type not found. Please select a new deal type.");
       }
+
+      // Parse avgReadingTime (e.g., "3 hours" -> duration: 3, unit: hours)
+      let avgReadingTimeDuration = 30;
+      let avgReadingTimeUnit: "hours" | "days" | "months" | "years" = "days";
+      if (book.avgReadingTime) {
+        const match = book.avgReadingTime.match(/^(\d+)\s*(hours|days|months|years)$/i);
+        if (match) {
+          avgReadingTimeDuration = Number(match[1]);
+          avgReadingTimeUnit = match[2].toLowerCase() as "hours" | "days" | "months" | "years";
+        }
+      }
+
+      // Set rentAmount and maxRentalPeriod to undefined for "Sale Only"
+      const isSaleOnly = book.dealTypeId.name === "Sale Only";
       form.reset(
         {
           name: book.name,
@@ -169,32 +220,30 @@ function BookFormPage({ mode }: BookFormPageProps) {
           dealTypeId:
             dealTypeExists && book.dealTypeId._id ? book.dealTypeId._id : "",
           originalAmount: book.originalAmount,
-          rentAmount: book.rentAmount ?? undefined,
+          rentAmount: isSaleOnly ? undefined : book.rentAmount ?? undefined,
           description: book.description || "",
-          maxRentalPeriod: book.maxRentalPeriod ?? undefined,
+          maxRentalPeriod: isSaleOnly ? undefined : book.maxRentalPeriod ?? undefined,
           locationName: book.locationName,
           latitude: book.location.coordinates[1],
           longitude: book.location.coordinates[0],
           latitude2: undefined,
           longitude2: undefined,
+          numberOfPages: book.numberOfPages || 0,
+          avgReadingTimeDuration,
+          avgReadingTimeUnit,
         },
         { keepDefaultValues: false }
       );
       setImages(book.images || []);
       setIsFormReady(true);
-   
     }
   }, [bookQuery?.data, categoriesQuery.data, dealTypesQuery.data, mode, form]);
-
-  // Debug form values and errors
-
 
   // Handle location change from LocationPicker
   const handleLocationChange = useCallback(
     async (
       locationName: string,
       point1: [number, number]
-      // point2: [number, number] | null
     ) => {
       const [latitude, longitude] = point1;
       form.setValue("locationName", locationName);
@@ -348,7 +397,6 @@ function BookFormPage({ mode }: BookFormPageProps) {
   // Form submission
   const onSubmit = useCallback(
     async (values: FormValues) => {
-    
       if (!userId) {
         warning("User ID is missing. Please check your URL.");
         return;
@@ -361,6 +409,47 @@ function BookFormPage({ mode }: BookFormPageProps) {
       if (totalImagesCount < 3) {
         warning("Please add at least 3 images before submitting");
         return;
+      }
+
+      // Validate rentAmount and maxRentalPeriod for rent-required deal types
+      const dealTypeName = dealTypesQuery.data?.find(
+        (deal) => deal._id === values.dealTypeId
+      )?.name;
+      const rentRequired =
+        dealTypeName === "For Rent Only" ||
+        dealTypeName === "For Rent And Sale";
+
+      if (rentRequired) {
+        if (values.rentAmount === undefined || values.rentAmount <= 0) {
+          form.setError("rentAmount", {
+            type: "manual",
+            message: "Rent amount is required and must be positive.",
+          });
+          return;
+        }
+        if (values.maxRentalPeriod === undefined || values.maxRentalPeriod <= 0) {
+          form.setError("maxRentalPeriod", {
+            type: "manual",
+            message: "Max rental period is required and must be positive.",
+          });
+          return;
+        }
+      } else {
+        // For "Sale Only", ensure rentAmount and maxRentalPeriod are not set
+        if (values.rentAmount !== undefined && values.rentAmount !== 0) {
+          form.setError("rentAmount", {
+            type: "manual",
+            message: "Rent amount should not be set for Sale Only deal type",
+          });
+          return;
+        }
+        if (values.maxRentalPeriod !== undefined && values.maxRentalPeriod !== 0) {
+          form.setError("maxRentalPeriod", {
+            type: "manual",
+            message: "Max rental period should not be set for Sale Only deal type",
+          });
+          return;
+        }
       }
 
       setIsSubmitting(true);
@@ -376,14 +465,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
           coordinates: [values.longitude, values.latitude],
         };
 
-        // Ensure rentAmount and maxRentalPeriod are set to 0 or undefined for non-rent deal types
-        const dealTypeName = dealTypesQuery.data?.find(
-          (deal) => deal._id === values.dealTypeId
-        )?.name;
-        const rentRequired =
-          dealTypeName === "For Rent Only" ||
-          dealTypeName === "For Rent And Sale";
-
+        // Ensure rentAmount and maxRentalPeriod are set appropriately
         const bookData = {
           name: values.name,
           categoryId: values.categoryId,
@@ -396,8 +478,9 @@ function BookFormPage({ mode }: BookFormPageProps) {
           ownerId: userId,
           location: locationData,
           locationName: values.locationName,
+          numberOfPages: Number(values.numberOfPages),
+          avgReadingTime: `${values.avgReadingTimeDuration} ${values.avgReadingTimeUnit}`,
         };
-      
 
         if (mode === "create") {
           await createBookMutation.mutateAsync(bookData);
@@ -413,7 +496,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
         form.reset();
         setImages([]);
         setImageFiles([]);
-        navigate(`/Books/${userId}`);
+        navigate(`/Books`);
       } catch (err) {
         if (err instanceof AxiosError) {
           console.error(
@@ -450,7 +533,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
 
   // Handle cancel
   const handleCancel = useCallback(() => {
-    navigate(`/Books/${userId}`);
+    navigate(`/Books`);
   }, [navigate, userId]);
 
   // Handle tab change
@@ -526,7 +609,6 @@ function BookFormPage({ mode }: BookFormPageProps) {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit((values) => {
-          
               onSubmit(values);
             })}
           >
@@ -680,7 +762,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
                             {...field}
                             value={field.value === 0 ? "" : field.value}
                             onChange={(e) =>
-                              field.onChange(Number(e.target.value))
+                              field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
                             }
                             disabled={!isRentFieldsEnabled}
                             className="border-black focus:ring-black focus:border-black bg-white text-black"
@@ -705,7 +787,7 @@ function BookFormPage({ mode }: BookFormPageProps) {
                             {...field}
                             value={field.value === 0 ? "" : field.value}
                             onChange={(e) =>
-                              field.onChange(Number(e.target.value))
+                              field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
                             }
                             disabled={!isRentFieldsEnabled}
                             className="border-black focus:ring-black focus:border-black bg-white text-black"
@@ -715,6 +797,84 @@ function BookFormPage({ mode }: BookFormPageProps) {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="numberOfPages"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-black font-medium">
+                          Number of Pages
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter number of pages"
+                            {...field}
+                            value={field.value === 0 ? "" : field.value}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            className="border-black focus:ring-black focus:border-black bg-white text-black"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-black" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormItem>
+                    <FormLabel className="text-black font-medium">
+                      Avg. Reading Time
+                    </FormLabel>
+                    <div className="flex space-x-2">
+                      <FormField
+                        control={form.control}
+                        name="avgReadingTimeDuration"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="Duration"
+                                {...field}
+                                value={field.value === 0 ? "" : field.value}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                                className="border-black focus:ring-black focus:border-black bg-white text-black"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-black" />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="avgReadingTimeUnit"
+                        render={({ field }) => (
+                          <FormItem className="w-32">
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="border-black focus:ring-black focus:border-black bg-white text-black">
+                                  <SelectValue placeholder="Unit" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="hours">Hours</SelectItem>
+                                <SelectItem value="days">Days</SelectItem>
+                                <SelectItem value="months">Months</SelectItem>
+                                <SelectItem value="years">Years</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage className="text-black" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </FormItem>
                   <FormField
                     control={form.control}
                     name="locationName"
@@ -1026,7 +1186,6 @@ function BookFormPage({ mode }: BookFormPageProps) {
                         onClose={handleCropCancel}
                         imageSrc={currentImageSrc}
                         onCropComplete={handleCropComplete}
-                        // aspectRatio={4 / 6}
                         title="Crop Book Image"
                       />
                     </div>

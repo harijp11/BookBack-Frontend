@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-
 export interface Category {
   _id: string;
   name: string;
@@ -32,8 +31,8 @@ export const formSchema = z.object({
   rentAmount: z.coerce
     .number()
     .optional()
-    .refine(val => val === undefined || val > 0, {
-      message: "Rent amount must be a positive number",
+    .refine((val) => val === undefined || val >= 0, {
+      message: "Rent amount must be a non-negative number",
     }),
   description: z
     .string()
@@ -42,8 +41,8 @@ export const formSchema = z.object({
   maxRentalPeriod: z.coerce
     .number()
     .optional()
-    .refine(val => val === undefined || val > 0, {
-      message: "Max rental period must be a positive number",
+    .refine((val) => val === undefined || val >= 0, {
+      message: "Max rental period must be a non-negative number",
     }),
   locationName: z
     .string()
@@ -53,21 +52,22 @@ export const formSchema = z.object({
   longitude: z.coerce.number().min(-180).max(180),
   latitude2: z.coerce.number().min(-90).max(90).optional(),
   longitude2: z.coerce.number().min(-180).max(180).optional(),
+  numberOfPages: z.coerce
+    .number()
+    .positive({ message: "Number of pages must be positive" }),
+  avgReadingTimeDuration: z.coerce
+    .number()
+    .positive({ message: "Reading time duration must be positive" }),
+  avgReadingTimeUnit: z.enum(["hours", "days", "months", "years"], {
+    errorMap: () => ({ message: "Please select a valid time unit" }),
+  }),
 }).superRefine((data, ctx) => {
-  // Define deal types that require rent validation
-  const rentRequiredDealTypeNames = ["For Rent Only", "For Rent And Sale"];
 
-  const requiresRentValidation = rentRequiredDealTypeNames.some(name =>
-    data.dealTypeId === name
-  );
-
-  if (requiresRentValidation) {
-    if (data.rentAmount && data.rentAmount > data.originalAmount) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Rent amount must not exceed original amount",
-        path: ["rentAmount"],
-      });
-    }
+  if (data.rentAmount !== undefined && data.rentAmount > data.originalAmount) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Rent amount must not exceed original amount",
+      path: ["rentAmount"],
+    });
   }
 });

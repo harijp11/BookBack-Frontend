@@ -18,7 +18,8 @@ import {
 } from "@/services/contract/contractService";
 import { useToast } from "@/hooks/ui/toast";
 import { AxiosError } from "axios";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ErrorResponse } from "@/types/ErrorType,";
 
 type contractDetails = {
   contractType: "rental" | "sale";
@@ -31,13 +32,7 @@ type contractDetails = {
   requestType: string;
 } | null;
 
-interface ErrorResponse {
-  response: {
-    data: {
-      message: string;
-    };
-  };
-}
+
 
 const ContractForm: React.FC = () => {
   const { conReqId } = useParams<{ conReqId: string }>();
@@ -81,12 +76,24 @@ const ContractForm: React.FC = () => {
 
   if (error || !contractRequest) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-red-500 text-xl font-medium">
-          {error instanceof Error
-            ? error.message
-            : "No contract data available"}
-        </p>
+      <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 flex items-center justify-center p-6">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center space-y-6 max-w-md w-full">
+          <div className="flex justify-center">
+            <AlertCircle className="h-12 w-12 text-red-500" />
+          </div>
+          <p className="text-black text-xl font-semibold">
+            No Contract Request Details Available
+          </p>
+          <p className="text-gray-600 text-sm">
+            It looks like we couldn't find the contract details. Please try again or return to the previous page.
+          </p>
+          <button
+            onClick={handleBack}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+          >
+            Go Back
+          </button>
+        </div>
       </div>
     );
   }
@@ -106,7 +113,7 @@ const ContractForm: React.FC = () => {
 
     setIsSendingOtp(true);
     try {
-      const response = await sendOtpEmail(ownerEmail);
+      const response = await sendOtpEmail(ownerEmail,contractRequest.request_type,contractRequest.bookId._id);
       if (response?.success) {
         toast.success(response.message);
         setIsOtpModalOpen(true);
@@ -121,13 +128,14 @@ const ContractForm: React.FC = () => {
 
   const handleVerifyOtp = async (otp: string) => {
     try {
-      const response = await verifyOtp({ email: ownerEmail, otp });
+      const response = await verifyOtp({ email: ownerEmail, otp, purpose:contractRequest.request_type, bookId:contractRequest.bookId._id });
       if (response?.success) {
         toast.success(response.message);
         setIsOtpModalOpen(false);
         await submitContract();
       }
     } catch (error) {
+      console.log(error)
       const err = error as ErrorResponse;
       toast.error(
         err.response.data.message || "Invalid OTP. Please try again."
@@ -138,7 +146,7 @@ const ContractForm: React.FC = () => {
   const handleResendOtp = async () => {
     setIsSendingOtp(true);
     try {
-      const response = await sendOtpEmail(ownerEmail);
+      const response = await sendOtpEmail(ownerEmail,contractRequest.request_type,contractRequest.bookId._id);
       if (response?.success) {
         toast.success(response.message);
       }
@@ -222,8 +230,11 @@ const ContractForm: React.FC = () => {
         setIsResultModalOpen(true);
       }
     } catch (error) {
-      if (error instanceof AxiosError)
-        toast.error(error.message || "Failed to create contract.");
+      console.log(error)
+      const err = error as ErrorResponse;
+      toast.error(
+        err.message || "Invalid OTP. Please try again."
+      );
     }
   };
 

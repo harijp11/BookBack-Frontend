@@ -122,21 +122,13 @@ export const checkIfRequestExists = async (requesterId:string,bookId: string):Pr
 export const sendContractRequest = async (
   data: ContractRequestPayload
 ): Promise<ContractRequestResponse> => {
-  // try {
+
     const response = await UserAxiosInstance.post(
       "/user/contract-request",
       data
     );
     return response.data;
-  // } catch (error) {
-  //   if (error instanceof AxiosError) {
-  //     console.error(
-  //       "Contract request failed:",
-  //       error?.response?.data || error.message
-  //     );
-  //   }
-  //   throw new Error("Failed to send contract request");
-  // }
+
 };
 
 
