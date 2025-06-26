@@ -541,7 +541,8 @@ const BorrowedBookDetailsPage: React.FC = () => {
 
               {rentalContract.status === "Return Rejected" && (
                 <button
-                  onClick={openConfirmModal}
+                  // onClick={openConfirmModal}
+                  disabled={true}
                   className="px-6 py-2 rounded-md bg-red-100 border border-red-300 text-red-800 font-medium transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   Your Return Request Rejected

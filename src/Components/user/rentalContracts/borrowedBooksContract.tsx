@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { ReusableFilterTopbar, FilterOptions } from "@/Components/common/FilterSidebar/filterHeader";
+import {
+  ReusableFilterTopbar,
+  FilterOptions,
+} from "@/Components/common/FilterSidebar/filterHeader";
 import { DataTable } from "@/Components/common/tablecomponent/tableComponent";
 import { useBorrowedBooksQuery } from "@/hooks/user/rentalContracts/useBorrowedBooksContractqueries";
 import { RentalContract } from "@/services/rental/rentalService";
-import { DollarSign, Calendar, } from "lucide-react";
+import { DollarSign, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BorrowedBooks: React.FC = () => {
@@ -15,11 +18,13 @@ const BorrowedBooks: React.FC = () => {
     dateRange: { startDate: null, endDate: null },
     priceRange: { min: "", max: "" },
   });
- 
 
-  const { data, isLoading, error } = useBorrowedBooksQuery(page, limit, filterOptions);
- const navigate = useNavigate()
- 
+  const { data, isLoading, error } = useBorrowedBooksQuery(
+    page,
+    limit,
+    filterOptions
+  );
+  const navigate = useNavigate();
 
   const hasActiveFilters = !!(
     filterOptions.dateRange.startDate ||
@@ -29,19 +34,24 @@ const BorrowedBooks: React.FC = () => {
   );
 
   const handleApplyFilters = (filters: FilterOptions) => {
-   
     const sanitizedFilters: FilterOptions = {
       dateRange: {
         startDate: filters.dateRange.startDate || null,
         endDate: filters.dateRange.endDate || null,
       },
       priceRange: {
-        min: filters.priceRange.min && !isNaN(Number(filters.priceRange.min)) ? filters.priceRange.min : "",
-        max: filters.priceRange.max && !isNaN(Number(filters.priceRange.max)) ? filters.priceRange.max : "",
+        min:
+          filters.priceRange.min && !isNaN(Number(filters.priceRange.min))
+            ? filters.priceRange.min
+            : "",
+        max:
+          filters.priceRange.max && !isNaN(Number(filters.priceRange.max))
+            ? filters.priceRange.max
+            : "",
       },
     };
     setFilterOptions(sanitizedFilters);
-    setPage(1); 
+    setPage(1);
   };
 
   const handleClearFilters = () => {
@@ -68,28 +78,27 @@ const BorrowedBooks: React.FC = () => {
 
   // Define DataTable columns
   const columns = [
-     {
-              header: "Book",
-              accessor: (contract: RentalContract) => (
-                contract.bookId.images && contract.bookId.images.length > 0 ? (
-                  <img
-                    src={contract.bookId.images[0]}
-                    alt={contract.bookId.name}
-                    className="w-12 h-12 object-cover rounded"
-                    onClick={()=>navigate(`/borrowed-book/details/${contract._id}`)}
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder-image.jpg" // Fallback image
-                    }}
-                  />
-                ) : (
-                  <img
-                    src="/placeholder-image.jpg"
-                    alt="No image"
-                    className="w-12 h-12 object-cover rounded"
-                  />
-                )
-              )
-            },
+    {
+      header: "Book",
+      accessor: (contract: RentalContract) =>
+        contract.bookId.images && contract.bookId.images.length > 0 ? (
+          <img
+            src={contract.bookId.images[0]}
+            alt={contract.bookId.name}
+            className="w-12 h-12 object-cover rounded"
+            onClick={() => navigate(`/borrowed-book/details/${contract._id}`)}
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder-image.jpg"; // Fallback image
+            }}
+          />
+        ) : (
+          <img
+            src="/placeholder-image.jpg"
+            alt="No image"
+            className="w-12 h-12 object-cover rounded"
+          />
+        ),
+    },
     {
       header: "Book Name",
       accessor: (row: RentalContract) => row.bookId.name || "Unknown",
@@ -102,29 +111,79 @@ const BorrowedBooks: React.FC = () => {
     },
     {
       header: "Rent Amount",
-      accessor: (row: RentalContract) => `$${row.rent_amount.toFixed(2)}`,
+      accessor: (row: RentalContract) => (
+        <div className="w-full text-right pr-5 text-gray-800">
+          ₹{row.rent_amount.toFixed(2)}
+        </div>
+      ),
       className: "text-right text-gray-800",
     },
     {
       header: "Status",
-      accessor: (row: RentalContract) => (
-        <span
-          className={
-            row.status === "Returned"
-              ? "text-green-600 font-medium"
-              : row.status === "Contract Date Exceeded"
-              ? "text-red-600 font-medium"
-              : "text-gray-600 font-medium"
-          }
-        >
-          {row.status}
-        </span>
-      ),
+      accessor: (row: RentalContract) => {
+        let textClass = "";
+
+        switch (row.status) {
+          case "Returned":
+            textClass = "text-green-600";
+            break;
+          case "Return Requested":
+            textClass = "text-blue-600";
+            break;
+          case "On Rental":
+            textClass = "text-amber-600";
+            break;
+          case "Return Rejected":
+            textClass = "text-red-600";
+            break;
+          case "Contract Date Exceeded":
+            textClass = "text-red-700";
+            break;
+          case "Return Rejection Requested":
+            textClass = "text-purple-600";
+            break;
+          default:
+            textClass = "text-gray-600";
+        }
+
+        return <span className={`${textClass} font-medium`}>{row.status}</span>;
+      },
+      className: "text-center",
+    },
+    {
+      header: "Renewal Status",
+      accessor: (row: RentalContract) => {
+        let textClass = "";
+
+        switch (row.renewal_status) {
+          case "No Renewal":
+            textClass = "text-gray-600";
+            break;
+          case "Renewal Requested":
+            textClass = "text-blue-600";
+            break;
+          case "Renewal Rejected":
+            textClass = "text-red-600";
+            break;
+          case "Renewed":
+            textClass = "text-green-600";
+            break;
+          default:
+            textClass = "text-gray-600";
+        }
+
+        return (
+          <span className={`${textClass} font-medium`}>
+            {row.renewal_status}
+          </span>
+        );
+      },
       className: "text-center",
     },
     {
       header: "Requested At",
-      accessor: (row: RentalContract) => new Date(row.created_at).toLocaleDateString(),
+      accessor: (row: RentalContract) =>
+        new Date(row.created_at).toLocaleDateString(),
       className: "text-center text-gray-800",
     },
     {
@@ -148,7 +207,8 @@ const BorrowedBooks: React.FC = () => {
   ];
 
   // Use totalBorrowedContracts and totalPages from API response
-  const totalItems = data?.totalBorrowedContracts || data?.borrowedBooksContract?.length || 0;
+  const totalItems =
+    data?.totalBorrowedContracts || data?.borrowedBooksContract?.length || 0;
   const totalPages = data?.totalPages || Math.ceil(totalItems / limit) || 1;
 
   return (
@@ -180,13 +240,18 @@ const BorrowedBooks: React.FC = () => {
             emptyStateRenderer={() => (
               <div className="text-center py-8 text-gray-500">
                 No borrowed books found for the selected filters (Rent Amount: $
-                {filterOptions.priceRange.min || "Any"} - ${filterOptions.priceRange.max || "Any"}, Date:{" "}
+                {filterOptions.priceRange.min || "Any"} - $
+                {filterOptions.priceRange.max || "Any"}, Date:{" "}
                 {filterOptions.dateRange.startDate
-                  ? new Date(filterOptions.dateRange.startDate).toLocaleDateString()
+                  ? new Date(
+                      filterOptions.dateRange.startDate
+                    ).toLocaleDateString()
                   : "Any"}{" "}
                 -{" "}
                 {filterOptions.dateRange.endDate
-                  ? new Date(filterOptions.dateRange.endDate).toLocaleDateString()
+                  ? new Date(
+                      filterOptions.dateRange.endDate
+                    ).toLocaleDateString()
                   : "Any"}
                 ). Try adjusting or clearing the filters.
               </div>

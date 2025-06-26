@@ -348,14 +348,14 @@ const RentedOutBookDetailsPage = () => {
           </div>
         );
       case "Return Rejected":
-        return (
-          <div className="flex items-center gap-2 bg-red-100 px-4 py-3 rounded-lg border border-red-200 w-full">
-            <X className="h-5 w-5 text-red-600" />
-            <span className="text-red-700 font-medium">
-              Return Request Rejected
-            </span>
-          </div>
-        );
+       return (
+  <div className="flex items-center gap-2 bg-green-100 px-4 py-3 rounded-lg border border-green-200 w-full">
+    <CheckCircle className="h-5 w-5 text-green-600" />
+    <span className="text-green-700 font-medium">
+      Return Request Rejectetion Approved.
+    </span>
+  </div>
+);
       case "Return Rejection Requested":
         return (
           <div className="flex items-center gap-2 bg-amber-100 px-4 py-3 rounded-lg border border-amber-200 w-full">
@@ -478,6 +478,7 @@ const RentedOutBookDetailsPage = () => {
                     <Clock className="h-4 w-4" />
                     <span>{remainingDays} days remaining</span>
                   </div>
+                 
                 )}
               </div>
 

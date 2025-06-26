@@ -39,7 +39,6 @@ export function UserHeader() {
 
   // Fetch unread counts using the new hook
 
-
   const { data: unreadCounts } = useUnreadCounts();
 
   const navItems = [
@@ -121,13 +120,13 @@ export function UserHeader() {
     second: "2-digit",
     hour12: true,
   });
-  let unReadMessagesCount = 0
-  let unReadNotificationsCount = 0
+  let unReadMessagesCount = 0;
+  let unReadNotificationsCount = 0;
 
   // Use fetched counts, fallback to 0 if data is not available
-  if(isLoggedIn){
-   unReadNotificationsCount = unreadCounts?.unReadNotificationsCount || 0;
-   unReadMessagesCount = unreadCounts?.unReadMessagesCount || 0;
+  if (isLoggedIn) {
+    unReadNotificationsCount = unreadCounts?.unReadNotificationsCount || 0;
+    unReadMessagesCount = unreadCounts?.unReadMessagesCount || 0;
   }
 
   return (
@@ -147,7 +146,9 @@ export function UserHeader() {
             <span className="mr-4">
               {day}, {time}
             </span>
-            {isLoggedIn && <span onClick={()=>navigate("/profile")}>My Account</span>}
+            {isLoggedIn && (
+              <span onClick={() => navigate("/profile")}>My Account</span>
+            )}
           </div>
           <div className="hidden md:flex space-x-4 text-xs">
             <a href="/contact" className="hover:underline">
@@ -237,7 +238,9 @@ export function UserHeader() {
                     {/* Notification badge */}
                     {unReadNotificationsCount > 0 && (
                       <span className="absolute top-0 right-0 -mt-1 -mr-1 h-5 w-5 bg-red-600 text-white text-xs flex items-center justify-center rounded-full shadow-md">
-                        {unReadNotificationsCount > 9 ? "9+" : unReadNotificationsCount}
+                        {unReadNotificationsCount > 9
+                          ? "9+"
+                          : unReadNotificationsCount}
                       </span>
                     )}
                   </motion.button>
@@ -316,7 +319,9 @@ export function UserHeader() {
                     {/* Notification badge */}
                     {unReadNotificationsCount > 0 && (
                       <span className="absolute top-0 right-0 -mt-1 -mr-1 h-5 w-5 bg-red-600 text-white text-xs flex items-center justify-center rounded-full shadow-md">
-                        {unReadNotificationsCount > 9 ? "9+" : unReadNotificationsCount}
+                        {unReadNotificationsCount > 9
+                          ? "9+"
+                          : unReadNotificationsCount}
                       </span>
                     )}
                   </motion.button>
@@ -461,16 +466,22 @@ export function UserHeader() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to log out of your account?
+              Are you sure you want to log out of your account? This will end
+              your current session.
             </AlertDialogDescription>
           </AlertDialogHeader>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+          <div className="flex justify-end gap-3 mt-4">
+            <AlertDialogCancel className="border border-gray-300 hover:bg-gray-100">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={logoutUser}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              Log out
+              Log Out
             </AlertDialogAction>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </>

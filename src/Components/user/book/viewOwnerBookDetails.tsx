@@ -15,15 +15,17 @@ import {
   AlertCircle,
   Clock as ClockIcon,
   DollarSign as DollarSignIcon,
+  File,
+  Clock,
 } from "lucide-react";
-import { useBookDetails } from "@/hooks/common/useGetBookdetailsMutation"; // Import the hook
+import { useBookDetails } from "@/hooks/common/useGetBookdetailsMutation";
 import { Card } from "@/Components/ui/card";
 import { FormFieldBook } from "@/Components/ui/form";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 
-// Types based on your provided interface
+// Types based on provided interface
 export interface Category {
   _id: string;
   name: string;
@@ -52,8 +54,12 @@ export interface IBook {
     coordinates: [number, number];
   };
   locationName: string;
+  numberOfPages: number;
+  avgReadingTime: string;
+  notifyUsers: string[];
   createdAt: Date;
   updatedAt: Date;
+  distance: number;
 }
 
 // UI Components
@@ -114,7 +120,7 @@ const ErrorDisplay = ({ message }: { message: string }) => (
   </div>
 );
 
-// New Image Gallery Component with wider main image
+// Image Gallery Component
 const ImageGallery = ({
   images,
   bookId,
@@ -130,7 +136,6 @@ const ImageGallery = ({
 
   return (
     <div className="flex flex-col gap-2 w-60">
-      {/* Main image - wider and fixed height */}
       <div className="bg-gradient-to-b from-white to-gray-100 rounded-md p-3 w-full border-2 border-black shadow-md">
         <div className="w-full h-full overflow-hidden">
           <img
@@ -141,7 +146,6 @@ const ImageGallery = ({
         </div>
       </div>
 
-      {/* Thumbnails */}
       {allImages.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {allImages.map((img, index) => (
@@ -195,7 +199,6 @@ const BookDetailsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const user = useSelector((state: RootState) => state.user.User);
-  // For navigating back
   const handleBack = () => {
     window.history.back();
   };
@@ -363,6 +366,32 @@ const BookDetailsPage: React.FC = () => {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormFieldBook
+                      icon={<File className="w-5 h-5 text-indigo-600" />}
+                      label="Number of Pages"
+                      value={
+                        <div className="flex items-center">
+                          <span className="bg-indigo-100 border border-indigo-300 text-indigo-800 rounded-md px-3 py-1 font-medium">
+                            {book.numberOfPages} Pages
+                          </span>
+                        </div>
+                      }
+                    />
+
+                    <FormFieldBook
+                      icon={<Clock className="w-5 h-5 text-teal-600" />}
+                      label="Average Reading Time"
+                      value={
+                        <div className="flex items-center">
+                          <span className="bg-teal-100 border border-teal-300 text-teal-800 rounded-md px-3 py-1 font-medium">
+                            {book.avgReadingTime}
+                          </span>
+                        </div>
+                      }
+                    />
+                  </div>
+
                   <FormFieldBook
                     icon={<MapPin className="w-5 h-5 text-pink-600" />}
                     label="Location"
@@ -374,14 +403,6 @@ const BookDetailsPage: React.FC = () => {
                   />
 
                   <div className="flex gap-3 mt-6">
-                    {/* <Button variant="outline" size="md" className="flex-1">
-                      <ShoppingBag className="w-4 h-4 mr-2" />
-                      Checkout Details
-                    </Button>
-                    <Button variant="primary" size="md" className="flex-1">
-                      <Clock className="w-4 h-4 mr-2" />
-                      Rental Details
-                    </Button> */}
                     <Button
                       variant="default"
                       size="md"
