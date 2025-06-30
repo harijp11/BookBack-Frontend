@@ -65,6 +65,8 @@ const RentedOutBookDetailsPage = () => {
     return diffDays > 0 ? diffDays : 0;
   };
 
+  console.log("amount of book total",rentalContract?.rent_amount,rentalContract?.penalty_amount)
+
   const formatDate = (date: Date) => {
     return format(new Date(date), "dd-MM-yyyy");
   };
