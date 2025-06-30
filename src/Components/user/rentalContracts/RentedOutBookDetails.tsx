@@ -67,7 +67,7 @@ const RentedOutBookDetailsPage = () => {
 
   console.log("amount of book total",rentalContract?.rent_amount,rentalContract?.penalty_amount)
   console.log("its sum", Number(rentalContract?.rent_amount) +
-                                Number(rentalContract?.penalty_amount).toFixed(2))
+                                Number(rentalContract?.penalty_amount))
 
   const formatDate = (date: Date) => {
     return format(new Date(date), "dd-MM-yyyy");
@@ -812,8 +812,8 @@ const RentedOutBookDetailsPage = () => {
                             </p>
                             <p className="font-medium">
                               Rs.{" "}
-                              {Number(rentalContract?.rent_amount) +
-                                Number(rentalContract?.penalty_amount).toFixed(2)}
+                              {(Number(rentalContract?.rent_amount) +
+                                Number(rentalContract?.penalty_amount)).toFixed(2)}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
                               (Rental: Rs. {rentalContract.rent_amount.toFixed(2)} +
