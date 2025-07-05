@@ -63,7 +63,7 @@ export default function Index() {
   );
 
   const { data, isLoading, isError, error, isFetching, isSuccess } =
-    useFetchNotifications(notificationFilter, page, 8);
+    useFetchNotifications(notificationFilter, page, 4);
 
   const notifications: Notification[] =
     data?.notifications.map((notification) => ({
