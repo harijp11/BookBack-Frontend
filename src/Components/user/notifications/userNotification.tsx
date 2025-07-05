@@ -1,17 +1,26 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Bell, Check, Info, AlertTriangle, X, ArrowLeft, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/Components/ui/card";
+import {
+  Bell,
+  X,
+  ArrowLeft,
+} from "lucide-react";
+import { Card,} from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
 import { useFetchNotifications } from "@/hooks/user/notifications/useNotificationQueries";
 import { Loader2 } from "lucide-react";
-import { Pagination1 } from "@/Components/common/pagination/pagination1"; // Import the Pagination1 component
+import { Pagination1 } from "@/Components/common/pagination/pagination1";
 import { INotificationEntity } from "@/services/notifications/notificationService";
 import { motion } from "framer-motion";
+import {
+  useClearNotifications,
+  useClearNotificationById,
+} from "@/hooks/user/notifications/useClearNotifications"; // Added import
+import { NotificationCard } from "./notificationCard";
 
 // Type definitions for notifications
 interface Notification {
@@ -33,9 +42,13 @@ export interface NotificationResponse {
 }
 
 export default function Index() {
-  const [filter, setFilter] = useState<string>("all");
+  const [filter, setFilter] = useState<string>("unread");
   const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
+
+  // Added hooks
+  const { mutate: clearAll } = useClearNotifications();
+  const { mutate: clearById } = useClearNotificationById();
 
   const notificationFilter = useMemo(
     () =>
@@ -43,28 +56,27 @@ export default function Index() {
         ? {}
         : filter === "unread"
         ? { isRead: false }
+        : filter === "read"
+        ? { isRead: true }
         : { type: filter as "warning" | "info" | "fault" | "good" | "normal" },
     [filter]
   );
 
-  const { data, isLoading, isError, error, isFetching, isSuccess } = useFetchNotifications(notificationFilter, page,6);
+  const { data, isLoading, isError, error, isFetching, isSuccess } =
+    useFetchNotifications(notificationFilter, page, 1);
 
-   const notifications: Notification[] = data?.notifications.map(notification => ({
-  _id: notification._id || "",
-  type: notification.type,
-  title: notification.title,
-  message: notification.message,
-  isRead: notification.isRead,
-  created_at: notification.created_at,
-  link: notification.navlink || undefined,
-})) || [];
+  const notifications: Notification[] =
+    data?.notifications.map((notification) => ({
+      _id: notification._id || "",
+      type: notification.type,
+      title: notification.title,
+      message: notification.message,
+      isRead: notification.isRead,
+      created_at: notification.created_at,
+      link: notification.navlink || undefined,
+    })) || [];
 
-
-
-
- 
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
   const filteredNotifications = notifications;
 
   const handlePagePrev = () => {
@@ -83,14 +95,16 @@ export default function Index() {
     setPage(selectedPage);
   };
 
+  
+
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigate(-1)} 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
             className="mr-2"
             aria-label="Go back"
           >
@@ -104,11 +118,29 @@ export default function Index() {
             </Badge>
           )}
         </div>
+        {/* Added Clear All button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => clearAll()}
+          disabled={notifications.length === 0}
+        >
+          Clear All
+        </Button>
       </div>
-
       <Card className="mb-6">
+      
         <div className="flex overflow-x-auto scrollbar-none p-1">
-          {["all", "warning", "good", "info", "fault", "normal"].map((type) => (
+          {[
+            "all",
+            "read",
+            "unread",
+            "warning",
+            "good",
+            "info",
+            "fault",
+            "normal",
+          ].map((type) => (
             <Button
               key={type}
               variant={filter === type ? "default" : "ghost"}
@@ -119,7 +151,9 @@ export default function Index() {
               }}
               className="mx-1 whitespace-nowrap capitalize"
             >
-              {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
+              {type === "all"
+                ? "All"
+                : type.charAt(0).toUpperCase() + type.slice(1)}
             </Button>
           ))}
         </div>
@@ -148,7 +182,9 @@ export default function Index() {
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <X className="h-12 w-12 text-red-500 mb-2" />
           <h3 className="text-lg font-medium">No data available</h3>
-          <p className="text-muted-foreground">Unable to load notifications. Please try again.</p>
+          <p className="text-muted-foreground">
+            Unable to load notifications. Please try again.
+          </p>
           <Button
             variant="outline"
             className="mt-4"
@@ -163,10 +199,10 @@ export default function Index() {
             {filteredNotifications.length > 0 ? (
               <div className="space-y-4">
                 {filteredNotifications.map((notification) => (
-                  <NotificationCard 
-                    key={notification._id} 
+                  <NotificationCard
+                    key={notification._id}
                     notification={notification}
-                  
+                    clearNotification={() => clearById(notification._id)} // Added prop
                   />
                 ))}
               </div>
@@ -175,8 +211,8 @@ export default function Index() {
                 <Bell className="h-12 w-12 text-gray-300 mb-2" />
                 <h3 className="text-lg font-medium">No notifications</h3>
                 <p className="text-muted-foreground">
-                  {filter !== "all" 
-                    ? `You don't have any ${filter} notifications` 
+                  {filter !== "all"
+                    ? `You don't have any ${filter} notifications`
                     : "You're all caught up!"}
                 </p>
               </div>
@@ -184,129 +220,24 @@ export default function Index() {
           </ScrollArea>
 
           {data.totalPages > 1 && (
-             <motion.div
-                className="mt-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Pagination1
-                  currentPage={data.currentPage}
-                  totalPages={data.totalPages}
-                  onPagePrev={handlePagePrev}
-                  onPageNext={handlePageNext}
-                  onPageSelect={handlePageSelect}
-                />
-              </motion.div>
-            )}
+            <motion.div
+              className="mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Pagination1
+                currentPage={page}
+                totalPages={data.totalPages}
+                onPagePrev={handlePagePrev}
+                onPageNext={handlePageNext}
+                onPageSelect={handlePageSelect}
+              />
+            </motion.div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-interface NotificationCardProps {
-  notification: Notification;
-}
-
-function NotificationCard({ notification }: NotificationCardProps) {
-  const getIcon = () => {
-    switch (notification.type) {
-      case "warning":
-        return <AlertTriangle className="h-5 w-5 text-amber-500" />;
-      case "good":
-        return <Check className="h-5 w-5 text-emerald-500" />;
-      case "info":
-        return <Info className="h-5 w-5 text-blue-500" />;
-      case "fault":
-        return <X className="h-5 w-5 text-red-500" />;
-      default:
-        return <Bell className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getHoverColor = () => {
-    if (!notification.isRead) return "";
-    switch (notification.type) {
-      case "warning":
-        return "hover:bg-amber-50";
-      case "good":
-        return "hover:bg-emerald-50";
-      case "info":
-        return "hover:bg-blue-50";
-      case "fault":
-        return "hover:bg-red-50";
-      default:
-        return "hover:bg-gray-50";
-    }
-  };
-
-  const formatDate = (dateString: string | Date) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    }).format(date);
-  };
-
-  return (
-    <Card
-      className={`relative transition-all duration-200 ${getHoverColor()} h-[140px] ${
-        !notification.isRead
-          ? `shadow-lg brightness-110 after:w-5 after:h-5 after:bg-red-500 after:rounded-bl-md 
-          after:border-l-2 after:border-b-2 after:border-white after:-translate-x-0.5 after:-translate-y-0.5 border-l-4 border-black`
-          : "border-l-4 border-gray-400"
-      }`}
-    >
-      <CardContent className="p-4 h-full">
-        <div className="flex h-full items-start gap-4">
-          <div className="flex-shrink-0 mt-1 bg-gray-100 p-2 rounded-full">
-            {getIcon()}
-          </div>
-          <div className="flex-1 flex flex-col h-full">
-            <div className="flex items-start justify-between">
-              <div className="overflow-hidden">
-                {notification.title && (
-                  <h3
-                    className={`font-semibold text-base truncate ${
-                      !notification.isRead ? "text-gray-900 font-bold" : ""
-                    }`}
-                  >
-                    {notification.title}
-                  </h3>
-                )}
-                <p
-                  className={`text-sm text-gray-700 mt-1 line-clamp-2 ${
-                     !notification.isRead ? "font-medium" : ""
-                  }`}
-                >
-                  {notification.message}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-auto text-xs">
-              <span className="text-muted-foreground">
-                {formatDate(notification.created_at)}
-              </span>
-              {notification.link && (
-                <Button 
-                  variant="link" 
-                  className="h-auto p-0 text-xs"
-                  asChild
-                >
-                  <a href={notification.link} className="flex items-center">
-                    View details
-                    <ArrowRight className="ml-1 h-3 w-3" />
-                  </a>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}

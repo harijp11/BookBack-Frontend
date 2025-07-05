@@ -22,7 +22,7 @@ const ReturnRejectionRequestPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
  const [filter, setFilter] = useState<Record<string, unknown>>({});
   const [isFiltering, setIsFiltering] = useState(false);
-  const limit = 5;
+  const limit = 2;
 
   const { data, isLoading, error, isFetching } = useReturnRejectionRequests({
     filter,

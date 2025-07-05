@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 const BoughtBooks: React.FC = () => {
   const [page, setPage] = useState<number>(1);
-  const [limit] = useState<number>(5);
+  const [limit] = useState<number>(2);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     dateRange: { startDate: null, endDate: null },
     priceRange: { min: "", max: "" },

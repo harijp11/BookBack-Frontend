@@ -63,3 +63,14 @@ export const fetchUnreadCounts = async (): Promise<UnreadCountsResponse | null> 
       const response = await UserAxiosInstance.get<UnreadCountsResponse>('/user/chat-notifications/unread-count');
       return response.data
   }
+
+
+  export const clearAllNotifications = async () => {
+  const response = await UserAxiosInstance.delete("/user/notifications");
+  return response.data;
+};
+
+export const clearNotificationById = async (notificationId: string) => {
+  const response = await UserAxiosInstance.delete(`/user/notifications/${notificationId}`);
+  return response.data;
+};
